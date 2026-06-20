@@ -356,10 +356,6 @@ body.dark-mode .service-card[data-tooltip]::after {
     font-size: 1.1rem;
     margin-right: 0.75rem;
     border-radius: 0.25rem;
-    background: rgba(0, 0, 0, 0.05);
-}
-body.dark-mode .service-icon {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .service-icon img {
