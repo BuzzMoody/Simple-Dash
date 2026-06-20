@@ -1,0 +1,213 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
+    const groupToggle = document.getElementById('group-toggle');
+    const headerTitle = document.getElementById('header-title');
+    const headerDesc = document.getElementById('header-desc');
+    const announcementsContainer = document.getElementById('announcements');
+    const buttonsContainer = document.getElementById('buttons');
+    const servicesContainer = document.getElementById('services-container');
+
+    let currentConfig = null;
+    let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
+
+    // Theme Management
+    const initTheme = () => {
+        const savedTheme = localStorage.getItem('dashy-theme');
+        if (savedTheme === 'light') {
+            document.body.classList.remove('dark-mode');
+            themeToggle.textContent = '☀️';
+        } else {
+            document.body.classList.add('dark-mode');
+            themeToggle.textContent = '🌙';
+        }
+    };
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('dashy-theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '🌙' : '☀️';
+    });
+
+    initTheme();
+
+    // Grouping Toggle
+    const updateGroupToggleButton = () => {
+        const span = groupToggle.querySelector('span');
+        if (span) {
+            span.textContent = groupBy === 'category' ? 'A-Z Sort' : 'Categories';
+        }
+    };
+    
+    updateGroupToggleButton();
+
+    groupToggle.addEventListener('click', () => {
+        groupBy = groupBy === 'category' ? 'none' : 'category';
+        localStorage.setItem('dashy-groupby', groupBy);
+        updateGroupToggleButton();
+        if (currentConfig) renderServices(currentConfig.services);
+    });
+
+    // Fetch config
+    const fetchConfig = async () => {
+        try {
+            const response = await fetch('/api/config');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            currentConfig = data;
+            renderDashboard(data);
+        } catch (error) {
+            console.error('Failed to fetch config:', error);
+            headerDesc.textContent = 'Error loading configuration.';
+        }
+    };
+
+    const renderDashboard = (config) => {
+        if (config.header) headerTitle.textContent = config.header;
+        if (config.description) headerDesc.textContent = config.description;
+
+        const footerEl = document.getElementById('footer');
+        if (footerEl) {
+            footerEl.innerHTML = config.footer !== undefined ? config.footer : 'Powered by <a href="https://github.com/Antigravity" target="_blank">Antigravity Dash</a>';
+        }
+
+        // Header Colors
+        if (config.header_colors && config.header_colors.length >= 2) {
+            document.documentElement.style.setProperty('--header-color-1', config.header_colors[0]);
+            document.documentElement.style.setProperty('--header-color-2', config.header_colors[1]);
+        } else {
+            document.documentElement.style.removeProperty('--header-color-1');
+            document.documentElement.style.removeProperty('--header-color-2');
+        }
+
+        // Announcements
+        announcementsContainer.innerHTML = '';
+        if (config.announcements && config.announcements.length > 0) {
+            config.announcements.forEach(ann => {
+                const el = document.createElement('div');
+                el.className = `announcement ${ann.type || 'default'}`;
+                el.textContent = ann.text;
+                announcementsContainer.appendChild(el);
+            });
+        }
+
+        // Buttons
+        buttonsContainer.innerHTML = '';
+        if (config.buttons && config.buttons.length > 0) {
+            config.buttons.forEach(btn => {
+                const el = document.createElement('a');
+                el.className = 'btn';
+                el.href = btn.url;
+                el.target = '_blank';
+                el.rel = 'noopener noreferrer';
+                if (btn.icon) {
+                    el.innerHTML = `<span style="margin-right:0.3rem">${btn.icon}</span>${btn.name}`;
+                } else {
+                    el.textContent = btn.name;
+                }
+                buttonsContainer.appendChild(el);
+            });
+        }
+
+        renderServices(config.services || []);
+    };
+
+    const createServiceCard = (service) => {
+        const card = document.createElement('a');
+        card.className = 'service-card';
+        card.href = service.url;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        if (service.description) {
+            card.setAttribute('data-tooltip', service.description);
+        }
+
+        const iconContainer = document.createElement('div');
+        iconContainer.className = 'service-icon';
+        
+        if (service.logo) {
+            const img = document.createElement('img');
+            img.src = `logos/${service.logo}`;
+            img.alt = service.name;
+            img.onerror = () => { iconContainer.textContent = service.icon || '🔗'; };
+            iconContainer.appendChild(img);
+        } else {
+            iconContainer.textContent = service.icon || '🔗';
+        }
+
+        const name = document.createElement('div');
+        name.className = 'service-name';
+        name.textContent = service.name;
+
+        card.appendChild(iconContainer);
+        card.appendChild(name);
+        return card;
+    };
+
+    const renderServices = (services) => {
+        servicesContainer.innerHTML = '';
+        
+        const sortedServices = [...services].sort((a, b) => a.name.localeCompare(b.name));
+        
+        if (groupBy === 'none') {
+            const gridEl = document.createElement('div');
+            gridEl.className = 'services-grid';
+            sortedServices.forEach(service => gridEl.appendChild(createServiceCard(service)));
+            servicesContainer.appendChild(gridEl);
+            return;
+        }
+
+        const groups = {};
+        sortedServices.forEach(service => {
+            const groupKey = service.category || 'Uncategorized';
+            if (!groups[groupKey]) groups[groupKey] = [];
+            groups[groupKey].push(service);
+        });
+
+        const sortedGroupKeys = Object.keys(groups).sort();
+
+        sortedGroupKeys.forEach(key => {
+            const groupEl = document.createElement('div');
+            groupEl.className = 'group';
+
+            const titleEl = document.createElement('h2');
+            titleEl.className = 'group-title';
+            titleEl.textContent = key;
+            groupEl.appendChild(titleEl);
+
+            const gridEl = document.createElement('div');
+            gridEl.className = 'services-grid';
+
+            groups[key].forEach(service => gridEl.appendChild(createServiceCard(service)));
+
+            groupEl.appendChild(gridEl);
+            servicesContainer.appendChild(groupEl);
+        });
+    };
+
+    fetchConfig();
+
+    // Mobile Sidebar Logic
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const closeMenuBtn = document.getElementById('close-menu-btn');
+    const headerRight = document.getElementById('header-right');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuBtn && closeMenuBtn && headerRight && sidebarOverlay) {
+        const toggleMenu = (e) => {
+            if (e) e.stopPropagation();
+            const isOpen = headerRight.classList.contains('show');
+            if (isOpen) {
+                headerRight.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            } else {
+                headerRight.classList.add('show');
+                sidebarOverlay.classList.add('show');
+            }
+        };
+
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+        closeMenuBtn.addEventListener('click', toggleMenu);
+        sidebarOverlay.addEventListener('click', toggleMenu);
+    }
+});

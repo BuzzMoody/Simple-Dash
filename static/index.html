@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Homelab Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="header-left">
+                    <div>
+                        <h1 id="header-title">Homelab</h1>
+                        <p id="header-desc">Loading...</p>
+                    </div>
+                </div>
+                <div id="header-right" class="header-right">
+                    <button id="close-menu-btn" class="close-menu-btn" aria-label="Close">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <div id="buttons" class="buttons"></div>
+                </div>
+            </div>
+            <div id="announcements" class="announcements"></div>
+        </header>
+
+        <main id="services-container">
+            <!-- Services will be injected here -->
+        </main>
+        
+        <footer id="footer" class="footer"></footer>
+    </div>
+
+    <div class="floating-dock">
+        <button id="mobile-menu-btn" class="dock-btn mobile-only-dock-btn" aria-label="Menu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span class="dock-label">Menu</span>
+        </button>
+        <div class="dock-divider mobile-only-dock-divider"></div>
+        <button id="group-toggle" class="dock-btn" title="Toggle Grouping">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span class="dock-label">Grouping</span>
+        </button>
+        <div class="dock-divider"></div>
+        <button id="theme-toggle" class="dock-btn" title="Toggle Theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <span class="dock-label">Theme</span>
+        </button>
+    </div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <script src="script.js"></script>
+</body>
+</html>
