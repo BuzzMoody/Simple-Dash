@@ -48,17 +48,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentConfig) renderServices(currentConfig.services);
     });
 
+    const showErrorToast = (message) => {
+        const toast = document.createElement('div');
+        toast.className = 'announcement outage';
+        toast.style.position = 'fixed';
+        toast.style.top = '1rem';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.zIndex = '9999';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    };
+
     // Fetch config
     const fetchConfig = async () => {
         try {
             const response = await fetch('/api/config');
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) throw new Error(`Network error (${response.status})`);
             const data = await response.json();
             currentConfig = data;
             renderDashboard(data);
         } catch (error) {
-            console.error('Failed to fetch config:', error);
-            headerDesc.textContent = 'Error loading configuration.';
+            headerDesc.textContent = 'Failed to load configuration.';
+            showErrorToast('Could not fetch configuration from the server.');
         }
     };
 

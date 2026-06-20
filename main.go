@@ -1,11 +1,14 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
-	"sync"
+	"strings"
+	"sync/atomic"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -43,53 +46,77 @@ type Service struct {
 }
 
 var (
-	configCache Config
-	lastModTime time.Time
-	configMutex sync.RWMutex
+	configCache atomic.Pointer[Config]
+	lastModTime atomic.Int64 // UnixNano
 	configPath  = "data/config.yaml"
 )
 
-func loadConfig() error {
+func reloadConfigIfModified() {
+	info, err := os.Stat(configPath)
+	if err != nil {
+		log.Printf("Error stating config file: %v", err)
+		return
+	}
+
+	modTime := info.ModTime().UnixNano()
+	if modTime > lastModTime.Load() {
+		data, err := os.ReadFile(configPath)
+		if err != nil {
+			log.Printf("Error reading config file: %v", err)
+			return
+		}
+
+		var newConfig Config
+		if err := yaml.Unmarshal(data, &newConfig); err != nil {
+			log.Printf("Error parsing config file: %v", err)
+			return
+		}
+
+		configCache.Store(&newConfig)
+		lastModTime.Store(modTime)
+		log.Println("Config reloaded")
+	}
+}
+
+func startConfigWatcher() {
+	// Check config file every 5 seconds
+	ticker := time.NewTicker(5 * time.Second)
+	go func() {
+		for range ticker.C {
+			reloadConfigIfModified()
+		}
+	}()
+}
+
+func loadInitialConfig() error {
 	info, err := os.Stat(configPath)
 	if err != nil {
 		return err
 	}
 
-	configMutex.RLock()
-	modTime := lastModTime
-	configMutex.RUnlock()
-
-	if info.ModTime().After(modTime) {
-		configMutex.Lock()
-		defer configMutex.Unlock()
-
-		data, err := os.ReadFile(configPath)
-		if err != nil {
-			return err
-		}
-
-		var newConfig Config
-		if err := yaml.Unmarshal(data, &newConfig); err != nil {
-			return err
-		}
-
-		configCache = newConfig
-		lastModTime = info.ModTime()
-		log.Println("Config reloaded")
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return err
 	}
+
+	var newConfig Config
+	if err := yaml.Unmarshal(data, &newConfig); err != nil {
+		return err
+	}
+
+	configCache.Store(&newConfig)
+	lastModTime.Store(info.ModTime().UnixNano())
 	return nil
 }
 
 func configHandler(w http.ResponseWriter, r *http.Request) {
-	if err := loadConfig(); err != nil {
-		http.Error(w, "Failed to load config", http.StatusInternalServerError)
+	cfg := configCache.Load()
+	if cfg == nil {
+		http.Error(w, "Config not loaded", http.StatusInternalServerError)
 		return
 	}
 
-	configMutex.RLock()
-	data, err := json.Marshal(configCache)
-	configMutex.RUnlock()
-
+	data, err := json.Marshal(cfg)
 	if err != nil {
 		http.Error(w, "Failed to encode config", http.StatusInternalServerError)
 		return
@@ -99,18 +126,60 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// gzipResponseWriter wraps http.ResponseWriter to support gzip compression
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+// gzipMiddleware compresses HTTP responses for clients that support it
+func gzipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Set("Vary", "Accept-Encoding")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+
+		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		next.ServeHTTP(gzw, r)
+	})
+}
+
+// cacheMiddleware sets caching headers for static assets
+func cacheMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Cache for 24 hours (86400 seconds)
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
-	if err := loadConfig(); err != nil {
+	if err := loadInitialConfig(); err != nil {
 		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted in data/): %v", err)
 	}
 
-	http.HandleFunc("/api/config", configHandler)
-	http.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./data/logos"))))
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	startConfigWatcher()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/config", configHandler)
+	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
+	mux.Handle("/", cacheMiddleware(http.FileServer(http.Dir("./static"))))
 
 	port := "8888"
 	log.Printf("Server starting on port %s...", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	
+	// Apply gzip middleware to the entire mux router
+	if err := http.ListenAndServe(":"+port, gzipMiddleware(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
