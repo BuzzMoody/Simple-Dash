@@ -101,7 +101,7 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	if err := loadConfig(); err != nil {
-		log.Printf("Warning: Could not load initial config: %v", err)
+		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted): %v", err)
 	}
 
 	http.HandleFunc("/api/config", configHandler)
