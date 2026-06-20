@@ -98,8 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const el = document.createElement('a');
                 el.className = 'btn';
                 el.href = btn.url;
-                el.target = '_blank';
-                el.rel = 'noopener noreferrer';
                 if (btn.icon) {
                     el.innerHTML = `<span style="margin-right:0.3rem">${btn.icon}</span>${btn.name}`;
                 } else {
@@ -116,8 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('a');
         card.className = 'service-card';
         card.href = service.url;
-        card.target = '_blank';
-        card.rel = 'noopener noreferrer';
         if (service.description) {
             card.setAttribute('data-tooltip', service.description);
         }
