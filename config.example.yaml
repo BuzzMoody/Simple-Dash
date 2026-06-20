@@ -1,0 +1,17 @@
+header: "My Dashboard"
+description: "Home Server Services"
+header_colors: ["#38bdf8", "#a855f7"]
+footer: "© 2026 My Dashboard"
+announcements:
+  - text: "Welcome to your new dashboard!"
+    type: "success"
+buttons:
+  - name: "Router"
+    url: "http://192.168.1.1"
+    icon: "🌐"
+services:
+  - name: "Example Service"
+    url: "http://192.168.1.100"
+    category: "Infrastructure"
+    logo: "example.svg"
+    description: "An example service description."

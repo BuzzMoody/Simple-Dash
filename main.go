@@ -105,6 +105,7 @@ func main() {
 	}
 
 	http.HandleFunc("/api/config", configHandler)
+	http.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./logos"))))
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	port := "8888"
