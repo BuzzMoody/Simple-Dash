@@ -25,5 +25,5 @@ ehthumbs.db
 Thumbs.db
 
 # User Configuration
-config.yaml
-logos/
+data/*
+!data/config.example.yaml

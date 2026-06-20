@@ -46,7 +46,7 @@ var (
 	configCache Config
 	lastModTime time.Time
 	configMutex sync.RWMutex
-	configPath  = "config.yaml"
+	configPath  = "data/config.yaml"
 )
 
 func loadConfig() error {
@@ -101,11 +101,11 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	if err := loadConfig(); err != nil {
-		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted): %v", err)
+		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted in data/): %v", err)
 	}
 
 	http.HandleFunc("/api/config", configHandler)
-	http.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./logos"))))
+	http.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./data/logos"))))
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	port := "8888"
