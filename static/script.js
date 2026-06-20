@@ -159,17 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const sortedServices = [...services].sort((a, b) => a.name.localeCompare(b.name));
         
-        if (groupBy === 'none') {
-            const gridEl = document.createElement('div');
-            gridEl.className = 'services-grid';
-            sortedServices.forEach(service => gridEl.appendChild(createServiceCard(service)));
-            servicesContainer.appendChild(gridEl);
-            return;
-        }
-
         const groups = {};
         sortedServices.forEach(service => {
-            const groupKey = service.category || 'Uncategorized';
+            let groupKey;
+            if (groupBy === 'category') {
+                groupKey = service.category || 'Uncategorized';
+            } else {
+                groupKey = (service.name.charAt(0) || '#').toUpperCase();
+                // Group numbers and symbols together
+                if (!/[A-Z]/.test(groupKey)) {
+                    groupKey = '#';
+                }
+            }
+            
             if (!groups[groupKey]) groups[groupKey] = [];
             groups[groupKey].push(service);
         });
