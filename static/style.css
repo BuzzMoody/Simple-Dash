@@ -48,11 +48,9 @@ body:not(.dark-mode) .dark-theme-logo {
     padding: 0;
 }
 
-::selection {
-    background: transparent;
-}
-::-moz-selection {
-    background: transparent;
+input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 body {
