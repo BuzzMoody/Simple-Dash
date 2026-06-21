@@ -128,8 +128,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.href = btn.url;
                 
                 let content = '';
-                if (btn.logo) {
-                    content = `<img src="logos/${btn.logo}" alt="${btn.name}" class="btn-logo" onerror="this.style.display='none'">`;
+                const btnLight = btn.logo_light || btn.logo;
+                const btnDark = btn.logo_dark || btn.logo;
+
+                if (btnLight && btnDark && btnLight !== btnDark) {
+                    content = `
+                        <img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo light-theme-logo" onerror="this.style.display='none'">
+                        <img src="logos/${btnDark}" alt="${btn.name}" class="btn-logo dark-theme-logo" onerror="this.style.display='none'">
+                    `;
+                } else if (btnLight) {
+                    content = `<img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo" onerror="this.style.display='none'">`;
                 } else if (btn.icon) {
                     content = `<span style="margin-right:0.3rem">${btn.icon}</span>`;
                 }
@@ -153,12 +161,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const iconContainer = document.createElement('div');
         iconContainer.className = 'service-icon';
         
-        if (service.logo) {
-            const img = document.createElement('img');
-            img.src = `logos/${service.logo}`;
-            img.alt = service.name;
-            img.onerror = () => { iconContainer.textContent = service.icon || '🔗'; };
-            iconContainer.appendChild(img);
+        if (service.logo || service.logo_light || service.logo_dark) {
+            const sLight = service.logo_light || service.logo;
+            const sDark = service.logo_dark || service.logo;
+
+            if (sLight && sDark && sLight !== sDark) {
+                const imgL = document.createElement('img');
+                imgL.src = `logos/${sLight}`;
+                imgL.alt = service.name;
+                imgL.className = 'light-theme-logo';
+                imgL.onerror = () => { imgL.style.display = 'none'; };
+                
+                const imgD = document.createElement('img');
+                imgD.src = `logos/${sDark}`;
+                imgD.alt = service.name;
+                imgD.className = 'dark-theme-logo';
+                imgD.onerror = () => { imgD.style.display = 'none'; };
+                
+                iconContainer.appendChild(imgL);
+                iconContainer.appendChild(imgD);
+                
+                // Fallback icon if both fail (simplified)
+                if (!sLight && !sDark) {
+                     iconContainer.textContent = service.icon || '🔗';
+                }
+            } else {
+                const img = document.createElement('img');
+                img.src = `logos/${sLight || sDark}`;
+                img.alt = service.name;
+                img.onerror = () => { iconContainer.textContent = service.icon || '🔗'; };
+                iconContainer.appendChild(img);
+            }
         } else {
             iconContainer.textContent = service.icon || '🔗';
         }
