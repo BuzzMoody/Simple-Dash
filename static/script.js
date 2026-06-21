@@ -310,6 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
             groupEl.appendChild(gridEl);
             servicesContainer.appendChild(groupEl);
         });
+
+        updateStatusIndicators();
     };
 
     fetchConfig();
