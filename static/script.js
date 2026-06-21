@@ -133,8 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (btnLight && btnDark && btnLight !== btnDark) {
                     content = `
-                        <img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo light-theme-logo" onerror="this.style.display='none'">
-                        <img src="logos/${btnDark}" alt="${btn.name}" class="btn-logo dark-theme-logo" onerror="this.style.display='none'">
+                        <span class="btn-logo-wrapper">
+                            <img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo light-theme-logo" onerror="this.style.display='none'">
+                            <img src="logos/${btnDark}" alt="${btn.name}" class="btn-logo dark-theme-logo" onerror="this.style.display='none'">
+                        </span>
                     `;
                 } else if (btnLight) {
                     content = `<img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo" onerror="this.style.display='none'">`;

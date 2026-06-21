@@ -25,12 +25,19 @@ body.dark-mode::before {
                       radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.06), transparent 50%);
 }
 
+/* Light / Dark crossfade */
+.light-theme-logo, .dark-theme-logo {
+    transition: opacity 0.3s ease;
+}
+
 body.dark-mode .light-theme-logo {
-    display: none !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
 body:not(.dark-mode) .dark-theme-logo {
-    display: none !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
 * {
@@ -219,6 +226,21 @@ body.dark-mode .announcement.outage {
     object-fit: contain;
 }
 
+.btn-logo-wrapper {
+    display: inline-grid;
+    place-items: center;
+    vertical-align: middle;
+    margin-right: 0.3rem;
+}
+
+.btn-logo-wrapper > * {
+    grid-area: 1 / 1;
+}
+
+.btn-logo-wrapper .btn-logo {
+    margin-right: 0;
+}
+
 .floating-dock {
     position: fixed;
     bottom: 2rem;
@@ -366,12 +388,15 @@ body.dark-mode .service-card[data-tooltip]::after {
 .service-icon {
     width: 1.75rem;
     height: 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     font-size: 1.1rem;
     margin-right: 0.75rem;
     border-radius: 0.25rem;
+}
+
+.service-icon > * {
+    grid-area: 1 / 1;
 }
 
 .service-icon img {
