@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDark = document.body.classList.contains('dark-mode');
         localStorage.setItem('dashy-theme', isDark ? 'dark' : 'light');
         themeToggle.textContent = isDark ? '🌙' : '☀️';
+        showToast(isDark ? 'Dark Mode Enabled' : 'Light Mode Enabled');
     });
 
     initTheme();
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         groupBy = groupBy === 'category' ? 'none' : 'category';
         localStorage.setItem('dashy-groupby', groupBy);
         updateGroupToggleButton();
+        showToast(groupBy === 'category' ? 'Grouped by Categories' : 'Sorted A-Z');
         if (currentConfig) renderServices(currentConfig.services || []);
     });
 
@@ -71,6 +73,38 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 5000);
+    };
+
+    const showToast = (message) => {
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '2rem';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+        toast.style.zIndex = '9999';
+        toast.style.background = 'var(--card-bg)';
+        toast.style.color = 'var(--text-color)';
+        toast.style.padding = '0.6rem 1.2rem';
+        toast.style.borderRadius = '999px';
+        toast.style.border = '1px solid var(--card-border)';
+        toast.style.boxShadow = 'var(--shadow)';
+        toast.style.fontSize = '0.9rem';
+        toast.style.fontWeight = '500';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        // trigger reflow
+        void toast.offsetWidth;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
     };
 
     // Fetch config
