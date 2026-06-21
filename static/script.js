@@ -77,8 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderDashboard = (config) => {
-        if (config.header) headerTitle.textContent = config.header;
+        if (config.header) {
+            headerTitle.textContent = config.header;
+            document.title = config.header;
+        }
         if (config.description) headerDesc.textContent = config.description;
+
+        if (config.favicon && config.favicon.endsWith('.svg')) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = `logos/${config.favicon}`;
+            link.type = 'image/svg+xml';
+        }
 
         const footerEl = document.getElementById('footer');
         if (footerEl) {
@@ -112,11 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const el = document.createElement('a');
                 el.className = 'btn';
                 el.href = btn.url;
-                if (btn.icon) {
-                    el.innerHTML = `<span style="margin-right:0.3rem">${btn.icon}</span>${btn.name}`;
-                } else {
-                    el.textContent = btn.name;
+                
+                let content = '';
+                if (btn.logo) {
+                    content = `<img src="logos/${btn.logo}" alt="${btn.name}" class="btn-logo" onerror="this.style.display='none'">`;
+                } else if (btn.icon) {
+                    content = `<span style="margin-right:0.3rem">${btn.icon}</span>`;
                 }
+                el.innerHTML = `${content}${btn.name}`;
+                
                 buttonsContainer.appendChild(el);
             });
         }

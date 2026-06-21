@@ -24,6 +24,7 @@ type Config struct {
 	Description   string         `yaml:"description" json:"description"`
 	HeaderColors  []string       `yaml:"header_colors" json:"header_colors"`
 	Footer        string         `yaml:"footer" json:"footer"`
+	Favicon       string         `yaml:"favicon" json:"favicon"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
 	Buttons       []Button       `yaml:"buttons" json:"buttons"`
 	Services      []Service      `yaml:"services" json:"services"`
@@ -33,6 +34,7 @@ type Button struct {
 	Name string `yaml:"name" json:"name"`
 	URL  string `yaml:"url" json:"url"`
 	Icon string `yaml:"icon" json:"icon"`
+	Logo string `yaml:"logo" json:"logo"`
 }
 
 type Service struct {

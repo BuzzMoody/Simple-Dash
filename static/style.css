@@ -203,6 +203,14 @@ body.dark-mode .announcement.outage {
     border-color: var(--accent-color);
 }
 
+.btn-logo {
+    width: 1.2em;
+    height: 1.2em;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+    object-fit: contain;
+}
+
 .floating-dock {
     position: fixed;
     bottom: 2rem;
