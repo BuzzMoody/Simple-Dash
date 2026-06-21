@@ -17,11 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedTheme === 'light') {
             document.body.classList.remove('dark-mode');
             themeToggle.textContent = '☀️';
-            themeToggle.setAttribute('data-tooltip', 'Switch to Dark Mode');
         } else {
             document.body.classList.add('dark-mode');
             themeToggle.textContent = '🌙';
-            themeToggle.setAttribute('data-tooltip', 'Switch to Light Mode');
         }
     };
 
@@ -30,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDark = document.body.classList.contains('dark-mode');
         localStorage.setItem('dashy-theme', isDark ? 'dark' : 'light');
         themeToggle.textContent = isDark ? '🌙' : '☀️';
-        themeToggle.setAttribute('data-tooltip', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
     });
 
     initTheme();
