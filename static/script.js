@@ -6,8 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const announcementsContainer = document.getElementById('announcements');
     const buttonsContainer = document.getElementById('buttons');
     const servicesContainer = document.getElementById('services-container');
+    const searchInput = document.getElementById('search-input');
 
     let currentConfig = null;
+    let currentSearchTerm = '';
     let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
 
     // Theme Management
@@ -45,8 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
         groupBy = groupBy === 'category' ? 'none' : 'category';
         localStorage.setItem('dashy-groupby', groupBy);
         updateGroupToggleButton();
-        if (currentConfig) renderServices(currentConfig.services);
+        if (currentConfig) renderServices(currentConfig.services || []);
     });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearchTerm = e.target.value.toLowerCase();
+            if (currentConfig) {
+                renderServices(currentConfig.services || []);
+            }
+        });
+    }
 
     const showErrorToast = (message) => {
         const toast = document.createElement('div');
@@ -210,7 +221,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderServices = (services) => {
         servicesContainer.innerHTML = '';
         
-        const sortedServices = [...services].sort((a, b) => a.name.localeCompare(b.name));
+        let filteredServices = services;
+        if (currentSearchTerm) {
+            filteredServices = services.filter(s => 
+                s.name.toLowerCase().includes(currentSearchTerm) || 
+                (s.description && s.description.toLowerCase().includes(currentSearchTerm)) ||
+                (s.category && s.category.toLowerCase().includes(currentSearchTerm))
+            );
+        }
+
+        if (filteredServices.length === 0 && currentSearchTerm) {
+            servicesContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 2rem;">No services match your search.</div>';
+            return;
+        }
+
+        const sortedServices = [...filteredServices].sort((a, b) => a.name.localeCompare(b.name));
         
         const groups = {};
         sortedServices.forEach(service => {
