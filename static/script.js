@@ -62,6 +62,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    let currentStatus = {};
+
+    const fetchStatus = async () => {
+        try {
+            const response = await fetch('/api/status');
+            if (!response.ok) return;
+            currentStatus = await response.json();
+            updateStatusIndicators();
+        } catch (error) {
+            // silent fail
+        }
+    };
+
+    const updateStatusIndicators = () => {
+        const cards = document.querySelectorAll('.service-card');
+        cards.forEach(card => {
+            const configUrl = card.getAttribute('data-url');
+            if (!configUrl) return;
+
+            let dot = card.querySelector('.status-dot');
+            if (currentStatus.hasOwnProperty(configUrl)) {
+                if (!dot) {
+                    dot = document.createElement('div');
+                    dot.className = 'status-dot';
+                    card.appendChild(dot);
+                }
+                const isUp = currentStatus[configUrl];
+                dot.className = isUp ? 'status-dot up' : 'status-dot down';
+            }
+        });
+    };
+
+    setInterval(fetchStatus, 60000);
+
     const showErrorToast = (message) => {
         const toast = document.createElement('div');
         toast.className = 'announcement outage';
@@ -86,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             currentConfig = data;
             renderDashboard(data);
+            fetchStatus();
         } catch (error) {
             headerDesc.textContent = 'Failed to load configuration.';
             showErrorToast('Could not fetch configuration from the server.');
@@ -172,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('a');
         card.className = 'service-card';
         card.href = service.url;
+        card.setAttribute('data-url', service.url);
         if (service.description) {
             card.setAttribute('data-tooltip', service.description);
         }

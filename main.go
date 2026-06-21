@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -53,6 +54,7 @@ type Service struct {
 
 var (
 	configCache atomic.Pointer[Config]
+	statusCache atomic.Pointer[map[string]bool]
 	lastModTime atomic.Int64 // UnixNano
 	configPath  = "data/config.yaml"
 )
@@ -115,6 +117,72 @@ func loadInitialConfig() error {
 	return nil
 }
 
+func checkHealth() {
+	cfg := configCache.Load()
+	if cfg == nil {
+		return
+	}
+
+	newStatus := make(map[string]bool)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	client := http.Client{Timeout: 3 * time.Second}
+
+	for _, s := range cfg.Services {
+		if s.URL == "" {
+			continue
+		}
+		wg.Add(1)
+		go func(url string) {
+			defer wg.Done()
+			req, err := http.NewRequest("GET", url, nil)
+			isUp := false
+			if err == nil {
+				if resp, err := client.Do(req); err == nil {
+					if resp.StatusCode < 500 {
+						isUp = true
+					}
+					resp.Body.Close()
+				}
+			}
+			mu.Lock()
+			newStatus[url] = isUp
+			mu.Unlock()
+		}(s.URL)
+	}
+	wg.Wait()
+	statusCache.Store(&newStatus)
+}
+
+func startHealthChecker() {
+	go func() {
+		checkHealth()
+		ticker := time.NewTicker(60 * time.Second)
+		for range ticker.C {
+			checkHealth()
+		}
+	}()
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	status := statusCache.Load()
+	if status == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
+	}
+
+	data, err := json.Marshal(*status)
+	if err != nil {
+		http.Error(w, "Failed to encode status", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
+
 func configHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
 	if cfg == nil {
@@ -175,9 +243,11 @@ func main() {
 	}
 
 	startConfigWatcher()
+	startHealthChecker()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/config", configHandler)
+	mux.HandleFunc("/api/status", statusHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
 	mux.Handle("/", cacheMiddleware(http.FileServer(http.Dir("./static"))))
 
