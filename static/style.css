@@ -78,6 +78,9 @@ body::before {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 6rem;
 }
 
 header {
@@ -599,12 +602,16 @@ body.dark-mode [data-tooltip]::after {
 }
 
 .footer {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
     text-align: center;
-    padding: 2rem 1rem 0;
+    padding: 1.5rem 1rem 0;
     font-size: 0.8rem;
     color: var(--text-color);
     opacity: 0.5;
-    margin-top: 2rem;
+    margin-top: 0;
     border-top: 1px solid var(--card-border);
 }
 
