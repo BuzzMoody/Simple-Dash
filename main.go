@@ -26,6 +26,7 @@ type Config struct {
 	HeaderColors  []string       `yaml:"header_colors" json:"header_colors"`
 	Footer        string         `yaml:"footer" json:"footer"`
 	Favicon       string         `yaml:"favicon" json:"favicon"`
+	NewTabs       *bool          `yaml:"new_tabs" json:"new_tabs"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
 	Buttons       []Button       `yaml:"buttons" json:"buttons"`
 	Services      []Service      `yaml:"services" json:"services"`
@@ -80,6 +81,11 @@ func reloadConfigIfModified() {
 			return
 		}
 
+		if newConfig.NewTabs == nil {
+			defaultTabs := true
+			newConfig.NewTabs = &defaultTabs
+		}
+
 		configCache.Store(&newConfig)
 		lastModTime.Store(modTime)
 		log.Println("Config reloaded")
@@ -112,6 +118,11 @@ func loadInitialConfig() error {
 		return err
 	}
 
+	if newConfig.NewTabs == nil {
+		defaultTabs := true
+		newConfig.NewTabs = &defaultTabs
+	}
+
 	configCache.Store(&newConfig)
 	lastModTime.Store(info.ModTime().UnixNano())
 	return nil
@@ -134,9 +145,15 @@ func checkHealth() {
 			continue
 		}
 		wg.Add(1)
-		go func(url string) {
+		go func(url string, server string) {
 			defer wg.Done()
-			req, err := http.NewRequest("GET", url, nil)
+			
+			pingUrl := url
+			if server != "" {
+				pingUrl = server
+			}
+			
+			req, err := http.NewRequest("GET", pingUrl, nil)
 			isUp := false
 			if err == nil {
 				if resp, err := client.Do(req); err == nil {
@@ -149,7 +166,7 @@ func checkHealth() {
 			mu.Lock()
 			newStatus[url] = isUp
 			mu.Unlock()
-		}(s.URL)
+		}(s.URL, s.Server)
 	}
 	wg.Wait()
 	statusCache.Store(&newStatus)
@@ -237,6 +254,14 @@ func cacheMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// noCacheMiddleware sets headers to prevent caching for dynamic assets
+func noCacheMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	if err := loadInitialConfig(); err != nil {
 		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted in data/): %v", err)
@@ -249,7 +274,7 @@ func main() {
 	mux.HandleFunc("/api/config", configHandler)
 	mux.HandleFunc("/api/status", statusHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
-	mux.Handle("/", cacheMiddleware(http.FileServer(http.Dir("./static"))))
+	mux.Handle("/", noCacheMiddleware(http.FileServer(http.Dir("./static"))))
 
 	port := "8888"
 	log.Printf("Server starting on port %s...", port)

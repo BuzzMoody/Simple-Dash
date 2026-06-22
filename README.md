@@ -71,6 +71,7 @@ The entire dashboard is driven by a single `config.yaml` file mounted into the `
 - `header_colors`: *(Array of Strings)* A list of precisely two hex colors (e.g. `["#38bdf8", "#a855f7"]`) to create a custom gradient for your header text. If omitted, falls back to the default theme colors.
 - `footer`: *(String)* Custom text to be displayed at the very bottom of the page.
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
+- `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
 
 ### Announcements
 Display highly visible global status alerts or messages at the top of the dashboard.
@@ -113,7 +114,8 @@ services:
 ```
 **Service Options:**
 - `name`: *(String)* The title of the application.
-- `url`: *(String)* The destination link when the card is clicked. This is also used for the backend health check.
+- `url`: *(String)* The destination link when the card is clicked. This is also used for the backend health check if `server` is omitted.
+- `server`: *(String)* (Optional) A local IP or internal hostname for the backend to use strictly for health checks, bypassing the public `url`.
 - `category`: *(String)* The group this service belongs to. Used when grouping mode is enabled.
 - `logo`: *(String)* The exact filename of an image stored inside your local `logos/` directory.
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.

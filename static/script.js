@@ -53,12 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentConfig) renderServices(currentConfig.services || []);
     });
 
+    let searchTimeout = null;
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            currentSearchTerm = e.target.value.toLowerCase();
-            if (currentConfig) {
-                renderServices(currentConfig.services || []);
-            }
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentSearchTerm = e.target.value.toLowerCase();
+                if (currentConfig) {
+                    renderServices(currentConfig.services || []);
+                }
+            }, 150);
         });
     }
 
@@ -179,6 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const el = document.createElement('a');
                 el.className = 'btn';
                 el.href = btn.url;
+                if (config.new_tabs !== false) {
+                    el.target = '_blank';
+                    el.rel = 'noopener noreferrer';
+                }
                 
                 let content = '';
                 const btnLight = btn.logo_light || btn.logo;
@@ -209,6 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('a');
         card.className = 'service-card';
         card.href = service.url;
+        if (currentConfig && currentConfig.new_tabs !== false) {
+            card.target = '_blank';
+            card.rel = 'noopener noreferrer';
+        }
         card.setAttribute('data-url', service.url);
         if (service.description) {
             card.setAttribute('data-tooltip', service.description);
