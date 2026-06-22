@@ -7,7 +7,6 @@
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     --hover-shadow: 0 8px 15px rgba(14, 165, 233, 0.2);
     --glass-blur: blur(10px);
-    --header-shadow: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 body.dark-mode {
@@ -18,7 +17,6 @@ body.dark-mode {
     --accent-color: #38bdf8;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
     --hover-shadow: 0 8px 15px rgba(56, 189, 248, 0.25);
-    --header-shadow: none;
 }
 
 body.dark-mode::before {
@@ -128,7 +126,6 @@ h1 {
     background: linear-gradient(135deg, var(--header-color-1, var(--text-color)), var(--header-color-2, var(--accent-color)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: var(--header-shadow);
 }
 
 #header-desc {
