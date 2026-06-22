@@ -104,10 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isUp = currentStatus[configUrl];
                     
                     if (prev && prev.hasOwnProperty(configUrl) && prev[configUrl] !== isUp) {
-                        card.classList.remove('shimmer-up', 'shimmer-down');
+                        card.classList.remove('shimmer-up', 'shimmer-down', 'shimmer-active');
                         void card.offsetWidth; // trigger reflow
                         const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
-                        card.classList.add(shimmerClass);
+                        card.classList.add(shimmerClass, 'shimmer-active');
+                        
+                        // Fade out opacity after 2s
+                        setTimeout(() => card.classList.remove('shimmer-active'), 2000);
+                        // Clean up base classes after transition finishes (2.5s)
                         setTimeout(() => card.classList.remove(shimmerClass), 2500);
                     }
 
