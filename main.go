@@ -319,6 +319,17 @@ func noCacheMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	cfg := configCache.Load()
+	if cfg != nil && cfg.Favicon != "" {
+		// Serve the configured favicon with caching headers
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		http.ServeFile(w, r, "./data/logos/"+cfg.Favicon)
+		return
+	}
+	http.NotFound(w, r)
+}
+
 func main() {
 	if err := loadInitialConfig(); err != nil {
 		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted in data/): %v", err)
@@ -331,6 +342,7 @@ func main() {
 	mux.HandleFunc("/api/config", configHandler)
 	mux.HandleFunc("/api/status", statusHandler)
 	mux.HandleFunc("/api/status/stream", statusStreamHandler)
+	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
 	mux.Handle("/", noCacheMiddleware(http.FileServer(http.Dir("./static"))))
 
