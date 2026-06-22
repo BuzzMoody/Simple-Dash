@@ -66,6 +66,9 @@ func applyDefaults(cfg *Config) {
 	if cfg.Header == "" {
 		cfg.Header = "Simple Dash"
 	}
+	if cfg.Description == "" {
+		cfg.Description = "A simple homelab dashboard"
+	}
 	if cfg.Footer == "" {
 		cfg.Footer = "&copy; 2026 Buzz Moody &bull; <a href='https://github.com/BuzzMoody' target='_blank'>GitHub</a> &bull; Built with ☕ and Go"
 	}

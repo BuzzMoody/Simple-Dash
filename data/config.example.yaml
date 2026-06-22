@@ -1,14 +1,20 @@
-header: "My Dashboard"
-description: "Home Server Services"
+header: "Simple Dash"
+description: "A simple homelab dashboard"
 header_colors: ["#38bdf8", "#a855f7"]
-footer: "© 2026 My Dashboard"
+footer: "&copy; 2026 Buzz Moody &bull; <a href='https://github.com/BuzzMoody' target='_blank'>GitHub</a> &bull; Built with ☕ and Go"
+favicon: "favicon.svg"
+new_tabs: true
+show_only_down: false
+
 announcements:
   - text: "Welcome to your new dashboard!"
     type: "success"
+
 buttons:
   - name: "Router"
     url: "http://192.168.1.1"
     icon: "🌐"
+
 services:
   - name: "Example Service"
     url: "http://192.168.1.100"
