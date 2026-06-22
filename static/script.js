@@ -94,12 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let dot = card.querySelector('.status-dot');
                 if (currentStatus.hasOwnProperty(configUrl)) {
+                    const isUp = currentStatus[configUrl];
+                    
+                    if (isUp && currentConfig && currentConfig.show_only_down) {
+                        if (dot) dot.remove();
+                        return;
+                    }
+
                     if (!dot) {
                         dot = document.createElement('div');
                         dot.className = 'status-dot';
                         card.appendChild(dot);
                     }
-                    const isUp = currentStatus[configUrl];
                     dot.className = isUp ? 'status-dot up' : 'status-dot down';
                 }
             });

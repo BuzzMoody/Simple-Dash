@@ -27,6 +27,7 @@ type Config struct {
 	Footer        string         `yaml:"footer" json:"footer"`
 	Favicon       string         `yaml:"favicon" json:"favicon"`
 	NewTabs       *bool          `yaml:"new_tabs" json:"new_tabs"`
+	ShowOnlyDown  bool           `yaml:"show_only_down" json:"show_only_down"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
 	Buttons       []Button       `yaml:"buttons" json:"buttons"`
 	Services      []Service      `yaml:"services" json:"services"`

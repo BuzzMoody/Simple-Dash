@@ -72,6 +72,7 @@ The entire dashboard is driven by a single `config.yaml` file mounted into the `
 - `footer`: *(String)* Custom text to be displayed at the very bottom of the page.
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
+- `show_only_down`: *(Boolean)* Default is `false`. If set to `true`, the UI will only display status indicators for services that are offline (hiding the green online dots).
 
 ### Announcements
 Display highly visible global status alerts or messages at the top of the dashboard.
