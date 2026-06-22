@@ -109,10 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
                         card.classList.add(shimmerClass, 'shimmer-active');
                         
-                        // Fade out opacity after 2s
-                        setTimeout(() => card.classList.remove('shimmer-active'), 2000);
-                        // Clean up base classes after transition finishes (2.5s)
-                        setTimeout(() => card.classList.remove(shimmerClass), 2500);
+                        // Fade out opacity after 4s (allows 4 full 1s cycles)
+                        setTimeout(() => card.classList.remove('shimmer-active'), 4000);
+                        // Clean up base classes after transition finishes (4.5s)
+                        setTimeout(() => card.classList.remove(shimmerClass), 4500);
                     }
 
                     if (isUp && currentConfig && currentConfig.show_only_down) {
