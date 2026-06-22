@@ -68,15 +68,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentStatus = {};
 
-    const fetchStatus = async () => {
-        try {
-            const response = await fetch('/api/status');
-            if (!response.ok) return;
-            currentStatus = await response.json();
-            updateStatusIndicators();
-        } catch (error) {
-            // silent fail
+    let statusEventSource = null;
+
+    const initStatusStream = () => {
+        if (statusEventSource) {
+            statusEventSource.close();
         }
+        statusEventSource = new EventSource('/api/status/stream');
+        statusEventSource.onmessage = (event) => {
+            currentStatus = JSON.parse(event.data);
+            updateStatusIndicators();
+        };
+        statusEventSource.onerror = () => {
+            statusEventSource.close();
+            setTimeout(initStatusStream, 5000);
+        };
     };
 
     const updateStatusIndicators = () => {
@@ -99,8 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, 10);
     };
-
-    setInterval(fetchStatus, 60000);
 
     const showErrorToast = (message) => {
         const toast = document.createElement('div');
@@ -126,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             currentConfig = data;
             renderDashboard(data);
-            fetchStatus();
+            initStatusStream();
         } catch (error) {
             headerDesc.textContent = 'Failed to load configuration.';
             showErrorToast('Could not fetch configuration from the server.');

@@ -58,6 +58,7 @@ var (
 	statusCache atomic.Pointer[map[string]bool]
 	lastModTime atomic.Int64 // UnixNano
 	configPath  = "data/config.yaml"
+	statusClients sync.Map // map[chan string]bool
 )
 
 func reloadConfigIfModified() {
@@ -175,11 +176,66 @@ func checkHealth() {
 func startHealthChecker() {
 	go func() {
 		checkHealth()
+		broadcastStatus()
 		ticker := time.NewTicker(60 * time.Second)
 		for range ticker.C {
 			checkHealth()
+			broadcastStatus()
 		}
 	}()
+}
+
+func broadcastStatus() {
+	status := statusCache.Load()
+	if status == nil {
+		return
+	}
+	data, _ := json.Marshal(*status)
+	msg := string(data)
+	statusClients.Range(func(key, value interface{}) bool {
+		ch := key.(chan string)
+		select {
+		case ch <- msg:
+		default:
+		}
+		return true
+	})
+}
+
+func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	msgChan := make(chan string, 1)
+	statusClients.Store(msgChan, true)
+
+	defer func() {
+		statusClients.Delete(msgChan)
+		close(msgChan)
+	}()
+
+	if status := statusCache.Load(); status != nil {
+		data, _ := json.Marshal(*status)
+		w.Write([]byte("data: " + string(data) + "\n\n"))
+		flusher.Flush()
+	}
+
+	for {
+		select {
+		case msg := <-msgChan:
+			w.Write([]byte("data: " + msg + "\n\n"))
+			flusher.Flush()
+		case <-r.Context().Done():
+			return
+		}
+	}
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +286,7 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 // gzipMiddleware compresses HTTP responses for clients that support it
 func gzipMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") || r.Header.Get("Accept") == "text/event-stream" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -273,6 +329,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/config", configHandler)
 	mux.HandleFunc("/api/status", statusHandler)
+	mux.HandleFunc("/api/status/stream", statusStreamHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
 	mux.Handle("/", noCacheMiddleware(http.FileServer(http.Dir("./static"))))
 
