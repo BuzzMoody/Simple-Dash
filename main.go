@@ -62,6 +62,19 @@ var (
 	statusClients sync.Map // map[chan string]bool
 )
 
+func applyDefaults(cfg *Config) {
+	if cfg.Header == "" {
+		cfg.Header = "Simple Dash"
+	}
+	if cfg.Footer == "" {
+		cfg.Footer = "&copy; 2026 Buzz Moody &bull; <a href='https://github.com/BuzzMoody' target='_blank'>GitHub</a> &bull; Built with ☕ and Go"
+	}
+	if cfg.NewTabs == nil {
+		defaultTabs := true
+		cfg.NewTabs = &defaultTabs
+	}
+}
+
 func reloadConfigIfModified() {
 	info, err := os.Stat(configPath)
 	if err != nil {
@@ -83,10 +96,7 @@ func reloadConfigIfModified() {
 			return
 		}
 
-		if newConfig.NewTabs == nil {
-			defaultTabs := true
-			newConfig.NewTabs = &defaultTabs
-		}
+		applyDefaults(&newConfig)
 
 		configCache.Store(&newConfig)
 		lastModTime.Store(modTime)
@@ -120,10 +130,7 @@ func loadInitialConfig() error {
 		return err
 	}
 
-	if newConfig.NewTabs == nil {
-		defaultTabs := true
-		newConfig.NewTabs = &defaultTabs
-	}
+	applyDefaults(&newConfig)
 
 	configCache.Store(&newConfig)
 	lastModTime.Store(info.ModTime().UnixNano())

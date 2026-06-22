@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const footerEl = document.getElementById('footer');
         if (footerEl) {
-            footerEl.innerHTML = config.footer !== undefined ? config.footer : 'Powered by <a href="https://github.com/Antigravity" target="_blank">Antigravity Dash</a>';
+            footerEl.innerHTML = config.footer;
         }
 
         // Header Colors
