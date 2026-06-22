@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let currentStatus = {};
+    let previousStatus = null;
 
     let statusEventSource = null;
 
@@ -76,8 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         statusEventSource = new EventSource('/api/status/stream');
         statusEventSource.onmessage = (event) => {
-            currentStatus = JSON.parse(event.data);
-            updateStatusIndicators();
+            const incoming = JSON.parse(event.data);
+            updateStatusIndicators(incoming);
+            previousStatus = incoming;
         };
         statusEventSource.onerror = () => {
             statusEventSource.close();
@@ -85,7 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
-    const updateStatusIndicators = () => {
+    const updateStatusIndicators = (incomingStatus) => {
+        if (incomingStatus) currentStatus = incomingStatus;
         setTimeout(() => {
             const cards = document.querySelectorAll('.service-card');
             cards.forEach(card => {
@@ -96,6 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     const isUp = currentStatus[configUrl];
                     
+                    if (previousStatus && previousStatus.hasOwnProperty(configUrl) && previousStatus[configUrl] !== isUp) {
+                        card.classList.remove('shimmer-up', 'shimmer-down');
+                        void card.offsetWidth; // trigger reflow
+                        const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
+                        card.classList.add(shimmerClass);
+                        setTimeout(() => card.classList.remove(shimmerClass), 2500);
+                    }
+
                     if (isUp && currentConfig && currentConfig.show_only_down) {
                         if (dot) dot.remove();
                         return;
@@ -235,6 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (service.description) {
             card.setAttribute('data-tooltip', service.description);
         }
+
+        const shimmerBox = document.createElement('div');
+        shimmerBox.className = 'shimmer-box';
+        card.appendChild(shimmerBox);
 
         const iconContainer = document.createElement('div');
         iconContainer.className = 'service-icon';

@@ -487,6 +487,47 @@ body.dark-mode [data-tooltip]::after {
     animation: status-pulse 2s infinite ease-in-out;
 }
 
+/* Shimmer animations on state change */
+.shimmer-box {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.shimmer-box::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -50%; width: 150%; height: 100%;
+    transform: translateX(-100%) skewX(-20deg);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.service-card.shimmer-up .shimmer-box::after {
+    background: linear-gradient(to right, transparent, rgba(57, 197, 92, 0.3), transparent);
+    animation: shimmer-swipe 1s infinite linear;
+    opacity: 1;
+}
+
+.service-card.shimmer-down .shimmer-box::after {
+    background: linear-gradient(to right, transparent, rgba(214, 66, 66, 0.3), transparent);
+    animation: shimmer-swipe 1s infinite linear;
+    opacity: 1;
+}
+
+.service-card.shimmer-up .status-dot,
+.service-card.shimmer-down .status-dot {
+    opacity: 0 !important;
+}
+
+@keyframes shimmer-swipe {
+    0% { transform: translateX(-100%) skewX(-20deg); }
+    100% { transform: translateX(100%) skewX(-20deg); }
+}
+
 @media (max-width: 600px) {
     .container {
         padding-top: 1rem;
