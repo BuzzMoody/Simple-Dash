@@ -66,6 +66,15 @@ docker compose up -d
 The entire dashboard is driven by a single `config.yaml` file mounted into the `/app/data` directory. If the container cannot find this file upon booting, it will instantly exit with a fatal error.
 
 ### Global Settings
+```yaml
+header: "Homelab"
+description: "My personal server dashboard"
+header_colors: ["#38bdf8", "#a855f7"]
+footer: "&copy; 2026 Buzz Moody &middot; <a href='https://github.com/BuzzMoody'>GitHub</a>"
+favicon: "favicon.svg"
+new_tabs: true
+show_only_down: false
+```
 - `header`: *(String)* The primary title of your dashboard.
 - `description`: *(String)* A subtitle displayed inline with the header.
 - `header_colors`: *(Array of Strings)* A list of precisely two hex colors (e.g. `["#38bdf8", "#a855f7"]`) to create a custom gradient for your header text. If omitted, falls back to the default theme colors.
