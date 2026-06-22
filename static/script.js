@@ -76,22 +76,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateStatusIndicators = () => {
-        const cards = document.querySelectorAll('.service-card');
-        cards.forEach(card => {
-            const configUrl = card.getAttribute('data-url');
-            if (!configUrl) return;
+        setTimeout(() => {
+            const cards = document.querySelectorAll('.service-card');
+            cards.forEach(card => {
+                const configUrl = card.getAttribute('data-url');
+                if (!configUrl) return;
 
-            let dot = card.querySelector('.status-dot');
-            if (currentStatus.hasOwnProperty(configUrl)) {
-                if (!dot) {
-                    dot = document.createElement('div');
-                    dot.className = 'status-dot';
-                    card.appendChild(dot);
+                let dot = card.querySelector('.status-dot');
+                if (currentStatus.hasOwnProperty(configUrl)) {
+                    if (!dot) {
+                        dot = document.createElement('div');
+                        dot.className = 'status-dot';
+                        card.appendChild(dot);
+                    }
+                    const isUp = currentStatus[configUrl];
+                    dot.className = isUp ? 'status-dot up' : 'status-dot down';
                 }
-                const isUp = currentStatus[configUrl];
-                dot.className = isUp ? 'status-dot up' : 'status-dot down';
-            }
-        });
+            });
+        }, 10);
     };
 
     setInterval(fetchStatus, 60000);

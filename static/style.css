@@ -78,6 +78,9 @@ body::before {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 header {
@@ -343,6 +346,7 @@ body.dark-mode .announcement.outage {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     align-items: start;
     gap: 1.5rem 2rem;
+    flex: 1;
 }
 
 .group {
@@ -604,8 +608,9 @@ body.dark-mode [data-tooltip]::after {
     font-size: 0.8rem;
     color: var(--text-color);
     opacity: 0.5;
-    margin-top: 2rem;
+    margin-top: auto;
     border-top: 1px solid var(--card-border);
+    padding-bottom: 2rem;
 }
 
 .footer a {
