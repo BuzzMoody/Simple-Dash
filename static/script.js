@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEventSource.onmessage = (event) => {
             const incoming = JSON.parse(event.data);
             updateStatusIndicators(incoming);
-            previousStatus = incoming;
         };
         statusEventSource.onerror = () => {
             statusEventSource.close();
@@ -88,7 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateStatusIndicators = (incomingStatus) => {
-        if (incomingStatus) currentStatus = incomingStatus;
+        let prev = previousStatus;
+        if (incomingStatus) {
+            prev = currentStatus;
+            currentStatus = incomingStatus;
+            previousStatus = incomingStatus;
+        }
         setTimeout(() => {
             const cards = document.querySelectorAll('.service-card');
             cards.forEach(card => {
@@ -99,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     const isUp = currentStatus[configUrl];
                     
-                    if (previousStatus && previousStatus.hasOwnProperty(configUrl) && previousStatus[configUrl] !== isUp) {
+                    if (prev && prev.hasOwnProperty(configUrl) && prev[configUrl] !== isUp) {
                         card.classList.remove('shimmer-up', 'shimmer-down');
                         void card.offsetWidth; // trigger reflow
                         const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
