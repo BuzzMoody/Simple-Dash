@@ -1,5 +1,7 @@
 # Stage 1: Build the Go binary
-FROM golang:alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /build
 
@@ -10,8 +12,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build a statically linked binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o dash main.go
+# Build a statically linked binary (cross-compiled natively)
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o dash main.go
 
 # Stage 2: Create the minimal distroless image
 FROM gcr.io/distroless/static-debian12:latest
