@@ -474,6 +474,7 @@ body.dark-mode [data-tooltip]::after {
 .status-dot.down {
     background: #d64242;
     box-shadow: 0 0 6px rgba(214, 66, 66, 0.6);
+    animation: status-pulse 2s infinite ease-in-out;
 }
 
 @keyframes status-pulse {
