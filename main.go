@@ -207,6 +207,7 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -228,10 +229,16 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	}
 
+	pingTicker := time.NewTicker(15 * time.Second)
+	defer pingTicker.Stop()
+
 	for {
 		select {
 		case msg := <-msgChan:
 			w.Write([]byte("data: " + msg + "\n\n"))
+			flusher.Flush()
+		case <-pingTicker.C:
+			w.Write([]byte(": ping\n\n"))
 			flusher.Flush()
 		case <-r.Context().Done():
 			return
