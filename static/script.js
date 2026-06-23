@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttonsContainer = document.getElementById('buttons');
     const servicesContainer = document.getElementById('services-container');
     const searchInput = document.getElementById('search-input');
+    const searchClear = document.getElementById('search-clear');
 
     let currentConfig = null;
     let currentSearchTerm = '';
@@ -50,12 +51,25 @@ document.addEventListener('DOMContentLoaded', () => {
         groupBy = groupBy === 'category' ? 'none' : 'category';
         localStorage.setItem('dashy-groupby', groupBy);
         updateGroupToggleButton();
-        if (currentConfig) renderServices(currentConfig.services || []);
+        if (currentConfig) {
+            renderServices(currentConfig.services || []);
+        }
     });
+
+    if (searchClear) {
+        searchClear.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+        });
+    }
 
     let searchTimeout = null;
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
+            if (searchClear) {
+                searchClear.style.display = e.target.value.length > 0 ? 'flex' : 'none';
+            }
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 currentSearchTerm = e.target.value.toLowerCase();
@@ -386,4 +400,92 @@ document.addEventListener('DOMContentLoaded', () => {
         closeMenuBtn.addEventListener('click', toggleMenu);
         sidebarOverlay.addEventListener('click', toggleMenu);
     }
+
+    // Global keyboard navigation and search handling
+    document.addEventListener('keydown', (e) => {
+        const isInputFocused = document.activeElement === searchInput;
+
+        if (e.key === 'Escape') {
+            if (searchInput && searchInput.value !== '') {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+            }
+            if (isInputFocused) {
+                searchInput.blur();
+            }
+            return;
+        }
+
+        if (e.key === '/') {
+            if (!isInputFocused && searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            return;
+        }
+
+        // Capture alphanumeric typing to search box
+        if (!isInputFocused && !e.ctrlKey && !e.altKey && !e.metaKey && e.key.length === 1 && searchInput) {
+            // Ignore spacebar if focused on a button or link to allow native click
+            if (e.key === ' ' && (document.activeElement.tagName === 'BUTTON' || document.activeElement.tagName === 'A')) {
+                return;
+            }
+            searchInput.value += e.key;
+            searchInput.dispatchEvent(new Event('input'));
+            return;
+        }
+
+        // Capture backspace
+        if (!isInputFocused && e.key === 'Backspace' && searchInput) {
+            if (searchInput.value.length > 0) {
+                searchInput.value = searchInput.value.slice(0, -1);
+                searchInput.dispatchEvent(new Event('input'));
+            }
+            return;
+        }
+
+        // Grid navigation
+        if (!isInputFocused) {
+            const cards = Array.from(document.querySelectorAll('.service-card')).filter(c => c.style.display !== 'none');
+            if (cards.length === 0) return;
+
+            let currentIndex = cards.indexOf(document.activeElement);
+
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                const next = currentIndex < cards.length - 1 ? currentIndex + 1 : 0;
+                cards[next].focus();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const next = currentIndex > 0 ? currentIndex - 1 : cards.length - 1;
+                cards[next].focus();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex === -1) {
+                    cards[0].focus();
+                    return;
+                }
+
+                let rowItemCount = 0;
+                let firstOffsetTop = cards[0].offsetTop;
+                for (let i = 0; i < cards.length; i++) {
+                    if (cards[i].offsetTop === firstOffsetTop) {
+                        rowItemCount++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (e.key === 'ArrowDown') {
+                    let next = currentIndex + rowItemCount;
+                    if (next >= cards.length) next = cards.length - 1;
+                    cards[next].focus();
+                } else if (e.key === 'ArrowUp') {
+                    let next = currentIndex - rowItemCount;
+                    if (next < 0) next = 0;
+                    cards[next].focus();
+                }
+            }
+        }
+    });
 });
