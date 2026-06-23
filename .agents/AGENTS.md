@@ -8,3 +8,7 @@ When implementing CSS animations, strictly limit them to compositor-only propert
 
 ## 3. Gradient Text Shadows
 Avoid applying `filter: drop-shadow` or `text-shadow` to text elements that utilize `-webkit-background-clip: text` with a background gradient, as it can create muddy or undesirable visual artifacts, especially in light themes.
+
+# Documentation & Features
+## 4. Keep Docs in Sync
+Every time you push a change to the repository, you MUST check that `README.md` and `data/config.example.yaml` are fully up-to-date with any new features added, or any features removed. Ensure all configuration options are beautifully documented with their defaults.
