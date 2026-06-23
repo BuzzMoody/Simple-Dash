@@ -61,6 +61,15 @@ Start the stack by running:
 docker compose up -d
 ```
 
+## Keyboard Navigation & Search
+
+Simple Dash features powerful, performance-focused keyboard navigation out of the box:
+
+- **Silent Search**: Start typing anywhere on the dashboard to instantly filter your services. Your keystrokes are automatically captured into the search bar without stealing native focus.
+- **Grid Navigation**: Use the `Up`, `Down`, `Left`, and `Right` arrow keys to seamlessly fly through your service cards in any layout. Press `Enter` to open the highlighted service.
+- **Quick Focus**: Press `/` to instantly snap your cursor directly into the search bar for native text manipulation or pasting.
+- **Quick Clear**: Press `Esc` at any time to instantly clear your current search filter and reset the dashboard view, or click the `X` button in the search bar.
+
 ## Configuration Guide (`config.yaml`)
 
 The entire dashboard is driven by a single `config.yaml` file mounted into the `/app/data` directory. If the container cannot find this file upon booting, it will instantly exit with a fatal error.
