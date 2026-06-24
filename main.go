@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -55,12 +56,62 @@ type Service struct {
 }
 
 var (
-	configCache atomic.Pointer[Config]
-	statusCache atomic.Pointer[map[string]bool]
-	lastModTime atomic.Int64 // UnixNano
-	configPath  = "data/config.yaml"
+	configCache   atomic.Pointer[Config]
+	statusCache   atomic.Pointer[map[string]bool]
+	lastModTime   atomic.Int64 // UnixNano
+	configPath    = "data/config.yaml"
 	statusClients sync.Map // map[chan string]bool
+
+	// In-memory static assets
+	indexHTML []byte
+	styleCSS  []byte
+	scriptJS  []byte
+	manifest  []byte
+	swJS      []byte
 )
+
+func initStaticFiles() {
+	var err error
+	indexHTML, err = os.ReadFile("./static/index.html")
+	if err != nil {
+		log.Fatalf("Failed to read index.html: %v", err)
+	}
+
+	styleBytes, err := os.ReadFile("./static/style.css")
+	if err != nil {
+		log.Fatalf("Failed to read style.css: %v", err)
+	}
+	
+	// CSS Minification
+	s := string(styleBytes)
+	s = regexp.MustCompile(`/\*[\s\S]*?\*/`).ReplaceAllString(s, "")
+	s = strings.ReplaceAll(s, "\n", " ")
+	s = strings.ReplaceAll(s, "\t", " ")
+	for strings.Contains(s, "  ") {
+		s = strings.ReplaceAll(s, "  ", " ")
+	}
+	styleCSS = []byte(s)
+
+	scriptJS, err = os.ReadFile("./static/script.js")
+	if err != nil {
+		log.Fatalf("Failed to read script.js: %v", err)
+	}
+
+	manifest, _ = os.ReadFile("./static/manifest.json")
+	swJS, _ = os.ReadFile("./static/sw.js")
+}
+
+func handleMemFile(content []byte, contentType string, cache bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if cache {
+			w.Header().Set("Cache-Control", "public, max-age=86400")
+		} else {
+			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		}
+		w.Header().Set("Content-Type", contentType)
+		w.Write(content)
+	}
+}
 
 func applyDefaults(cfg *Config) {
 	if cfg.Header == "" {
@@ -355,13 +406,31 @@ func main() {
 	startConfigWatcher()
 	startHealthChecker()
 
+	initStaticFiles()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/config", configHandler)
 	mux.HandleFunc("/api/status", statusHandler)
 	mux.HandleFunc("/api/status/stream", statusStreamHandler)
 	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
-	mux.Handle("/", noCacheMiddleware(http.FileServer(http.Dir("./static"))))
+	
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/", "/index.html":
+			handleMemFile(indexHTML, "text/html; charset=utf-8", false)(w, r)
+		case "/style.css":
+			handleMemFile(styleCSS, "text/css; charset=utf-8", true)(w, r)
+		case "/script.js":
+			handleMemFile(scriptJS, "application/javascript; charset=utf-8", true)(w, r)
+		case "/manifest.json":
+			handleMemFile(manifest, "application/json; charset=utf-8", true)(w, r)
+		case "/sw.js":
+			handleMemFile(swJS, "application/javascript; charset=utf-8", false)(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 
 	port := "8888"
 	log.Printf("Server starting on port %s...", port)
