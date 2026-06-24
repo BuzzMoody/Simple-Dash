@@ -27,3 +27,4 @@ Thumbs.db
 # User Configuration
 data/*
 !data/config.example.yaml
+.agents/
