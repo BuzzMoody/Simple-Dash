@@ -8,6 +8,7 @@ A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go 
 - **Native Light/Dark Mode**: Built-in theme toggle that perfectly adjusts gradients, backgrounds, text colors, and shadows.
 - **Theme-Aware Logos**: Support for dynamically switching custom SVG/PNG logos based on the active light/dark theme.
 - **Live Health Checks**: Automatically polls your internal services every 60 seconds and pushes instant updates to the UI via Server-Sent Events (SSE).
+- **Progressive Web App (PWA)**: Fully supports "Add to Homescreen" on iOS/Android for a native app experience with zero-millisecond offline caching.
 - **Dynamic Sorting & Grouping**: Instantly toggle between categorical grouping or alphabetical sorting.
 - **Real-Time Search**: Built-in, ultra-fast client-side search to quickly filter your services by name, description, or category.
 - **Hot-Reloading Configuration**: Edit your configuration file on the fly; the dashboard re-renders automatically without needing to restart the container!
