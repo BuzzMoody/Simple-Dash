@@ -518,12 +518,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Prevent context menu on mobile to allow tooltip (toast) viewing on long-press
-    document.addEventListener('contextmenu', (e) => {
-        if (e.target.closest('[data-tooltip]')) {
-            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-                e.preventDefault();
-            }
-        }
-    });
 });
