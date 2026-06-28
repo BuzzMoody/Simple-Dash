@@ -379,13 +379,6 @@ func cacheMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// noCacheMiddleware sets headers to prevent caching for dynamic assets
-func noCacheMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		next.ServeHTTP(w, r)
-	})
-}
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
