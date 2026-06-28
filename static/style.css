@@ -405,6 +405,7 @@ body.dark-mode .announcement.outage {
     position: relative;
     -webkit-touch-callout: none;
     user-select: none;
+    flex-wrap: wrap;
 }
 
 /* Custom Glass Tooltip */
@@ -450,35 +451,18 @@ body.dark-mode [data-tooltip]::after {
 }
 
 .service-card .api-tooltip {
-    position: absolute;
-    top: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-10px);
-    background: var(--card-bg);
+    background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--card-border);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
+    padding: 0.4rem;
+    border-radius: 0.4rem;
     color: var(--text-color);
     font-size: 0.75rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--shadow);
-    z-index: 100;
-    width: max-content;
-    max-width: 100%;
+    width: 100%;
+    margin-top: 0.5rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
     justify-content: center;
-}
-
-.service-card:hover .api-tooltip,
-.service-card:focus-visible .api-tooltip {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
 }
 
 .api-tooltip span {
