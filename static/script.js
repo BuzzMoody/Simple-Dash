@@ -156,6 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     dot.className = isUp ? 'status-dot up' : 'status-dot down';
 
+                    // Find if this service expects API data
+                    let expectsApi = false;
+                    if (currentConfig && currentConfig.services) {
+                        const srvDef = currentConfig.services.find(s => s.url === configUrl);
+                        if (srvDef && srvDef.api) expectsApi = true;
+                    }
+
                     if (apiData && Object.keys(apiData).length > 0) {
                         let apiTooltip = card.querySelector('.api-tooltip');
                         if (!apiTooltip) {
@@ -168,6 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             dataHtml += `<span><strong>${k}:</strong> ${v}</span>`;
                         }
                         apiTooltip.innerHTML = dataHtml;
+                    } else if (expectsApi) {
+                        let apiTooltip = card.querySelector('.api-tooltip');
+                        if (!apiTooltip) {
+                            apiTooltip = document.createElement('div');
+                            apiTooltip.className = 'api-tooltip';
+                            card.appendChild(apiTooltip);
+                        }
+                        apiTooltip.innerHTML = `<span style="color: #ef4444;"><strong>API Error:</strong> Backend failed to extract data</span>`;
                     } else {
                         // Remove tooltip if data is no longer present
                         let apiTooltip = card.querySelector('.api-tooltip');
