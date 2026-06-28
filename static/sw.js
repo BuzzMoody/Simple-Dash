@@ -1,4 +1,4 @@
-const CACHE_NAME = 'simple-dash-v1';
+const CACHE_NAME = 'simple-dash-v2';
 const ASSETS_TO_CACHE = [
     '/',
     '/style.css',
