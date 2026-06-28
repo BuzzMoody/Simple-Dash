@@ -85,8 +85,6 @@ var (
 	indexHTML []byte
 	styleCSS  []byte
 	scriptJS  []byte
-	manifest  []byte
-	swJS      []byte
 )
 
 func initStaticFiles() {
@@ -115,18 +113,11 @@ func initStaticFiles() {
 	if err != nil {
 		log.Fatalf("Failed to read script.js: %v", err)
 	}
-
-	manifest, _ = os.ReadFile("./static/manifest.json")
-	swJS, _ = os.ReadFile("./static/sw.js")
 }
 
-func handleMemFile(content []byte, contentType string, cache bool) http.HandlerFunc {
+func handleMemFile(content []byte, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if cache {
-			w.Header().Set("Cache-Control", "public, max-age=86400")
-		} else {
-			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		}
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		w.Header().Set("Content-Type", contentType)
 		w.Write(content)
 	}
@@ -277,40 +268,27 @@ func checkHealth() {
 			status := ServiceStatus{IsUp: isUp}
 
 			if srv.API != nil && srv.API.URL != "" {
-				log.Printf("[DEBUG] API Poll triggered for %s at URL: %s", srv.Name, srv.API.URL)
 				apiReq, err := http.NewRequest("GET", srv.API.URL, nil)
 				if err == nil {
 					for k, v := range srv.API.Headers {
 						apiReq.Header.Set(k, v)
 					}
 					if resp, err := client.Do(apiReq); err == nil {
-						log.Printf("[DEBUG] API Response from %s: Status %d", srv.Name, resp.StatusCode)
 						if resp.StatusCode < 400 {
 							body, _ := io.ReadAll(resp.Body)
-							log.Printf("[DEBUG] API Body from %s: %s", srv.Name, string(body))
 							var data map[string]interface{}
-							if err := json.Unmarshal(body, &data); err == nil {
+							if json.Unmarshal(body, &data) == nil {
 								status.APIData = make(map[string]string)
 								for _, mapping := range srv.API.Mappings {
 									val := extractJSONPath(data, mapping.Path)
-									log.Printf("[DEBUG] API Mapping '%s' -> path '%s' -> extracted value: '%s'", mapping.Label, mapping.Path, val)
 									if val != "" {
 										status.APIData[mapping.Label] = val
 									}
 								}
-							} else {
-								log.Printf("[DEBUG] JSON Unmarshal Error for %s: %v", srv.Name, err)
 							}
-						} else {
-							body, _ := io.ReadAll(resp.Body)
-							log.Printf("[DEBUG] API Error Body from %s: %s", srv.Name, string(body))
 						}
 						resp.Body.Close()
-					} else {
-						log.Printf("[DEBUG] API Request Error for %s: %v", srv.Name, err)
 					}
-				} else {
-					log.Printf("[DEBUG] API Request Creation Error for %s: %v", srv.Name, err)
 				}
 			}
 
@@ -471,8 +449,7 @@ func cacheMiddleware(next http.Handler) http.Handler {
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
 	if cfg != nil && cfg.Favicon != "" {
-		// Serve the configured favicon with caching headers
-		w.Header().Set("Cache-Control", "public, max-age=86400")
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		http.ServeFile(w, r, "./data/logos/"+cfg.Favicon)
 		return
 	}
@@ -494,20 +471,16 @@ func main() {
 	mux.HandleFunc("/api/status", statusHandler)
 	mux.HandleFunc("/api/status/stream", statusStreamHandler)
 	mux.HandleFunc("/favicon.ico", faviconHandler)
-	mux.Handle("/logos/", http.StripPrefix("/logos/", cacheMiddleware(http.FileServer(http.Dir("./data/logos")))))
+	mux.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./data/logos"))))
 	
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/", "/index.html":
-			handleMemFile(indexHTML, "text/html; charset=utf-8", false)(w, r)
+			handleMemFile(indexHTML, "text/html; charset=utf-8")(w, r)
 		case "/style.css":
-			handleMemFile(styleCSS, "text/css; charset=utf-8", true)(w, r)
+			handleMemFile(styleCSS, "text/css; charset=utf-8")(w, r)
 		case "/script.js":
-			handleMemFile(scriptJS, "application/javascript; charset=utf-8", true)(w, r)
-		case "/manifest.json":
-			handleMemFile(manifest, "application/json; charset=utf-8", true)(w, r)
-		case "/sw.js":
-			handleMemFile(swJS, "application/javascript; charset=utf-8", false)(w, r)
+			handleMemFile(scriptJS, "application/javascript; charset=utf-8")(w, r)
 		default:
 			http.NotFound(w, r)
 		}
