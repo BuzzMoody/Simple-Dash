@@ -198,8 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (apiTooltip) {
                         if (apiTooltip.children.length === 0) {
                             apiTooltip.style.display = 'none';
+                            card.classList.remove('has-tooltip');
                         } else {
                             apiTooltip.style.display = 'flex';
+                            card.classList.add('has-tooltip');
                         }
                     }
                 }
@@ -383,6 +385,11 @@ document.addEventListener('DOMContentLoaded', () => {
             tooltipHtml += `<div class="tooltip-desc">${service.description}</div>`;
         }
         tooltipHtml += `<div class="tooltip-data"><span>Loading...</span></div>`;
+        
+        if (tooltipHtml) {
+            card.classList.add('has-tooltip');
+        }
+        
         apiTooltip.innerHTML = tooltipHtml;
         card.appendChild(apiTooltip);
 
