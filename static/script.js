@@ -1,3 +1,5 @@
+console.log("=== SCRIPT V6 LOADED ===");
+
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const groupToggle = document.getElementById('group-toggle');
@@ -116,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let dot = card.querySelector('.status-dot');
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     let statusObj = currentStatus[configUrl];
+                    console.log("DEBUG: Checking card", configUrl, "StatusObj:", statusObj);
                     let isUp = false;
                     let apiData = null;
 
