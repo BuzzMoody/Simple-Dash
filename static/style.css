@@ -411,12 +411,12 @@ body.dark-mode .announcement.outage {
 
 .service-card .api-tooltip {
     position: absolute;
-    top: 100%;
+    top: calc(100% - 1px);
     left: -1px;
     width: calc(100% + 2px);
-    background: linear-gradient(145deg, var(--card-bg), rgba(0,0,0,0.02));
+    background: var(--card-bg);
     color: var(--text-color);
-    padding: 0.6rem 0.8rem;
+    padding: 0.6rem 0.4rem;
     border-radius: 0 0 0.5rem 0.5rem;
     font-weight: 100;
     opacity: 0;
@@ -425,8 +425,8 @@ body.dark-mode .announcement.outage {
     transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--hover-shadow);
     border: 1px solid var(--accent-color);
-    border-top: 1px solid rgba(0,0,0,0.05);
-    z-index: -1;
+    border-top: none;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -435,7 +435,6 @@ body.dark-mode .announcement.outage {
 
 .tooltip-desc {
     font-size: 0.75rem;
-    opacity: 0.75;
     text-align: center;
     line-height: 1.3;
     white-space: normal;
@@ -472,8 +471,7 @@ body.dark-mode .data-pill {
 }
 
 body.dark-mode .api-tooltip {
-    background: linear-gradient(145deg, var(--card-bg), rgba(255,255,255,0.05));
-    border-top: 1px solid rgba(255,255,255,0.05);
+    background: var(--card-bg);
 }
 
 .service-card:hover .api-tooltip,
@@ -496,6 +494,7 @@ body.dark-mode .api-tooltip {
 .service-card.has-tooltip:focus-visible {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    border-bottom-color: transparent;
 }
 
 .service-card:focus-visible {
