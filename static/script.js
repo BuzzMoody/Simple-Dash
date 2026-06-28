@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEventSource = new EventSource('/api/status/stream');
         statusEventSource.onmessage = (event) => {
             const incoming = JSON.parse(event.data);
+            console.log('[DEBUG] SSE Incoming Payload:', incoming);
             updateStatusIndicators(incoming);
         };
         statusEventSource.onerror = () => {

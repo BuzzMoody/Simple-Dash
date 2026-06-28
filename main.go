@@ -277,27 +277,40 @@ func checkHealth() {
 			status := ServiceStatus{IsUp: isUp}
 
 			if srv.API != nil && srv.API.URL != "" {
+				log.Printf("[DEBUG] API Poll triggered for %s at URL: %s", srv.Name, srv.API.URL)
 				apiReq, err := http.NewRequest("GET", srv.API.URL, nil)
 				if err == nil {
 					for k, v := range srv.API.Headers {
 						apiReq.Header.Set(k, v)
 					}
 					if resp, err := client.Do(apiReq); err == nil {
+						log.Printf("[DEBUG] API Response from %s: Status %d", srv.Name, resp.StatusCode)
 						if resp.StatusCode < 400 {
 							body, _ := io.ReadAll(resp.Body)
+							log.Printf("[DEBUG] API Body from %s: %s", srv.Name, string(body))
 							var data map[string]interface{}
-							if json.Unmarshal(body, &data) == nil {
+							if err := json.Unmarshal(body, &data); err == nil {
 								status.APIData = make(map[string]string)
 								for _, mapping := range srv.API.Mappings {
 									val := extractJSONPath(data, mapping.Path)
+									log.Printf("[DEBUG] API Mapping '%s' -> path '%s' -> extracted value: '%s'", mapping.Label, mapping.Path, val)
 									if val != "" {
 										status.APIData[mapping.Label] = val
 									}
 								}
+							} else {
+								log.Printf("[DEBUG] JSON Unmarshal Error for %s: %v", srv.Name, err)
 							}
+						} else {
+							body, _ := io.ReadAll(resp.Body)
+							log.Printf("[DEBUG] API Error Body from %s: %s", srv.Name, string(body))
 						}
 						resp.Body.Close()
+					} else {
+						log.Printf("[DEBUG] API Request Error for %s: %v", srv.Name, err)
 					}
+				} else {
+					log.Printf("[DEBUG] API Request Creation Error for %s: %v", srv.Name, err)
 				}
 			}
 
