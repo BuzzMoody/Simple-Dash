@@ -260,7 +260,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const footerEl = document.getElementById('footer');
         if (footerEl) {
-            footerEl.innerHTML = config.footer;
+            let footerHtml = config.footer || '';
+            const versionMeta = document.querySelector('meta[name="version"]');
+            const version = versionMeta && versionMeta.content !== '{{VERSION}}' ? versionMeta.content : 'dev';
+            
+            if (footerHtml) {
+                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version}</a>`;
+            } else {
+                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version}</a>`;
+            }
+            
+            footerEl.innerHTML = footerHtml;
         }
 
         // Header Colors
