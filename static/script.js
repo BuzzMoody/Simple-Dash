@@ -146,23 +146,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (currentConfig && currentConfig.show_only_down) {
                         if (isUp) {
-                            card.style.display = 'none';
+                            if (dot) dot.remove();
                         } else {
-                            card.style.display = 'flex';
+                            if (!dot) {
+                                dot = document.createElement('div');
+                                dot.className = 'status-dot down';
+                                card.appendChild(dot);
+                            } else {
+                                dot.className = 'status-dot down';
+                            }
+                        }
+                    } else {
+                        if (!dot) {
+                            dot = document.createElement('div');
+                            dot.className = isUp ? 'status-dot up' : 'status-dot down';
+                            card.appendChild(dot);
+                        } else {
+                            dot.className = isUp ? 'status-dot up' : 'status-dot down';
                         }
                     }
-
-                    if (isUp && currentConfig && currentConfig.show_only_down) {
-                        if (dot) dot.remove();
-                        // DO NOT RETURN EARLY! We still want to update API data!
-                    }
-
-                    if (!dot) {
-                        dot = document.createElement('div');
-                        dot.className = 'status-dot';
-                        card.appendChild(dot);
-                    }
-                    dot.className = isUp ? 'status-dot up' : 'status-dot down';
 
                     // Find if this service expects API data
                     let expectsApi = false;
