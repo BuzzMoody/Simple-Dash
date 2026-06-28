@@ -431,8 +431,9 @@ body.dark-mode .announcement.outage {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: max-content;
-    max-width: 250px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .tooltip-desc {
