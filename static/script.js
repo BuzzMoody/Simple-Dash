@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     dot.className = isUp ? 'status-dot up' : 'status-dot down';
 
-                    if (apiData && Object.keys(apiData).length > 0) {
+                    if (apiData) {
                         console.log("DEBUG: Render API Data for", configUrl, apiData);
                         let apiTooltip = card.querySelector('.api-tooltip');
                         if (!apiTooltip) {
