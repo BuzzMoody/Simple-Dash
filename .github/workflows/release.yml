@@ -61,6 +61,14 @@ jobs:
           git commit -m "chore: bump version to v${NEW_VERSION} [skip ci]"
           git push
 
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.bump.outputs.version }}" \
+            --title "Release v${{ steps.bump.outputs.version }}" \
+            --generate-notes
+
       - name: Inject Version
         run: |
           sed -i "s/{{VERSION}}/v${{ steps.bump.outputs.version }}/g" static/index.html
