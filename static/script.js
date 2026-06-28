@@ -144,9 +144,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         setTimeout(() => card.classList.remove(shimmerClass), 4500);
                     }
 
+                    if (currentConfig && currentConfig.show_only_down) {
+                        if (isUp) {
+                            card.style.display = 'none';
+                        } else {
+                            card.style.display = 'flex';
+                        }
+                    }
+
                     if (isUp && currentConfig && currentConfig.show_only_down) {
                         if (dot) dot.remove();
-                        return;
+                        // DO NOT RETURN EARLY! We still want to update API data!
                     }
 
                     if (!dot) {
