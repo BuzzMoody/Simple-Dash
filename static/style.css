@@ -25,13 +25,6 @@ body.dark-mode::before {
                       radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.06), transparent 50%);
 }
 
-.api-tooltip {
-    border: 2px solid red !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
 /* Light / Dark crossfade */
 .light-theme-logo, .dark-theme-logo {
     transition: opacity 0.3s ease;
@@ -461,23 +454,23 @@ body.dark-mode [data-tooltip]::after {
     position: absolute;
     top: calc(100% + 10px);
     left: 50%;
-    transform: translateX(-50%) translateY(0);
-    background: rgba(255, 0, 0, 0.5); /* RED for debugging */
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(255, 255, 255, 0.85);
     color: var(--text-color);
     padding: 0.4rem 0.8rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;
     font-weight: 100;
     white-space: nowrap;
-    opacity: 1 !important;
-    visibility: visible !important;
+    opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 2px solid red;
+    border: 1px solid var(--card-border);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 9999;
+    z-index: 100;
     display: flex;
     gap: 0.8rem;
 }
@@ -489,7 +482,9 @@ body.dark-mode .api-tooltip {
 
 .service-card:hover .api-tooltip,
 .service-card:focus-visible .api-tooltip {
-    /* Always visible for debugging */
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
 }
 
 .service-card:hover,

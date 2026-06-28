@@ -1,5 +1,3 @@
-console.log("=== SCRIPT V6 LOADED ===");
-
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const groupToggle = document.getElementById('group-toggle');
@@ -118,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 let dot = card.querySelector('.status-dot');
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     let statusObj = currentStatus[configUrl];
-                    console.log("DEBUG: Checking card", configUrl, "StatusObj:", statusObj);
                     let isUp = false;
                     let apiData = null;
 
@@ -159,8 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     dot.className = isUp ? 'status-dot up' : 'status-dot down';
 
-                    if (apiData) {
-                        console.log("DEBUG: Render API Data for", configUrl, apiData);
+                    if (apiData && Object.keys(apiData).length > 0) {
                         let apiTooltip = card.querySelector('.api-tooltip');
                         if (!apiTooltip) {
                             apiTooltip = document.createElement('div');
@@ -172,6 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             dataHtml += `<span><strong>${k}:</strong> ${v}</span>`;
                         }
                         apiTooltip.innerHTML = dataHtml;
+                    } else {
+                        // Remove tooltip if data is no longer present
+                        let apiTooltip = card.querySelector('.api-tooltip');
+                        if (apiTooltip) apiTooltip.remove();
                     }
                 }
             });
