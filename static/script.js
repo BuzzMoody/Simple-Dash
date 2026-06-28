@@ -165,28 +165,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (apiData && Object.keys(apiData).length > 0) {
                         let apiTooltip = card.querySelector('.api-tooltip');
-                        if (!apiTooltip) {
-                            apiTooltip = document.createElement('div');
-                            apiTooltip.className = 'api-tooltip';
-                            card.appendChild(apiTooltip);
+                        if (apiTooltip) {
+                            let dataHtml = '';
+                            for (const [k, v] of Object.entries(apiData)) {
+                                dataHtml += `<span><strong>${k}:</strong> ${v}</span>`;
+                            }
+                            apiTooltip.innerHTML = dataHtml;
                         }
-                        let dataHtml = '';
-                        for (const [k, v] of Object.entries(apiData)) {
-                            dataHtml += `<span><strong>${k}:</strong> ${v}</span>`;
-                        }
-                        apiTooltip.innerHTML = dataHtml;
                     } else if (expectsApi) {
                         let apiTooltip = card.querySelector('.api-tooltip');
-                        if (!apiTooltip) {
-                            apiTooltip = document.createElement('div');
-                            apiTooltip.className = 'api-tooltip';
-                            card.appendChild(apiTooltip);
+                        if (apiTooltip) {
+                            apiTooltip.innerHTML = `<span style="color: #ef4444;"><strong>API Error:</strong> Backend failed to extract data</span>`;
                         }
-                        apiTooltip.innerHTML = `<span style="color: #ef4444;"><strong>API Error:</strong> Backend failed to extract data</span>`;
                     } else {
-                        // Remove tooltip if data is no longer present
+                        // Keep tooltip but empty it
                         let apiTooltip = card.querySelector('.api-tooltip');
-                        if (apiTooltip) apiTooltip.remove();
+                        if (apiTooltip) {
+                            apiTooltip.innerHTML = `<span>No API Configured</span>`;
+                            // apiTooltip.style.display = 'none'; // Don't even hide it, let them see it
+                        }
                     }
                 }
             });
@@ -361,6 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.appendChild(iconContainer);
         card.appendChild(name);
+
+        // FORCIBLY INJECT TOOLTIP ON CREATION
+        const apiTooltip = document.createElement('div');
+        apiTooltip.className = 'api-tooltip';
+        apiTooltip.innerHTML = `<span>Loading...</span>`;
+        card.appendChild(apiTooltip);
+
         return card;
     };
 
