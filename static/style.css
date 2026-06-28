@@ -403,6 +403,8 @@ body.dark-mode .announcement.outage {
     box-shadow: var(--shadow);
     will-change: transform;
     position: relative;
+    -webkit-touch-callout: none;
+    user-select: none;
 }
 
 /* Custom Glass Tooltip */
