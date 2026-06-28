@@ -16,8 +16,17 @@ buttons:
     icon: "🌐"
 
 services:
-  - name: "Example Service"
-    url: "http://192.168.1.100"
+  - name: "Portainer"
+    url: "https://docker.example.com"
     category: "Infrastructure"
-    logo: "example.svg"
-    description: "An example service description."
+    logo: "portainer.svg"
+    description: "Docker Management"
+    api:
+      url: "https://docker.example.com/api/endpoints/1/docker/info"
+      headers:
+        "X-API-Key": "ptr_xxxxxxxxxxxxxxx"
+      mappings:
+        - label: "Running"
+          path: "ContainersRunning"
+        - label: "Stopped"
+          path: "ContainersStopped"

@@ -3,11 +3,13 @@ package main
 import (
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -43,21 +45,38 @@ type Button struct {
 	LogoLight string `yaml:"logo_light" json:"logo_light"`
 }
 
+type APIMapping struct {
+	Label string `yaml:"label" json:"label"`
+	Path  string `yaml:"path" json:"path"`
+}
+
+type APIConfig struct {
+	URL      string            `yaml:"url" json:"url"`
+	Headers  map[string]string `yaml:"headers" json:"headers"`
+	Mappings []APIMapping      `yaml:"mappings" json:"mappings"`
+}
+
 type Service struct {
-	Name        string `yaml:"name" json:"name"`
-	URL         string `yaml:"url" json:"url"`
-	Category    string `yaml:"category" json:"category"`
-	Server      string `yaml:"server" json:"server"`
-	Logo        string `yaml:"logo" json:"logo"`
-	LogoDark    string `yaml:"logo_dark" json:"logo_dark"`
-	LogoLight   string `yaml:"logo_light" json:"logo_light"`
-	Icon        string `yaml:"icon" json:"icon"`
-	Description string `yaml:"description" json:"description"`
+	Name        string     `yaml:"name" json:"name"`
+	URL         string     `yaml:"url" json:"url"`
+	Category    string     `yaml:"category" json:"category"`
+	Server      string     `yaml:"server" json:"server"`
+	Logo        string     `yaml:"logo" json:"logo"`
+	LogoDark    string     `yaml:"logo_dark" json:"logo_dark"`
+	LogoLight   string     `yaml:"logo_light" json:"logo_light"`
+	Icon        string     `yaml:"icon" json:"icon"`
+	Description string     `yaml:"description" json:"description"`
+	API         *APIConfig `yaml:"api" json:"api,omitempty"`
+}
+
+type ServiceStatus struct {
+	IsUp    bool              `json:"is_up"`
+	APIData map[string]string `json:"api_data,omitempty"`
 }
 
 var (
 	configCache   atomic.Pointer[Config]
-	statusCache   atomic.Pointer[map[string]bool]
+	statusCache   atomic.Pointer[map[string]ServiceStatus]
 	lastModTime   atomic.Int64 // UnixNano
 	configPath    = "data/config.yaml"
 	statusClients sync.Map // map[chan string]bool
@@ -191,13 +210,41 @@ func loadInitialConfig() error {
 	return nil
 }
 
+func extractJSONPath(data map[string]interface{}, path string) string {
+	keys := strings.Split(path, ".")
+	var current interface{} = data
+	for _, key := range keys {
+		if m, ok := current.(map[string]interface{}); ok {
+			current = m[key]
+		} else {
+			return ""
+		}
+	}
+	if current == nil {
+		return ""
+	}
+	switch v := current.(type) {
+	case string:
+		return v
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case bool:
+		if v {
+			return "true"
+		}
+		return "false"
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 func checkHealth() {
 	cfg := configCache.Load()
 	if cfg == nil {
 		return
 	}
 
-	newStatus := make(map[string]bool)
+	newStatus := make(map[string]ServiceStatus)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
@@ -208,12 +255,12 @@ func checkHealth() {
 			continue
 		}
 		wg.Add(1)
-		go func(url string, server string) {
+		go func(srv Service) {
 			defer wg.Done()
 			
-			pingUrl := url
-			if server != "" {
-				pingUrl = server
+			pingUrl := srv.URL
+			if srv.Server != "" {
+				pingUrl = srv.Server
 			}
 			
 			req, err := http.NewRequest("GET", pingUrl, nil)
@@ -226,10 +273,38 @@ func checkHealth() {
 					resp.Body.Close()
 				}
 			}
+
+			status := ServiceStatus{IsUp: isUp}
+
+			if srv.API != nil && srv.API.URL != "" {
+				apiReq, err := http.NewRequest("GET", srv.API.URL, nil)
+				if err == nil {
+					for k, v := range srv.API.Headers {
+						apiReq.Header.Set(k, v)
+					}
+					if resp, err := client.Do(apiReq); err == nil {
+						if resp.StatusCode < 400 {
+							body, _ := io.ReadAll(resp.Body)
+							var data map[string]interface{}
+							if json.Unmarshal(body, &data) == nil {
+								status.APIData = make(map[string]string)
+								for _, mapping := range srv.API.Mappings {
+									val := extractJSONPath(data, mapping.Path)
+									if val != "" {
+										status.APIData[mapping.Label] = val
+									}
+								}
+							}
+						}
+						resp.Body.Close()
+					}
+				}
+			}
+
 			mu.Lock()
-			newStatus[url] = isUp
+			newStatus[srv.URL] = status
 			mu.Unlock()
-		}(s.URL, s.Server)
+		}(s)
 	}
 	wg.Wait()
 	statusCache.Store(&newStatus)

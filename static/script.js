@@ -115,9 +115,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let dot = card.querySelector('.status-dot');
                 if (currentStatus.hasOwnProperty(configUrl)) {
-                    const isUp = currentStatus[configUrl];
+                    let statusObj = currentStatus[configUrl];
+                    let isUp = false;
+                    let apiData = null;
+
+                    if (typeof statusObj === 'boolean') {
+                        isUp = statusObj;
+                    } else if (statusObj && typeof statusObj === 'object') {
+                        isUp = statusObj.is_up;
+                        apiData = statusObj.api_data;
+                    }
+
+                    let prevIsUp = false;
+                    if (prev && prev.hasOwnProperty(configUrl)) {
+                        let prevObj = prev[configUrl];
+                        prevIsUp = (typeof prevObj === 'boolean') ? prevObj : (prevObj && prevObj.is_up);
+                    }
                     
-                    if (prev && prev.hasOwnProperty(configUrl) && prev[configUrl] !== isUp) {
+                    if (prev && prev.hasOwnProperty(configUrl) && prevIsUp !== isUp) {
                         card.classList.remove('shimmer-up', 'shimmer-down', 'shimmer-active');
                         void card.offsetWidth; // trigger reflow
                         const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
@@ -140,6 +155,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         card.appendChild(dot);
                     }
                     dot.className = isUp ? 'status-dot up' : 'status-dot down';
+
+                    if (apiData && Object.keys(apiData).length > 0) {
+                        let apiTooltip = card.querySelector('.api-tooltip');
+                        if (!apiTooltip) {
+                            apiTooltip = document.createElement('div');
+                            apiTooltip.className = 'api-tooltip';
+                            card.appendChild(apiTooltip);
+                        }
+                        let dataHtml = '';
+                        for (const [k, v] of Object.entries(apiData)) {
+                            dataHtml += `<span><strong>${k}:</strong> ${v}</span>`;
+                        }
+                        apiTooltip.innerHTML = dataHtml;
+                    }
                 }
             });
         }, 10);

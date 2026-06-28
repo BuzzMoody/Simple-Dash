@@ -443,6 +443,51 @@ body.dark-mode [data-tooltip]::after {
     transform: translateX(-50%) translateY(-8px);
 }
 
+.service-card:hover[data-tooltip]::after,
+.service-card:focus-visible[data-tooltip]::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.service-card .api-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow);
+    z-index: 100;
+    width: max-content;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.service-card:hover .api-tooltip,
+.service-card:focus-visible .api-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.api-tooltip span {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
 .service-card:hover,
 .service-card:focus-visible {
     transform: translateY(-3px) scale(1.02);

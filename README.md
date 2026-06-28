@@ -141,6 +141,9 @@ services:
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 - `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
 - `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
-
+- `api`: *(Object)* (Optional) Configure a lightweight JSON API poller to extract real-time stats (e.g. from Portainer, Proxmox, Pi-Hole) and display them in a tooltip beneath the card.
+  - `url`: The API endpoint to poll every 60 seconds.
+  - `headers`: Key-value pairs for authentication (e.g., `"X-API-Key": "your_key"`).
+  - `mappings`: A list of objects containing a `label` and a `path` (using dot notation) to extract from the JSON response.
 ---
 *Built with Go & Vanilla JS*
