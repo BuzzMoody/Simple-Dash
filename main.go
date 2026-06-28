@@ -85,6 +85,7 @@ var (
 	indexHTML []byte
 	styleCSS  []byte
 	scriptJS  []byte
+	swJS      []byte
 )
 
 func initStaticFiles() {
@@ -113,6 +114,8 @@ func initStaticFiles() {
 	if err != nil {
 		log.Fatalf("Failed to read script.js: %v", err)
 	}
+	
+	swJS, _ = os.ReadFile("./static/sw.js")
 }
 
 func handleMemFile(content []byte, contentType string) http.HandlerFunc {
@@ -481,6 +484,8 @@ func main() {
 			handleMemFile(styleCSS, "text/css; charset=utf-8")(w, r)
 		case "/script.js":
 			handleMemFile(scriptJS, "application/javascript; charset=utf-8")(w, r)
+		case "/sw.js":
+			handleMemFile(swJS, "application/javascript; charset=utf-8")(w, r)
 		default:
 			http.NotFound(w, r)
 		}
