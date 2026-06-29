@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (service.category) {
             const hue = getCategoryHue(service.category);
             card.style.setProperty('--hover-color', `hsl(${hue}, 90%, 60%)`);
+            card.style.setProperty('--hover-hue', hue);
         }
         if (currentConfig && currentConfig.new_tabs !== false) {
             card.target = '_blank';

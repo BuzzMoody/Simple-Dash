@@ -5,7 +5,7 @@
     --card-border: #e4e4e7;
     --accent-color: #0ea5e9;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --hover-shadow: 0 8px 15px rgba(14, 165, 233, 0.2);
+    --hover-shadow: 0 8px 15px hsla(var(--hover-hue, 199), 89%, 48%, 0.2);
     --glass-blur: blur(10px);
 }
 
@@ -16,7 +16,7 @@ body.dark-mode {
     --card-border: #27272a;
     --accent-color: #38bdf8;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
-    --hover-shadow: 0 8px 15px rgba(56, 189, 248, 0.25);
+    --hover-shadow: 0 8px 15px hsla(var(--hover-hue, 198), 93%, 60%, 0.25);
 }
 
 body.dark-mode::before {
