@@ -36,7 +36,7 @@ docker run -d \
   -p 8888:8888 \
   -v /home/user/simple-dash:/app/data \
   --restart unless-stopped \
-  ghcr.io/buzzmoody/simple-dash:main
+  ghcr.io/buzzmoody/simple-dash:latest
 ```
 
 #### Option B: Docker Compose
@@ -48,7 +48,7 @@ version: '3.8'
 
 services:
   simple-dash:
-    image: ghcr.io/buzzmoody/simple-dash:main
+    image: ghcr.io/buzzmoody/simple-dash:latest
     container_name: simple-dash
     ports:
       - "8888:8888"
