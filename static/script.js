@@ -166,44 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
-                    // Find if this service expects API data
-                    let expectsApi = false;
-                    if (currentConfig && currentConfig.services) {
-                        const srvDef = currentConfig.services.find(s => s.url === configUrl);
-                        if (srvDef && srvDef.api) expectsApi = true;
-                    }
 
-                    let tooltipData = card.querySelector('.tooltip-data');
-                    if (apiData && Object.keys(apiData).length > 0) {
-                        if (tooltipData) {
-                            let dataHtml = '';
-                            for (const [k, v] of Object.entries(apiData)) {
-                                dataHtml += `<span class="data-pill"><strong>${k}:</strong> ${v}</span>`;
-                            }
-                            tooltipData.innerHTML = dataHtml;
-                        }
-                    } else if (expectsApi) {
-                        if (tooltipData) {
-                            tooltipData.innerHTML = `<span style="color: #ef4444;"><strong>API Error:</strong> Backend failed to extract data</span>`;
-                        }
-                    } else {
-                        // Keep tooltip but empty it or remove data container
-                        if (tooltipData) {
-                            tooltipData.remove();
-                        }
-                    }
-
-                    // Hide the main tooltip container if it's completely empty (no desc and no data)
-                    let apiTooltip = card.querySelector('.api-tooltip');
-                    if (apiTooltip) {
-                        if (apiTooltip.children.length === 0) {
-                            apiTooltip.style.display = 'none';
-                            card.classList.remove('has-tooltip');
-                        } else {
-                            apiTooltip.style.display = 'flex';
-                            card.classList.add('has-tooltip');
-                        }
-                    }
                 }
             });
         }, 10);
@@ -386,22 +349,9 @@ document.addEventListener('DOMContentLoaded', () => {
         card.appendChild(iconContainer);
         card.appendChild(name);
 
-        // Unified Tooltip
-        const apiTooltip = document.createElement('div');
-        apiTooltip.className = 'api-tooltip';
-        
-        let tooltipHtml = '';
         if (service.description) {
-            tooltipHtml += `<div class="tooltip-desc">${service.description}</div>`;
+            card.setAttribute('data-tooltip', service.description);
         }
-        tooltipHtml += `<div class="tooltip-data"><span>Loading...</span></div>`;
-        
-        if (tooltipHtml) {
-            card.classList.add('has-tooltip');
-        }
-        
-        apiTooltip.innerHTML = tooltipHtml;
-        card.appendChild(apiTooltip);
 
         return card;
     };
