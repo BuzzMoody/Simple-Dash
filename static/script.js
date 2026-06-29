@@ -301,13 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.abs(hash) % 360;
     };
 
-    const createServiceCard = (service) => {
+    const createServiceCard = (service, groupKey) => {
         const card = document.createElement('a');
         card.className = 'service-card';
         card.href = service.url;
 
-        if (service.category) {
-            const hue = getCategoryHue(service.category);
+        if (currentConfig && currentConfig.category_colors) {
+            const hue = getCategoryHue(groupKey);
             card.style.setProperty('--hover-color', `hsl(${hue}, 90%, 60%)`);
             card.style.setProperty('--hover-hue', hue);
         }
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const gridEl = document.createElement('div');
             gridEl.className = 'services-grid';
 
-            groups[key].forEach(service => gridEl.appendChild(createServiceCard(service)));
+            groups[key].forEach(service => gridEl.appendChild(createServiceCard(service, key)));
 
             groupEl.appendChild(gridEl);
             servicesContainer.appendChild(groupEl);

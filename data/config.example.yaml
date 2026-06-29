@@ -5,6 +5,7 @@ footer: "&copy; 2026 Buzz Moody &bull; <a href='https://github.com/BuzzMoody' ta
 favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
+category_colors: false
 
 announcements:
   - text: "Welcome to your new dashboard!"

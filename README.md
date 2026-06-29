@@ -84,6 +84,7 @@ footer: "&copy; 2026 Buzz Moody &middot; <a href='https://github.com/BuzzMoody'>
 favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
+category_colors: false
 ```
 - `header`: *(String)* The primary title of your dashboard.
 - `description`: *(String)* A subtitle displayed inline with the header.
@@ -92,6 +93,7 @@ show_only_down: false
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
 - `show_only_down`: *(Boolean)* Default is `false`. If set to `true`, the UI will only display status indicators for services that are offline (hiding the green online dots).
+- `category_colors`: *(Boolean)* Default is `false`. If set to `true`, cards will have uniquely generated colors based on their category (or starting letter when sorting alphabetically).
 
 ### Announcements
 Display highly visible global status alerts or messages at the top of the dashboard.
