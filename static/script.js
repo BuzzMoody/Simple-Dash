@@ -293,10 +293,23 @@ document.addEventListener('DOMContentLoaded', () => {
         renderServices(config.services || []);
     };
 
+    const getCategoryHue = (category) => {
+        let hash = 0;
+        for (let i = 0; i < category.length; i++) {
+            hash = category.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return Math.abs(hash) % 360;
+    };
+
     const createServiceCard = (service) => {
         const card = document.createElement('a');
         card.className = 'service-card';
         card.href = service.url;
+
+        if (service.category) {
+            const hue = getCategoryHue(service.category);
+            card.style.setProperty('--hover-color', `hsl(${hue}, 90%, 60%)`);
+        }
         if (currentConfig && currentConfig.new_tabs !== false) {
             card.target = '_blank';
             card.rel = 'noopener noreferrer';
