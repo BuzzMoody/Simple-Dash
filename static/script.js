@@ -265,9 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const version = versionMeta && versionMeta.content !== '{{VERSION}}' ? versionMeta.content : 'dev';
             
             if (footerHtml) {
-                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version}</a>`;
+                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${version}</a>`;
             } else {
-                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version}</a>`;
+                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${version}</a>`;
             }
             
             footerEl.innerHTML = footerHtml;
