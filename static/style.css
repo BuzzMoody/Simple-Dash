@@ -5,7 +5,9 @@
     --card-border: #e4e4e7;
     --accent-color: #0ea5e9;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --hover-shadow: 0 8px 15px hsla(var(--hover-hue, 199), 89%, 48%, 0.2);
+    --hover-shadow-s: 89%;
+    --hover-shadow-l: 48%;
+    --hover-shadow-a: 0.2;
     --glass-blur: blur(10px);
 }
 
@@ -16,7 +18,9 @@ body.dark-mode {
     --card-border: #27272a;
     --accent-color: #38bdf8;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
-    --hover-shadow: 0 8px 15px hsla(var(--hover-hue, 198), 93%, 60%, 0.25);
+    --hover-shadow-s: 93%;
+    --hover-shadow-l: 60%;
+    --hover-shadow-a: 0.25;
 }
 
 body.dark-mode::before {
@@ -454,7 +458,7 @@ body.dark-mode [data-tooltip]::after {
 .service-card:hover,
 .service-card:focus-visible {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: var(--hover-shadow);
+    box-shadow: 0 8px 15px hsla(var(--hover-hue, 199), var(--hover-shadow-s), var(--hover-shadow-l), var(--hover-shadow-a));
     border-color: var(--hover-color, var(--accent-color));
     background: linear-gradient(145deg, var(--card-bg), rgba(255,255,255,0.05));
     outline: none;
