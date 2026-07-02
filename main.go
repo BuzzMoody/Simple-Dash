@@ -245,6 +245,16 @@ func checkHealth() {
 
 	client := http.Client{Timeout: 3 * time.Second}
 
+	// Fetch outbound IP once per health check for debugging NAT
+	go func() {
+		if resp, err := client.Get("https://api.ipify.org"); err == nil {
+			defer resp.Body.Close()
+			if ip, err := io.ReadAll(resp.Body); err == nil {
+				log.Printf("[DEBUG] Current outbound IP: %s", string(ip))
+			}
+		}
+	}()
+
 	for _, s := range cfg.Services {
 		if s.URL == "" {
 			continue
@@ -262,10 +272,14 @@ func checkHealth() {
 			isUp := false
 			if err == nil {
 				if resp, err := client.Do(req); err == nil {
-					if resp.StatusCode < 500 {
+					if resp.StatusCode < 500 && resp.StatusCode != 403 {
 						isUp = true
+					} else {
+						log.Printf("[DEBUG] Service %s is DOWN. Status: %d, Headers: %v", pingUrl, resp.StatusCode, resp.Header)
 					}
 					resp.Body.Close()
+				} else {
+					log.Printf("[DEBUG] Service %s is DOWN. Error: %v", pingUrl, err)
 				}
 			}
 
