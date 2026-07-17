@@ -96,19 +96,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentStatus = {};
     let previousStatus = null;
 
-    let statusEventSource = null;
+    let statusSource = null;
 
     const initStatusStream = () => {
-        if (statusEventSource) {
-            statusEventSource.close();
+        if (statusSource) {
+            statusSource.close();
         }
-        statusEventSource = new EventSource('/api/status/stream');
-        statusEventSource.onmessage = (event) => {
-            const incoming = JSON.parse(event.data);
-            updateStatusIndicators(incoming);
+        statusSource = new EventSource('/api/status/stream');
+
+        statusSource.onopen = () => {
+            document.querySelectorAll('.status-dot').forEach(dot => dot.classList.remove('disconnected'));
         };
-        statusEventSource.onerror = () => {
-            statusEventSource.close();
+
+        statusSource.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                updateStatusIndicators(data);
+            } catch (error) {
+                console.error("Error parsing SSE data", error);
+            }
+        };
+
+        statusSource.onerror = (error) => {
+            console.error("SSE Error:", error);
+            statusSource.close();
+            
+            document.querySelectorAll('.status-dot').forEach(dot => dot.classList.add('disconnected'));
+            
             setTimeout(initStatusStream, 5000);
         };
     };
@@ -478,6 +492,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Global keyboard navigation and search handling
     document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== searchInput) {
+            e.preventDefault();
+            searchInput.focus();
+            return;
+        }
+
+        const isCardFocused = document.activeElement && document.activeElement.classList.contains('service-card');
+        
+        if (document.activeElement === searchInput && e.key === 'ArrowDown') {
+            e.preventDefault();
+            const firstCard = document.querySelector('.service-card');
+            if (firstCard) firstCard.focus();
+            return;
+        }
+
+        if (isCardFocused) {
+            const cards = Array.from(document.querySelectorAll('.service-card'));
+            const currentIndex = cards.indexOf(document.activeElement);
+            if (currentIndex === -1) return;
+
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex + 1 < cards.length) cards[currentIndex + 1].focus();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex - 1 >= 0) {
+                    cards[currentIndex - 1].focus();
+                } else {
+                    searchInput.focus();
+                }
+            }
+            return;
+        }
+
         const isInputFocused = document.activeElement === searchInput;
 
         if (e.key === 'Escape') {
