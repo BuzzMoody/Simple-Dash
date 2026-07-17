@@ -440,14 +440,7 @@ func gzipMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// cacheMiddleware sets caching headers for static assets
-func cacheMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Cache for 24 hours (86400 seconds)
-		w.Header().Set("Cache-Control", "public, max-age=86400")
-		next.ServeHTTP(w, r)
-	})
-}
+
 
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {

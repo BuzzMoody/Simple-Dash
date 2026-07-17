@@ -8,7 +8,6 @@
     --hover-shadow-s: 89%;
     --hover-shadow-l: 48%;
     --hover-shadow-a: 0.2;
-    --glass-blur: blur(10px);
 }
 
 body.dark-mode {
@@ -703,10 +702,7 @@ body.dark-mode [data-tooltip]::after {
     border-top: 1px solid var(--card-border);
 }
 
-.error-overlay a {
-    color: var(--accent-color);
-    text-decoration: none;
-}
+
 
 .footer a {
     color: var(--accent-color);
