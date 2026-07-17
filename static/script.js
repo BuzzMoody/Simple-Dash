@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${version}</a>`;
             }
             
-            footerEl.innerHTML = footerHtml;
+            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span>`;
         }
 
         // Header Colors
