@@ -445,7 +445,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (currentConfig && currentConfig.category_colors) {
                 const hue = getCategoryHue(key);
-                titleEl.style.setProperty('--title-border-img', `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%)) 1`);
+                const gradient = `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%))`;
+                titleEl.style.setProperty('--title-border-img', `${gradient} 1`);
+                
+                titleEl.style.background = gradient;
+                titleEl.style.webkitBackgroundClip = 'text';
+                titleEl.style.webkitTextFillColor = 'transparent';
             }
             
             cardIndex++;
