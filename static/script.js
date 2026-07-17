@@ -426,7 +426,9 @@ document.addEventListener('DOMContentLoaded', () => {
             groupEl.className = 'group';
 
             const titleEl = document.createElement('h2');
-            titleEl.className = 'group-title';
+            titleEl.className = 'group-title stagger-in';
+            titleEl.style.animationDelay = `${cardIndex * 0.03}s`;
+            cardIndex++;
             titleEl.textContent = key;
             groupEl.appendChild(titleEl);
 
