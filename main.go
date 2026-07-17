@@ -88,15 +88,7 @@ func initStaticFiles() {
 		log.Fatalf("Failed to read style.css: %v", err)
 	}
 	
-	// CSS Minification
-	s := string(styleBytes)
-	s = regexp.MustCompile(`/\*[\s\S]*?\*/`).ReplaceAllString(s, "")
-	s = strings.ReplaceAll(s, "\n", " ")
-	s = strings.ReplaceAll(s, "\t", " ")
-	for strings.Contains(s, "  ") {
-		s = strings.ReplaceAll(s, "  ", " ")
-	}
-	styleCSS = []byte(s)
+	styleCSS = styleBytes
 
 	scriptJS, err = os.ReadFile("./static/script.js")
 	if err != nil {
@@ -203,6 +195,7 @@ func checkHealth() {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
+	sem := make(chan struct{}, 10) // Limit to 10 concurrent requests
 	client := http.Client{Timeout: 3 * time.Second}
 
 	for _, s := range cfg.Services {
@@ -212,6 +205,9 @@ func checkHealth() {
 		wg.Add(1)
 		go func(srv Service) {
 			defer wg.Done()
+			
+			sem <- struct{}{}
+			defer func() { <-sem }()
 			
 			pingUrl := srv.URL
 			if srv.Server != "" {

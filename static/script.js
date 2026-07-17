@@ -8,6 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const servicesContainer = document.getElementById('services-container');
     const searchInput = document.getElementById('search-input');
     const searchClear = document.getElementById('search-clear');
+    const greetingEl = document.getElementById('greeting');
+
+    const updateGreeting = () => {
+        if (!greetingEl) return;
+        const hour = new Date().getHours();
+        let greeting = 'Good evening';
+        if (hour >= 5 && hour < 12) greeting = 'Good morning';
+        else if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+        
+        const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        greetingEl.textContent = `${greeting}, it's ${timeString}`;
+    };
+    setInterval(updateGreeting, 60000);
+    updateGreeting();
 
     let currentConfig = null;
     let currentSearchTerm = '';
@@ -405,6 +419,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sortedGroupKeys = Object.keys(groups).sort();
 
+        let cardIndex = 0;
+
         sortedGroupKeys.forEach(key => {
             const groupEl = document.createElement('div');
             groupEl.className = 'group';
@@ -417,7 +433,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const gridEl = document.createElement('div');
             gridEl.className = 'services-grid';
 
-            groups[key].forEach(service => gridEl.appendChild(createServiceCard(service, key)));
+            groups[key].forEach(service => {
+                const card = createServiceCard(service, key);
+                card.classList.add('stagger-in');
+                card.style.animationDelay = `${cardIndex * 0.03}s`;
+                cardIndex++;
+                gridEl.appendChild(card);
+            });
 
             groupEl.appendChild(gridEl);
             servicesContainer.appendChild(groupEl);
