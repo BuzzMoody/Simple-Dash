@@ -8,20 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const servicesContainer = document.getElementById('services-container');
     const searchInput = document.getElementById('search-input');
     const searchClear = document.getElementById('search-clear');
-    const greetingEl = document.getElementById('greeting');
-
-    const updateGreeting = () => {
-        if (!greetingEl) return;
-        const hour = new Date().getHours();
-        let greeting = 'Good evening';
-        if (hour >= 5 && hour < 12) greeting = 'Good morning';
-        else if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
-        
-        const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        greetingEl.textContent = `${greeting}, it's ${timeString}`;
+    const updateClock = () => {
+        if (!headerDesc) return;
+        const timeString = new Date().toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+        let descText = 'Loading...';
+        if (currentConfig && currentConfig.description) {
+            descText = currentConfig.description;
+        } else if (currentConfig === false) {
+            descText = 'Failed to load configuration.';
+        }
+        headerDesc.innerHTML = `${timeString} &bull; ${descText}`;
     };
-    setInterval(updateGreeting, 60000);
-    updateGreeting();
+    setInterval(updateClock, 10000); // 10s is a good balance for low-power devices
+    updateClock();
 
     let currentConfig = null;
     let currentSearchTerm = '';
@@ -209,7 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderDashboard(data);
             initStatusStream();
         } catch (error) {
-            headerDesc.textContent = 'Failed to load configuration.';
+            currentConfig = false;
+            updateClock();
             showErrorToast('Could not fetch configuration from the server.');
         }
     };
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headerTitle.textContent = config.header;
             document.title = config.header;
         }
-        if (config.description) headerDesc.textContent = config.description;
+        updateClock();
 
         if (config.favicon && config.favicon.endsWith('.svg')) {
             let link = document.querySelector("link[rel~='icon']");
