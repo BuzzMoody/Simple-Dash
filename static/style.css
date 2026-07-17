@@ -735,6 +735,11 @@ body.dark-mode [data-tooltip]::after {
     }
 }
 
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 .footer {
     position: absolute;
     bottom: 0;
@@ -746,7 +751,7 @@ body.dark-mode [data-tooltip]::after {
     color: var(--text-color);
     margin-top: 0;
     border-top: 1px solid var(--card-border);
-    animation: stagger-fade-up 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+    animation: fade-in 0.5s ease-out both;
     animation-delay: 0.2s;
 }
 
