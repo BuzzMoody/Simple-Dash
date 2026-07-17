@@ -764,3 +764,9 @@ body.dark-mode [data-tooltip]::after {
     opacity: 1;
     visibility: visible;
 }
+
+@media (min-width: 2001px) {
+    .container {
+        max-width: 1536px;
+    }
+}
