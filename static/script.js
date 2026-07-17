@@ -117,13 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     let statusObj = currentStatus[configUrl];
                     let isUp = false;
-                    let apiData = null;
-
                     if (typeof statusObj === 'boolean') {
                         isUp = statusObj;
                     } else if (statusObj && typeof statusObj === 'object') {
                         isUp = statusObj.is_up;
-                        apiData = statusObj.api_data;
                     }
 
                     let prevIsUp = false;

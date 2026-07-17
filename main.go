@@ -46,16 +46,7 @@ type Button struct {
 	LogoLight string `yaml:"logo_light" json:"logo_light"`
 }
 
-type APIMapping struct {
-	Label string `yaml:"label" json:"label"`
-	Path  string `yaml:"path" json:"path"`
-}
 
-type APIConfig struct {
-	URL      string            `yaml:"url" json:"url"`
-	Headers  map[string]string `yaml:"headers" json:"headers"`
-	Mappings []APIMapping      `yaml:"mappings" json:"mappings"`
-}
 
 type Service struct {
 	Name        string     `yaml:"name" json:"name"`
@@ -67,12 +58,10 @@ type Service struct {
 	LogoLight   string     `yaml:"logo_light" json:"logo_light"`
 	Icon        string     `yaml:"icon" json:"icon"`
 	Description string     `yaml:"description" json:"description"`
-	API         *APIConfig `yaml:"api" json:"api,omitempty"`
 }
 
 type ServiceStatus struct {
 	IsUp    bool              `json:"is_up"`
-	APIData map[string]string `json:"api_data,omitempty"`
 }
 
 var (
@@ -205,33 +194,6 @@ func loadInitialConfig() error {
 	return nil
 }
 
-func extractJSONPath(data map[string]interface{}, path string) string {
-	keys := strings.Split(path, ".")
-	var current interface{} = data
-	for _, key := range keys {
-		if m, ok := current.(map[string]interface{}); ok {
-			current = m[key]
-		} else {
-			return ""
-		}
-	}
-	if current == nil {
-		return ""
-	}
-	switch v := current.(type) {
-	case string:
-		return v
-	case float64:
-		return strconv.FormatFloat(v, 'f', -1, 64)
-	case bool:
-		if v {
-			return "true"
-		}
-		return "false"
-	default:
-		return fmt.Sprintf("%v", v)
-	}
-}
 
 func checkHealth() {
 	cfg := configCache.Load()
@@ -270,31 +232,6 @@ func checkHealth() {
 			}
 
 			status := ServiceStatus{IsUp: isUp}
-
-			if srv.API != nil && srv.API.URL != "" {
-				apiReq, err := http.NewRequest("GET", srv.API.URL, nil)
-				if err == nil {
-					for k, v := range srv.API.Headers {
-						apiReq.Header.Set(k, v)
-					}
-					if resp, err := client.Do(apiReq); err == nil {
-						if resp.StatusCode < 400 {
-							body, _ := io.ReadAll(resp.Body)
-							var data map[string]interface{}
-							if json.Unmarshal(body, &data) == nil {
-								status.APIData = make(map[string]string)
-								for _, mapping := range srv.API.Mappings {
-									val := extractJSONPath(data, mapping.Path)
-									if val != "" {
-										status.APIData[mapping.Label] = val
-									}
-								}
-							}
-						}
-						resp.Body.Close()
-					}
-				}
-			}
 
 			mu.Lock()
 			newStatus[srv.URL] = status
@@ -377,23 +314,6 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func statusHandler(w http.ResponseWriter, r *http.Request) {
-	status := statusCache.Load()
-	if status == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
-	}
-
-	data, err := json.Marshal(*status)
-	if err != nil {
-		http.Error(w, "Failed to encode status", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
-}
 
 func configHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
@@ -465,7 +385,6 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/config", configHandler)
-	mux.HandleFunc("/api/status", statusHandler)
 	mux.HandleFunc("/api/status/stream", statusStreamHandler)
 	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./data/logos"))))

@@ -22,12 +22,3 @@ services:
     category: "Infrastructure"
     logo: "portainer.svg"
     description: "Docker Management"
-    api:
-      url: "https://docker.example.com/api/endpoints/1/docker/info"
-      headers:
-        "X-API-Key": "ptr_xxxxxxxxxxxxxxx"
-      mappings:
-        - label: "Running"
-          path: "ContainersRunning"
-        - label: "Stopped"
-          path: "ContainersStopped"
