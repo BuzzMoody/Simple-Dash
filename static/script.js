@@ -451,10 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const gradient = `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%))`;
                 titleEl.style.setProperty('--title-border-img', `${gradient} 1`);
                 
-                titleSpan.style.background = gradient;
-                titleSpan.style.webkitBackgroundClip = 'text';
-                titleSpan.style.webkitTextFillColor = 'transparent';
-                titleSpan.style.display = 'inline-block';
+                titleSpan.style.color = `hsl(${hue}, 90%, 65%)`;
             }
             
             cardIndex++;
