@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateClock = () => {
         if (!headerDesc) return;
-        const timeString = new Date().toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+        const timeString = new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit', second: '2-digit'});
         let descText = 'Loading...';
         if (currentConfig && currentConfig.description) {
             descText = currentConfig.description;
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         headerDesc.innerHTML = `${timeString} &bull; ${descText}`;
     };
-    setInterval(updateClock, 10000); // 10s is a good balance for low-power devices
+    setInterval(updateClock, 1000); // 1s interval to update seconds
     updateClock();
 
     const moonSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
