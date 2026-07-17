@@ -443,18 +443,22 @@ document.addEventListener('DOMContentLoaded', () => {
             titleEl.className = 'group-title stagger-in';
             titleEl.style.animationDelay = `${cardIndex * 0.03}s`;
             
+            const titleSpan = document.createElement('span');
+            titleSpan.textContent = key;
+            
             if (currentConfig && currentConfig.category_colors) {
                 const hue = getCategoryHue(key);
                 const gradient = `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%))`;
                 titleEl.style.setProperty('--title-border-img', `${gradient} 1`);
                 
-                titleEl.style.background = gradient;
-                titleEl.style.webkitBackgroundClip = 'text';
-                titleEl.style.webkitTextFillColor = 'transparent';
+                titleSpan.style.background = gradient;
+                titleSpan.style.webkitBackgroundClip = 'text';
+                titleSpan.style.webkitTextFillColor = 'transparent';
+                titleSpan.style.display = 'inline-block';
             }
             
             cardIndex++;
-            titleEl.textContent = key;
+            titleEl.appendChild(titleSpan);
             groupEl.appendChild(titleEl);
 
             const gridEl = document.createElement('div');
