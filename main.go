@@ -20,6 +20,30 @@ type Announcement struct {
 	Type string `yaml:"type" json:"type"`
 }
 
+type CategoryColorsConfig struct {
+	Enabled bool `yaml:"enabled" json:"enabled"`
+	Titles  bool `yaml:"titles" json:"titles"`
+}
+
+func (c *CategoryColorsConfig) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		var b bool
+		if err := value.Decode(&b); err != nil {
+			return err
+		}
+		c.Enabled = b
+		return nil
+	}
+	
+	type alias CategoryColorsConfig
+	var a alias
+	if err := value.Decode(&a); err != nil {
+		return err
+	}
+	*c = CategoryColorsConfig(a)
+	return nil
+}
+
 type Config struct {
 	Header        string         `yaml:"header" json:"header"`
 	Description   string         `yaml:"description" json:"description"`
@@ -28,7 +52,7 @@ type Config struct {
 	Favicon       string         `yaml:"favicon" json:"favicon"`
 	NewTabs       *bool          `yaml:"new_tabs" json:"new_tabs"`
 	ShowOnlyDown  bool           `yaml:"show_only_down" json:"show_only_down"`
-	CategoryColors bool          `yaml:"category_colors" json:"category_colors"`
+	CategoryColors CategoryColorsConfig  `yaml:"category_colors" json:"category_colors"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
 	Buttons       []Button       `yaml:"buttons" json:"buttons"`
 	Services      []Service      `yaml:"services" json:"services"`

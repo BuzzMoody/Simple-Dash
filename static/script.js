@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'service-card';
         card.href = service.url;
 
-        if (currentConfig && currentConfig.category_colors) {
+        if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
             const hue = getCategoryHue(groupKey);
             card.style.setProperty('--hover-color', `hsl(${hue}, 90%, 60%)`);
             card.style.setProperty('--hover-hue', hue);
@@ -446,12 +446,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleSpan = document.createElement('span');
             titleSpan.textContent = key;
             
-            if (currentConfig && currentConfig.category_colors) {
+            if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
                 const hue = getCategoryHue(key);
                 const gradient = `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%))`;
                 titleEl.style.setProperty('--title-border-img', `${gradient} 1`);
                 
-                titleSpan.style.color = `hsl(${hue}, 90%, 65%)`;
+                if (currentConfig.category_colors.titles) {
+                    titleSpan.style.color = `hsl(${hue}, 90%, 65%)`;
+                }
             }
             
             cardIndex++;
