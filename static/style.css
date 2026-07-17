@@ -423,7 +423,8 @@ body.dark-mode .announcement.outage {
     font-weight: 600;
     margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--card-border);
+    border-bottom: 2px solid var(--card-border);
+    border-image: var(--title-border-img, none);
     opacity: 0.9;
 }
 

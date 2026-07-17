@@ -442,6 +442,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleEl = document.createElement('h2');
             titleEl.className = 'group-title stagger-in';
             titleEl.style.animationDelay = `${cardIndex * 0.03}s`;
+            
+            if (currentConfig && currentConfig.category_colors) {
+                const hue = getCategoryHue(key);
+                titleEl.style.setProperty('--title-border-img', `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%)) 1`);
+            }
+            
             cardIndex++;
             titleEl.textContent = key;
             groupEl.appendChild(titleEl);
