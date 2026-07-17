@@ -393,7 +393,7 @@ body.dark-mode .announcement.outage {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     align-items: start;
-    gap: 1.5rem 2rem;
+    gap: 2.5rem 2rem;
 }
 
 .group {
