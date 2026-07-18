@@ -525,7 +525,20 @@ document.addEventListener('DOMContentLoaded', () => {
             table.appendChild(createHeader(false));
             table.appendChild(createHeader(true));
 
-            sortedServices.forEach(service => {
+            let displayServices = [];
+            if (isDesktop && sortedServices.length > 1) {
+                const half = Math.ceil(sortedServices.length / 2);
+                for (let i = 0; i < half; i++) {
+                    displayServices.push(sortedServices[i]);
+                    if (i + half < sortedServices.length) {
+                        displayServices.push(sortedServices[i + half]);
+                    }
+                }
+            } else {
+                displayServices = sortedServices;
+            }
+
+            displayServices.forEach(service => {
                 const row = document.createElement('a');
                 row.className = `list-row ${hasPingClass}`;
                 row.href = service.url;
