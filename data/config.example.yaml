@@ -25,3 +25,11 @@ services:
     category: "Infrastructure"
     logo: "portainer.svg"
     description: "Docker Management"
+
+  - name: "Plex"
+    url: "http://10.0.0.5:32400"
+    category: "Media"
+    logo: "plex.svg"
+    icon: "🍿"
+    description: "Main media streaming server"
+    pinned: true

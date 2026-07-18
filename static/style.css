@@ -822,12 +822,85 @@ body.dark-mode [data-tooltip]::after {
     z-index: 999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s, visibility 0.3s;
 }
 
 .sidebar-overlay.show {
     opacity: 1;
     visibility: visible;
+}
+
+/* Pinned Favorites Solar Flare */
+.group.favorites {
+    grid-column: 1 / -1;
+}
+
+.service-card.pinned-card {
+    border-color: transparent !important;
+}
+
+.flare-wrapper {
+    position: absolute;
+    inset: -2px;
+    border-radius: 0.6rem;
+    overflow: hidden;
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+.service-card:hover .flare-wrapper {
+    opacity: 1;
+}
+
+.flare-spin {
+    position: absolute;
+    top: -50%; left: -50%; right: -50%; bottom: -50%;
+    background: conic-gradient(from 0deg, transparent 0%, #ff512f 25%, #f9d423 50%, #ff512f 75%, transparent 100%);
+    animation: rotate-flare 3s linear infinite;
+}
+
+.flare-mask {
+    position: absolute;
+    inset: 2px;
+    background: var(--card-bg);
+    border-radius: 0.45rem;
+    transition: background 0.2s;
+}
+
+.service-card:hover .flare-mask {
+    background: linear-gradient(145deg, var(--card-bg), rgba(255,255,255,0.05));
+}
+
+@keyframes rotate-flare {
+    to { transform: rotate(360deg); }
+}
+
+/* List Layout */
+body.list-view #services-container {
+    display: flex;
+    flex-direction: column;
+}
+
+body.list-view .services-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 800px) {
+    body.list-view .services-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+body.list-view .service-card {
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 1rem;
+}
+
+body.list-view .service-name {
+    font-size: 1rem;
 }
 
 @media (min-width: 2001px) {

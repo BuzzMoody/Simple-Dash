@@ -80,6 +80,7 @@ type Service struct {
 	LogoLight   string     `yaml:"logo_light" json:"logo_light"`
 	Icon        string     `yaml:"icon" json:"icon"`
 	Description string     `yaml:"description" json:"description"`
+	Pinned      bool       `yaml:"pinned" json:"pinned"`
 }
 
 type ServiceStatus struct {

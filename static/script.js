@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentConfig = null;
     let currentSearchTerm = '';
     let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
+    let layout = localStorage.getItem('dashy-layout') || 'grid'; // 'grid' or 'list'
+    const layoutToggle = document.getElementById('layout-toggle');
 
     const updateClock = () => {
         if (!headerDesc) return;
@@ -68,6 +70,30 @@ document.addEventListener('DOMContentLoaded', () => {
             renderServices(currentConfig.services || []);
         }
     });
+
+    const updateLayoutToggleButton = () => {
+        if (!layoutToggle) return;
+        const span = layoutToggle.querySelector('span');
+        if (span) {
+            span.textContent = layout === 'grid' ? 'List' : 'Grid';
+        }
+        layoutToggle.setAttribute('data-tooltip', layout === 'grid' ? 'Switch to List View' : 'Switch to Grid View');
+        
+        if (layout === 'list') {
+            document.body.classList.add('list-view');
+        } else {
+            document.body.classList.remove('list-view');
+        }
+    };
+
+    if (layoutToggle) {
+        updateLayoutToggleButton();
+        layoutToggle.addEventListener('click', () => {
+            layout = layout === 'grid' ? 'list' : 'grid';
+            localStorage.setItem('dashy-layout', layout);
+            updateLayoutToggleButton();
+        });
+    }
 
     if (searchClear) {
         searchClear.addEventListener('click', () => {
@@ -407,6 +433,14 @@ document.addEventListener('DOMContentLoaded', () => {
         card.appendChild(iconContainer);
         card.appendChild(name);
 
+        if (service.pinned) {
+            card.classList.add('pinned-card');
+            const flare = document.createElement('div');
+            flare.className = 'flare-wrapper';
+            flare.innerHTML = '<div class="flare-spin"></div><div class="flare-mask"></div>';
+            card.appendChild(flare);
+        }
+
         if (service.description) {
             card.setAttribute('data-tooltip', service.description);
         }
@@ -456,13 +490,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedServices = [...filteredServices].sort((a, b) => a.name.localeCompare(b.name));
         
         const groups = {};
+        let hasPinned = false;
+
         sortedServices.forEach(service => {
             let groupKey;
-            if (groupBy === 'category') {
+            if (service.pinned) {
+                groupKey = 'Favorites';
+                hasPinned = true;
+            } else if (groupBy === 'category') {
                 groupKey = service.category || 'Uncategorized';
             } else {
                 groupKey = (service.name.charAt(0) || '#').toUpperCase();
-                // Group numbers and symbols together
                 if (!/[A-Z]/.test(groupKey)) {
                     groupKey = '#';
                 }
@@ -472,13 +510,22 @@ document.addEventListener('DOMContentLoaded', () => {
             groups[groupKey].push(service);
         });
 
-        const sortedGroupKeys = Object.keys(groups).sort();
+        let sortedGroupKeys = Object.keys(groups).sort();
+        
+        // Ensure Favorites is always first
+        if (hasPinned) {
+            sortedGroupKeys = sortedGroupKeys.filter(k => k !== 'Favorites');
+            sortedGroupKeys.unshift('Favorites');
+        }
 
         let cardIndex = 0;
 
         sortedGroupKeys.forEach(key => {
             const groupEl = document.createElement('div');
             groupEl.className = 'group';
+            if (key === 'Favorites') {
+                groupEl.classList.add('favorites');
+            }
 
             const titleEl = document.createElement('h2');
             titleEl.className = 'group-title stagger-in';
@@ -487,7 +534,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleSpan = document.createElement('span');
             titleSpan.textContent = key;
             
-            if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
+            if (key === 'Favorites') {
+                // Special styling for favorites title
+                titleEl.style.setProperty('--title-border-img', `linear-gradient(to right, #ff512f, #f9d423) 1`);
+                titleSpan.style.color = '#ff512f';
+                titleSpan.innerHTML = '⭐ ' + key;
+            } else if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
                 const hue = getCategoryHue(key);
                 const gradient = `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%))`;
                 titleEl.style.setProperty('--title-border-img', `${gradient} 1`);
