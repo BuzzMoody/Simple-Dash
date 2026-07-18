@@ -1028,7 +1028,7 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
     display: none;
 }
 .list-pinned-star {
-    margin-left: 0.4rem;
+    margin-left: auto;
     font-size: 1em;
     background: linear-gradient(90deg, var(--header-color-1), var(--header-color-2));
     -webkit-background-clip: text;
