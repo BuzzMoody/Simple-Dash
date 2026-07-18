@@ -942,10 +942,10 @@ body.dark-mode .list-table {
 
 @media (min-width: 1200px) {
     .list-table {
-        grid-template-columns: max-content minmax(0, 1fr) max-content max-content minmax(0, 1fr) max-content;
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content;
     }
     .list-table.has-ping {
-        grid-template-columns: max-content minmax(0, 1fr) max-content max-content max-content minmax(0, 1fr) max-content max-content;
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content max-content;
     }
     /* desktop-only-header inherits display: contents from .list-header */
 }

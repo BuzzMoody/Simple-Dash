@@ -619,6 +619,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             servicesContainer.appendChild(table);
+
+            if (isDesktop && sortedServices.length > 1) {
+                requestAnimationFrame(() => {
+                    let maxNameWidth = 0;
+                    const nameCols = table.querySelectorAll('.list-col.name');
+                    nameCols.forEach(col => {
+                        const w = col.getBoundingClientRect().width;
+                        if (w > maxNameWidth) maxNameWidth = w;
+                    });
+                    if (maxNameWidth > 0) {
+                        table.style.setProperty('--name-col-width', `${Math.ceil(maxNameWidth)}px`);
+                    }
+                });
+            }
             
             updateStatusIndicators();
             return;
