@@ -870,6 +870,16 @@ body.dark-mode [data-tooltip]::after {
     border-color: transparent !important;
 }
 
+body:not(.list-view) .group.favorites .services-grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+body:not(.list-view) .group.favorites .service-card {
+    flex: 1 1 320px;
+    max-width: 500px;
+}
+
 .flare-wrapper {
     position: absolute;
     inset: -2px;
@@ -877,7 +887,7 @@ body.dark-mode [data-tooltip]::after {
     overflow: hidden;
     z-index: -2;
     pointer-events: none;
-    opacity: 0.85;
+    opacity: 0;
     transition: opacity 0.2s;
 }
 .service-card:hover .flare-wrapper {
@@ -1029,11 +1039,8 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
 }
 .list-pinned-star {
     margin-left: auto;
-    font-size: 1em;
-    background: linear-gradient(90deg, var(--header-color-1), var(--header-color-2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Status dot overrides */
