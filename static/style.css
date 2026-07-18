@@ -905,13 +905,17 @@ body.list-view #services-container {
 .list-table {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1px;
-    background: var(--card-border);
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     overflow: hidden;
     margin-top: 1rem;
     box-shadow: var(--shadow);
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+body.dark-mode .list-table {
+    background: rgba(24, 24, 27, 0.6);
 }
 @media (min-width: 1200px) {
     .list-table {
@@ -931,7 +935,22 @@ body.list-view #services-container {
     color: var(--text-color);
     transition: background 0.1s;
     font-size: 0.85rem;
-    background-color: var(--card-bg);
+    background-color: transparent;
+    border-bottom: 1px solid var(--card-border);
+}
+@media (min-width: 1200px) {
+    .list-row:nth-child(odd) {
+        border-right: 1px solid var(--card-border);
+    }
+    .list-row:nth-last-child(1),
+    .list-row:nth-last-child(2) {
+        border-bottom: none;
+    }
+}
+@media (max-width: 1199px) {
+    .list-row:last-child {
+        border-bottom: none;
+    }
 }
 .list-row.has-ping {
     grid-template-columns: minmax(150px, 25%) 1fr minmax(150px, 25%) 60px;
@@ -940,7 +959,6 @@ body.list-view #services-container {
     font-weight: 600;
     color: var(--text-color);
     background-color: rgba(0,0,0,0.02);
-    border-bottom: 1px solid var(--card-border);
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
@@ -949,13 +967,13 @@ body.list-view #services-container {
     display: none !important;
 }
 body.dark-mode .list-header {
-    background-color: rgba(255,255,255,0.02);
+    background-color: rgba(255,255,255,0.03);
 }
 .list-row:not(.list-header):hover {
-    background-image: linear-gradient(rgba(0,0,0,0.04), rgba(0,0,0,0.04));
+    background-color: rgba(0,0,0,0.04);
 }
 body.dark-mode .list-row:not(.list-header):hover {
-    background-image: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05));
+    background-color: rgba(255,255,255,0.06);
 }
 .list-col {
     white-space: nowrap;
