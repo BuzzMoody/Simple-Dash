@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             previousStatus = incomingStatus;
         }
         setTimeout(() => {
-            const cards = document.querySelectorAll('.service-card');
+            const cards = document.querySelectorAll('[data-url]');
             cards.forEach(card => {
                 const configUrl = card.getAttribute('data-url');
                 if (!configUrl) return;
@@ -212,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         setTimeout(() => card.classList.remove(shimmerClass), 4500);
                     }
 
+                    const targetContainer = layout === 'list' && card.querySelector('.list-col.status') ? card.querySelector('.list-col.status') : card;
                     if (currentConfig && currentConfig.show_only_down) {
                         if (isUp) {
                             if (dot) dot.remove();
@@ -219,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (!dot) {
                                 dot = document.createElement('div');
                                 dot.className = 'status-dot down';
-                                card.appendChild(dot);
+                                targetContainer.appendChild(dot);
                             } else {
                                 dot.className = 'status-dot down';
                                 dot.textContent = '';
@@ -229,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         if (!dot) {
                             dot = document.createElement('div');
-                            card.appendChild(dot);
+                            targetContainer.appendChild(dot);
                         }
                         
                         if (currentConfig && currentConfig.show_ping && isUp && latency !== null) {
@@ -580,6 +581,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.appendChild(nameCol);
                 row.appendChild(descCol);
                 row.appendChild(urlCol);
+                
+                if (showPing) {
+                    const statusCol = document.createElement('div');
+                    statusCol.className = 'list-col status';
+                    row.appendChild(statusCol);
+                }
+                
                 table.appendChild(row);
             });
 
@@ -705,17 +713,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const isCardFocused = document.activeElement && document.activeElement.classList.contains('service-card');
+        const isCardFocused = document.activeElement && document.activeElement.hasAttribute('data-url');
         
         if (document.activeElement === searchInput && e.key === 'ArrowDown') {
             e.preventDefault();
-            const firstCard = document.querySelector('.service-card');
+            const firstCard = document.querySelector('[data-url]');
             if (firstCard) firstCard.focus();
             return;
         }
 
         if (isCardFocused) {
-            const cards = Array.from(document.querySelectorAll('.service-card'));
+            const cards = Array.from(document.querySelectorAll('[data-url]'));
             const currentIndex = cards.indexOf(document.activeElement);
             if (currentIndex === -1) return;
 
@@ -776,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Grid navigation
         if (!isInputFocused) {
-            const cards = Array.from(document.querySelectorAll('.service-card')).filter(c => c.style.display !== 'none');
+            const cards = Array.from(document.querySelectorAll('[data-url]')).filter(c => c.style.display !== 'none');
             if (cards.length === 0) return;
 
             let currentIndex = cards.indexOf(document.activeElement);

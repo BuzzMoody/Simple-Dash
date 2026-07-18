@@ -904,7 +904,7 @@ body.list-view #services-container {
 
 .list-table {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     overflow: hidden;
@@ -914,21 +914,31 @@ body.list-view #services-container {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 }
+.list-table.has-ping {
+    grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
+}
 body.dark-mode .list-table {
     background: rgba(24, 24, 27, 0.6);
 }
+
 @media (min-width: 1200px) {
     .list-table {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: max-content minmax(0, 1fr) max-content max-content minmax(0, 1fr) max-content;
+    }
+    .list-table.has-ping {
+        grid-template-columns: max-content minmax(0, 1fr) max-content max-content max-content minmax(0, 1fr) max-content max-content;
     }
     .desktop-only-header {
-        display: grid !important;
+        display: contents !important;
     }
 }
 
 .list-row {
-    display: grid;
-    grid-template-columns: minmax(150px, 25%) 1fr minmax(150px, 25%);
+    display: contents;
+}
+
+.list-col {
+    display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
     text-decoration: none;
@@ -937,50 +947,59 @@ body.dark-mode .list-table {
     font-size: 0.85rem;
     background-color: transparent;
     border-bottom: 1px solid var(--card-border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+@media (max-width: 1199px) {
+    .list-row:last-child > .list-col {
+        border-bottom: none;
+    }
+}
+
 @media (min-width: 1200px) {
-    .list-row:nth-child(odd) {
+    /* Remove bottom border for the last two rows (left and right columns) */
+    .list-row:nth-last-child(1) > .list-col,
+    .list-row:nth-last-child(2) > .list-col {
+        border-bottom: none;
+    }
+    
+    /* Vertical separator for the left column */
+    .list-table:not(.has-ping) .list-row:nth-child(odd) > .list-col:nth-child(3) {
         border-right: 1px solid var(--card-border);
     }
-    .list-row:nth-last-child(1),
-    .list-row:nth-last-child(2) {
-        border-bottom: none;
+    .list-table.has-ping .list-row:nth-child(odd) > .list-col:nth-child(4) {
+        border-right: 1px solid var(--card-border);
     }
 }
-@media (max-width: 1199px) {
-    .list-row:last-child {
-        border-bottom: none;
-    }
-}
-.list-row.has-ping {
-    grid-template-columns: minmax(150px, 25%) 1fr minmax(150px, 25%) 60px;
-}
+
 .list-header {
+    display: contents;
+}
+.list-header > .list-col {
     font-weight: 600;
     color: var(--text-color);
     background-color: rgba(0,0,0,0.02);
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--card-border);
 }
 .desktop-only-header {
     display: none !important;
 }
-body.dark-mode .list-header {
+body.dark-mode .list-header > .list-col {
     background-color: rgba(255,255,255,0.03);
 }
-.list-row:not(.list-header):hover {
+
+.list-row:not(.list-header):hover > .list-col {
     background-color: rgba(0,0,0,0.04);
 }
-body.dark-mode .list-row:not(.list-header):hover {
+body.dark-mode .list-row:not(.list-header):hover > .list-col {
     background-color: rgba(255,255,255,0.06);
 }
-.list-col {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 1rem;
-}
+
 .list-col.url {
     color: var(--accent-color);
     opacity: 0.8;
@@ -997,6 +1016,7 @@ body.dark-mode .list-row:not(.list-header):hover {
 .list-col.name img {
     width: 16px;
     height: 16px;
+    flex-shrink: 0;
 }
 body.dark-mode .list-col.name .light-theme-logo {
     display: none;
@@ -1005,14 +1025,17 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
     display: none;
 }
 
-/* Override status dot/ping for list layout */
+/* Status dot overrides */
+.list-col.status {
+    justify-content: flex-end;
+}
 .list-row .status-dot {
     position: static;
-    margin-left: 0.5rem;
+    margin-left: 0;
 }
 .list-row .status-ping {
     position: static;
-    margin-left: 0.5rem;
+    margin-left: 0;
     font-size: 0.7rem;
 }
 .list-row.dummy-row {
