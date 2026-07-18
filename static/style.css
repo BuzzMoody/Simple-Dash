@@ -897,31 +897,86 @@ body.dark-mode [data-tooltip]::after {
     to { transform: rotate(360deg); }
 }
 
-/* List Layout */
+/* List Layout - CSS Table */
 body.list-view #services-container {
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
-body.list-view .services-grid {
+.list-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-top: 1rem;
+    box-shadow: var(--shadow);
+}
+.list-row {
     display: grid;
-    grid-template-columns: 1fr;
-}
-
-@media (min-width: 800px) {
-    body.list-view .services-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-body.list-view .service-card {
-    flex-direction: row;
+    grid-template-columns: minmax(150px, 20%) 1fr minmax(150px, 20%) auto;
     align-items: center;
     padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--card-border);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: background 0.1s;
+    font-size: 0.85rem;
+}
+.list-header {
+    font-weight: 600;
+    color: var(--text-color);
+    background: rgba(0,0,0,0.02);
+    border-bottom: 2px solid var(--card-border);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+body.dark-mode .list-header {
+    background: rgba(255,255,255,0.02);
+}
+.list-row:last-child {
+    border-bottom: none;
+}
+.list-row:not(.list-header):hover {
+    background: rgba(0,0,0,0.02);
+}
+body.dark-mode .list-row:not(.list-header):hover {
+    background: rgba(255,255,255,0.05);
+}
+.list-col {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 1rem;
+}
+.list-col.url {
+    color: var(--accent-color);
+    opacity: 0.8;
+}
+.list-col.desc {
+    opacity: 0.7;
+}
+.list-col.name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+.list-col.name img {
+    width: 16px;
+    height: 16px;
 }
 
-body.list-view .service-name {
-    font-size: 1rem;
+/* Override status dot/ping for list layout */
+.list-row .status-dot {
+    position: static;
+    margin-left: 0.5rem;
+}
+.list-row .status-ping {
+    position: static;
+    margin-left: 0.5rem;
+    font-size: 0.7rem;
 }
 
 @media (min-width: 2001px) {

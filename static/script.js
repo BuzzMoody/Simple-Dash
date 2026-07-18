@@ -81,8 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (layout === 'list') {
             document.body.classList.add('list-view');
+            if (groupToggle) groupToggle.style.display = 'none';
         } else {
             document.body.classList.remove('list-view');
+            if (groupToggle) groupToggle.style.display = 'flex';
         }
     };
 
@@ -92,6 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
             layout = layout === 'grid' ? 'list' : 'grid';
             localStorage.setItem('dashy-layout', layout);
             updateLayoutToggleButton();
+            if (currentConfig) {
+                renderServices(currentConfig.services || []);
+            }
         });
     }
 
@@ -490,6 +495,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sortedServices = [...filteredServices].sort((a, b) => a.name.localeCompare(b.name));
         
+        if (layout === 'list') {
+            const table = document.createElement('div');
+            table.className = 'list-table stagger-in';
+            
+            const headerRow = document.createElement('div');
+            headerRow.className = 'list-row list-header';
+            headerRow.innerHTML = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div><div class="list-col status"></div>';
+            table.appendChild(headerRow);
+
+            sortedServices.forEach(service => {
+                const row = document.createElement('a');
+                row.className = 'list-row';
+                row.href = service.url;
+                row.setAttribute('data-url', service.url);
+                if (currentConfig && currentConfig.new_tabs !== false) {
+                    row.target = '_blank';
+                    row.rel = 'noopener noreferrer';
+                }
+
+                // name col
+                const nameCol = document.createElement('div');
+                nameCol.className = 'list-col name';
+                let iconHtml = '';
+                if (service.logo || service.logo_light || service.logo_dark) {
+                    const sLight = service.logo_light || service.logo;
+                    const sDark = service.logo_dark || service.logo;
+                    if (sLight && sDark && sLight !== sDark) {
+                        iconHtml = `<img src="logos/${sLight}" class="light-img" loading="lazy" alt=""><img src="logos/${sDark}" class="dark-img" loading="lazy" alt="">`;
+                    } else if (sLight) {
+                        iconHtml = `<img src="logos/${sLight}" loading="lazy" alt="">`;
+                    }
+                } else if (service.icon) {
+                    iconHtml = `<span style="font-size: 1.1em">${service.icon}</span>`;
+                } else {
+                    iconHtml = `<span style="font-size: 1.1em">🌍</span>`;
+                }
+                nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>`;
+
+                // desc col
+                const descCol = document.createElement('div');
+                descCol.className = 'list-col desc';
+                descCol.textContent = service.description || '';
+
+                // url col
+                const urlCol = document.createElement('div');
+                urlCol.className = 'list-col url';
+                urlCol.textContent = service.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+                row.appendChild(nameCol);
+                row.appendChild(descCol);
+                row.appendChild(urlCol);
+                table.appendChild(row);
+            });
+
+            servicesContainer.appendChild(table);
+            updateStatusIndicators();
+            return;
+        }
+
         const groups = {};
         let hasPinned = false;
 
