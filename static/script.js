@@ -16,7 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateClock = () => {
         if (!headerDesc) return;
-        const timeString = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true});
+        const d = new Date();
+        let h = d.getHours();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        if (h === 0) h = '00';
+        else if (h > 12) h -= 12;
+        const m = d.getMinutes().toString().padStart(2, '0');
+        const s = d.getSeconds().toString().padStart(2, '0');
+        const timeString = `${h}:${m}:${s} ${ampm}`;
         let descText = 'Loading...';
         if (currentConfig && currentConfig.description) {
             descText = currentConfig.description;
