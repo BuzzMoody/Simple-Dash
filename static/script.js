@@ -522,34 +522,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 return headerRow;
             };
 
-            const createEmptyHeader = (isDesktopOnly) => {
-                const headerRow = document.createElement('div');
-                headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''} ${hasPingClass}`;
-                let html = '<div class="list-col"></div><div class="list-col"></div><div class="list-col"></div>';
-                if (showPing) html += '<div class="list-col"></div>';
-                headerRow.innerHTML = html;
-                return headerRow;
-            };
-
-            table.appendChild(createHeader(false));
-            table.appendChild(createEmptyHeader(true));
+            table.appendChild(createHeader());
 
             let displayServices = [];
             if (isDesktop && sortedServices.length > 1) {
                 const half = Math.ceil(sortedServices.length / 2);
                 for (let i = 0; i < half; i++) {
-                    displayServices.push(sortedServices[i]);
+                    const isLastLeft = (i === half - 1);
+                    
                     if (i + half < sortedServices.length) {
-                        displayServices.push(sortedServices[i + half]);
+                        const isLastRight = (i + half === sortedServices.length - 1);
+                        displayServices.push({ 
+                            service: sortedServices[i + half], 
+                            side: 'right', 
+                            isLast: isLastRight 
+                        });
                     }
+                    displayServices.push({ 
+                        service: sortedServices[i], 
+                        side: 'left', 
+                        isLast: isLastLeft 
+                    });
                 }
             } else {
-                displayServices = sortedServices;
+                displayServices = sortedServices.map((s, i) => ({ 
+                    service: s, 
+                    side: 'left', 
+                    isLast: i === sortedServices.length - 1 
+                }));
             }
 
-            displayServices.forEach(service => {
+            displayServices.forEach(item => {
+                const service = item.service;
                 const row = document.createElement('a');
                 row.className = `list-row ${hasPingClass}`;
+                if (item.side === 'left') row.classList.add('left-column');
+                if (item.isLast) row.classList.add('last-in-column');
                 row.href = service.url;
                 row.setAttribute('data-url', service.url);
                 if (currentConfig && currentConfig.new_tabs !== false) {
@@ -560,6 +568,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // name col
                 const nameCol = document.createElement('div');
                 nameCol.className = 'list-col name';
+                if (item.side === 'left') {
+                    nameCol.style.gridColumn = '1';
+                }
                 let iconHtml = '';
                 if (service.logo || service.logo_light || service.logo_dark) {
                     const sLight = service.logo_light || service.logo;

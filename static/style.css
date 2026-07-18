@@ -950,24 +950,18 @@ body.dark-mode .list-table {
     text-overflow: ellipsis;
 }
 
-@media (max-width: 1199px) {
-    .list-row:last-child > .list-col {
-        border-bottom: none;
-    }
+.list-row.last-in-column > .list-col {
+    border-bottom: none;
 }
 
 @media (min-width: 1200px) {
-    /* Remove bottom border for the last two rows (left and right columns) */
-    .list-row:nth-last-child(1) > .list-col,
-    .list-row:nth-last-child(2) > .list-col {
-        border-bottom: none;
-    }
-    
-    /* Vertical separator for the left column */
-    .list-table:not(.has-ping) .list-row:nth-child(odd) > .list-col:nth-child(3) {
+    /* Vertical separator for the left column and header */
+    .list-table:not(.has-ping) .list-row.left-column > .list-col:nth-child(3),
+    .list-table:not(.has-ping) .list-header > .list-col:nth-child(3) {
         border-right: 1px solid var(--card-border);
     }
-    .list-table.has-ping .list-row:nth-child(odd) > .list-col:nth-child(4) {
+    .list-table.has-ping .list-row.left-column > .list-col:nth-child(4),
+    .list-table.has-ping .list-header > .list-col:nth-child(4) {
         border-right: 1px solid var(--card-border);
     }
 }
