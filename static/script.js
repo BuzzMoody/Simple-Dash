@@ -570,13 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 table.appendChild(row);
             });
 
-            if (isDesktop && sortedServices.length % 2 !== 0) {
-                const dummy = document.createElement('div');
-                dummy.className = `list-row dummy-row ${hasPingClass}`;
-                dummy.innerHTML = '<div class="list-col name">&nbsp;</div><div class="list-col desc"></div><div class="list-col url"></div>';
-                table.appendChild(dummy);
-            }
-
             servicesContainer.appendChild(table);
             
             updateStatusIndicators();
