@@ -5,7 +5,7 @@ A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go 
 ## Features
 - **Ultra-Lightweight Backend**: Built on a statically compiled Go backend and packaged in a highly secure `distroless` image.
 - **Glassmorphism UI**: Beautiful, dynamic gradients and frosted glass elements natively powered by pure CSS.
-- **Native Light/Dark Mode**: Built-in theme toggle that perfectly adjusts gradients, backgrounds, text colors, and shadows.
+- **Native Light/Dark Mode**: Built-in theme toggle that perfectly adjusts gradients, backgrounds, text colours, and shadows.
 - **Theme-Aware Logos**: Support for dynamically switching custom SVG/PNG logos based on the active light/dark theme.
 - **Live Health Checks**: Automatically polls your internal services every 60 seconds and pushes instant updates to the UI via Server-Sent Events (SSE).
 - **Progressive Web App**: Fully responsive mobile UI with standalone web app support.
@@ -91,15 +91,15 @@ category_colors:
 ```
 - `header`: *(String)* The primary title of your dashboard.
 - `description`: *(String)* A subtitle displayed inline with the header.
-- `header_colors`: *(Array of Strings)* A list of precisely two hex colors (e.g. `["#38bdf8", "#a855f7"]`) to create a custom gradient for your header text. If omitted, falls back to the default theme colors.
+- `header_colors`: *(Array of Strings)* A list of precisely two hex colours (e.g. `["#38bdf8", "#a855f7"]`) to create a custom gradient for your header text. If omitted, falls back to the default theme colours.
 - `footer`: *(String)* Custom text to be displayed at the very bottom of the page.
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
 - `show_only_down`: *(Boolean)* Default is `false`. If set to `true`, the UI will only display status indicators for services that are offline (hiding the green online dots).
-- `show_ping`: *(Boolean)* Default is `false`. If set to `true`, the UI will display the latency in milliseconds for online services instead of a green dot, color-coded based on response time.
-- `category_colors`: *(Boolean or Object)* Default is `false`. If set to `true`, cards will have uniquely generated colors based on their category. Can also be defined as a nested object to enable additional coloring options:
-  - `enabled`: *(Boolean)* Colorizes service cards and category title borders.
-  - `titles`: *(Boolean)* Colorizes the category title text itself to match.
+- `show_ping`: *(Boolean)* Default is `false`. If set to `true`, the UI will display the latency in milliseconds for online services instead of a green dot, colour-coded based on response time.
+- `category_colors`: *(Boolean or Object)* Default is `false`. If set to `true`, cards will have uniquely generated colours based on their category. Can also be defined as a nested object to enable additional colouring options:
+  - `enabled`: *(Boolean)* Colourises service cards and category title borders.
+  - `titles`: *(Boolean)* Colourises the category title text itself to match.
 
 ### Announcements
 Display highly visible global status alerts or messages at the top of the dashboard.
@@ -145,7 +145,7 @@ services:
 - `url`: *(String)* The destination link when the card is clicked. This is also used for the backend health check if `server` is omitted.
 - `server`: *(String)* (Optional) A local IP or internal hostname for the backend to use strictly for health checks, bypassing the public `url`.
 - `category`: *(String)* The group this service belongs to. Used when grouping mode is enabled.
-- `pinned`: *(Boolean)* (Optional) Default is `false`. If set to `true`, the service will be pinned to a special 'Favorites' group at the very top of the dashboard.
+- `pinned`: *(Boolean)* (Optional) Default is `false`. If set to `true`, the service will be pinned to a special 'Favourites' group at the very top of the dashboard.
 - `logo`: *(String)* The exact filename of an image stored inside your local `logos/` directory.
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 - `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
