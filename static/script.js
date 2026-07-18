@@ -522,8 +522,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return headerRow;
             };
 
+            const createEmptyHeader = (isDesktopOnly) => {
+                const headerRow = document.createElement('div');
+                headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''} ${hasPingClass}`;
+                let html = '<div class="list-col"></div><div class="list-col"></div><div class="list-col"></div>';
+                if (showPing) html += '<div class="list-col"></div>';
+                headerRow.innerHTML = html;
+                return headerRow;
+            };
+
             table.appendChild(createHeader(false));
-            table.appendChild(createHeader(true));
+            table.appendChild(createEmptyHeader(true));
 
             let displayServices = [];
             if (isDesktop && sortedServices.length > 1) {
