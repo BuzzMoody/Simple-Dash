@@ -52,6 +52,7 @@ type Config struct {
 	Favicon       string         `yaml:"favicon" json:"favicon"`
 	NewTabs       *bool          `yaml:"new_tabs" json:"new_tabs"`
 	ShowOnlyDown  bool           `yaml:"show_only_down" json:"show_only_down"`
+	ShowPing      bool           `yaml:"show_ping" json:"show_ping"`
 	CategoryColors CategoryColorsConfig  `yaml:"category_colors" json:"category_colors"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
 	Buttons       []Button       `yaml:"buttons" json:"buttons"`
@@ -83,6 +84,7 @@ type Service struct {
 
 type ServiceStatus struct {
 	IsUp    bool              `json:"is_up"`
+	Latency int               `json:"latency,omitempty"`
 }
 
 var (
@@ -237,18 +239,23 @@ func checkHealth() {
 				pingUrl = srv.Server
 			}
 			
+			start := time.Now()
 			req, err := http.NewRequest("GET", pingUrl, nil)
 			isUp := false
+			latencyMs := 0
 			if err == nil {
 				if resp, err := client.Do(req); err == nil {
 					if resp.StatusCode < 500 {
 						isUp = true
 					}
 					resp.Body.Close()
+					if cfg.ShowPing {
+						latencyMs = int(time.Since(start).Milliseconds())
+					}
 				}
 			}
 
-			status := ServiceStatus{IsUp: isUp}
+			status := ServiceStatus{IsUp: isUp, Latency: latencyMs}
 
 			mu.Lock()
 			newStatus[srv.URL] = status

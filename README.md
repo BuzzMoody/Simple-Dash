@@ -84,6 +84,7 @@ footer: "&copy; 2026 Buzz Moody &middot; <a href='https://github.com/BuzzMoody'>
 favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
+show_ping: true
 category_colors:
   enabled: false
   titles: false
@@ -95,6 +96,7 @@ category_colors:
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
 - `show_only_down`: *(Boolean)* Default is `false`. If set to `true`, the UI will only display status indicators for services that are offline (hiding the green online dots).
+- `show_ping`: *(Boolean)* Default is `false`. If set to `true`, the UI will display the latency in milliseconds for online services instead of a green dot, color-coded based on response time.
 - `category_colors`: *(Boolean or Object)* Default is `false`. If set to `true`, cards will have uniquely generated colors based on their category. Can also be defined as a nested object to enable additional coloring options:
   - `enabled`: *(Boolean)* Colorizes service cards and category title borders.
   - `titles`: *(Boolean)* Colorizes the category title text itself to match.

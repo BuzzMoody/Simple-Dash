@@ -144,10 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     let statusObj = currentStatus[configUrl];
                     let isUp = false;
-                    if (typeof statusObj === 'boolean') {
-                        isUp = statusObj;
-                    } else if (statusObj && typeof statusObj === 'object') {
+                    let latency = null;
+                    if (statusObj && typeof statusObj === 'object') {
                         isUp = statusObj.is_up;
+                        if ('latency' in statusObj) {
+                            latency = statusObj.latency;
+                        }
                     }
 
                     let prevIsUp = false;
@@ -178,14 +180,31 @@ document.addEventListener('DOMContentLoaded', () => {
                                 card.appendChild(dot);
                             } else {
                                 dot.className = 'status-dot down';
+                                dot.textContent = '';
+                                dot.style.color = '';
                             }
                         }
                     } else {
                         if (!dot) {
                             dot = document.createElement('div');
-                            dot.className = isUp ? 'status-dot up' : 'status-dot down';
                             card.appendChild(dot);
+                        }
+                        
+                        if (currentConfig && currentConfig.show_ping && isUp && latency !== null) {
+                            dot.className = 'status-ping';
+                            dot.textContent = latency + 'ms';
+                            let pingColor = '#39c55c';
+                            if (latency > 300) {
+                                pingColor = '#d64242';
+                            } else if (latency > 150) {
+                                pingColor = '#f59e0b';
+                            } else if (latency > 50) {
+                                pingColor = '#eab308';
+                            }
+                            dot.style.color = pingColor;
                         } else {
+                            dot.textContent = '';
+                            dot.style.color = '';
                             dot.className = isUp ? 'status-dot up' : 'status-dot down';
                         }
                     }
@@ -391,6 +410,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (service.description) {
             card.setAttribute('data-tooltip', service.description);
         }
+
+        card.addEventListener('mousemove', (e) => {
+            requestAnimationFrame(() => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -10;
+                const rotateY = ((x - centerX) / centerX) * 10;
+                
+                card.style.setProperty('--rx', `${rotateX}deg`);
+                card.style.setProperty('--ry', `${rotateY}deg`);
+            });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.setProperty('--rx', `0deg`);
+            card.style.setProperty('--ry', `0deg`);
+        });
 
         return card;
     };
