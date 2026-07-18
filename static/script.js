@@ -60,10 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Grouping Toggle
     const updateGroupToggleButton = () => {
-        const span = groupToggle.querySelector('span');
-        if (span) {
-            span.textContent = groupBy === 'category' ? 'A-Z Sort' : 'Categories';
-        }
+        if (!groupToggle) return;
+        const iconFolder = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
+        const iconAZ = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10V5a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v5M11 7h4M11 13h8l-8 8h8M4 15l3 3 3-3M7 4v14"/></svg>`;
+        const text = groupBy === 'category' ? 'A-Z Sort' : 'Categories';
+        const svg = groupBy === 'category' ? iconAZ : iconFolder;
+        groupToggle.innerHTML = `${svg}<span>${text}</span>`;
         groupToggle.setAttribute('data-tooltip', groupBy === 'category' ? 'Sort Alphabetically' : 'Group by Categories');
     };
     
@@ -80,11 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateLayoutToggleButton = () => {
         if (!layoutToggle) return;
-        const span = layoutToggle.querySelector('span');
-        if (span) {
-            span.textContent = layout === 'grid' ? 'List' : 'Grid';
-        }
-        layoutToggle.setAttribute('data-tooltip', layout === 'grid' ? 'Switch to List View' : 'Switch to Grid View');
+        const iconList = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`;
+        const iconGrid = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`;
+        const text = layout === 'grid' ? 'List' : 'Groups';
+        const svg = layout === 'grid' ? iconList : iconGrid;
+        layoutToggle.innerHTML = `${svg}<span>${text}</span>`;
+        layoutToggle.setAttribute('data-tooltip', layout === 'grid' ? 'Switch to List View' : 'Switch to Groups View');
         
         if (layout === 'list') {
             document.body.classList.add('list-view');
