@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const configUrl = card.getAttribute('data-url');
                 if (!configUrl) return;
 
-                let dot = card.querySelector('.status-dot');
+                let dot = card.querySelector('.status-dot, .status-ping');
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     let statusObj = currentStatus[configUrl];
                     let isUp = false;
