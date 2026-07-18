@@ -5,9 +5,8 @@
     --card-border: #e4e4e7;
     --accent-color: #0ea5e9;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --hover-shadow-s: 89%;
-    --hover-shadow-l: 48%;
-    --hover-shadow-a: 0.2;
+    --default-hover-shadow: rgba(0, 0, 0, 0.15);
+    --default-hover-border: #ffffff;
 }
 
 body.dark-mode {
@@ -17,9 +16,8 @@ body.dark-mode {
     --card-border: #27272a;
     --accent-color: #38bdf8;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
-    --hover-shadow-s: 93%;
-    --hover-shadow-l: 60%;
-    --hover-shadow-a: 0.25;
+    --default-hover-shadow: rgba(255, 255, 255, 0.15);
+    --default-hover-border: rgba(255, 255, 255, 0.6);
 }
 
 body.dark-mode::before {
@@ -456,6 +454,8 @@ body.dark-mode .announcement.outage {
     transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--ty)) scale3d(var(--s), var(--s), 1);
     transition: transform 0.1s ease-out, box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s, background 0.2s, z-index 0s 0.2s;
     transform-style: preserve-3d;
+    backface-visibility: hidden;
+    outline: 1px solid transparent;
     will-change: transform;
 }
 
@@ -514,8 +514,8 @@ body.dark-mode [data-tooltip]::after {
 .service-card:focus {
     --ty: -3px;
     --s: 1.02;
-    box-shadow: 0 8px 15px hsla(var(--hover-hue, 199), var(--hover-shadow-s), var(--hover-shadow-l), var(--hover-shadow-a));
-    border-color: var(--hover-color, var(--accent-color));
+    box-shadow: 0 8px 15px var(--hover-shadow-color, var(--default-hover-shadow));
+    border-color: var(--hover-color, var(--default-hover-border));
     background: linear-gradient(145deg, var(--card-bg), rgba(255,255,255,0.05));
     outline: none;
     transition: transform 0.1s ease-out, box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s, background 0.2s, z-index 0s 0s;
@@ -858,6 +858,7 @@ body.dark-mode [data-tooltip]::after {
     top: -50%; left: -50%; right: -50%; bottom: -50%;
     background: conic-gradient(from 0deg, transparent 0%, #ff512f 25%, #f9d423 50%, #ff512f 75%, transparent 100%);
     animation: rotate-flare 3s linear infinite;
+    filter: blur(4px);
 }
 
 .flare-mask {

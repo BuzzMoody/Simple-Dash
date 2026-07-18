@@ -379,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
             const hue = getCategoryHue(groupKey);
             card.style.setProperty('--hover-color', `hsl(${hue}, 90%, 60%)`);
-            card.style.setProperty('--hover-hue', hue);
+            card.style.setProperty('--hover-shadow-color', `hsla(${hue}, 90%, 60%, 0.25)`);
         }
         if (currentConfig && currentConfig.new_tabs !== false) {
             card.target = '_blank';
