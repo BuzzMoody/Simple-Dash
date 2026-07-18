@@ -589,7 +589,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     iconHtml = `<span style="font-size: 1.1em">🌍</span>`;
                 }
-                nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>`;
+                let pinnedHtml = '';
+                if (service.pinned) {
+                    pinnedHtml = ` <span class="list-pinned-star">★</span>`;
+                }
+                nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>${pinnedHtml}`;
 
                 // desc col
                 const descCol = document.createElement('div');
@@ -626,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sortedServices.forEach(service => {
             let groupKey;
             if (service.pinned) {
-                groupKey = 'Favorites';
+                groupKey = 'Pinned';
                 hasPinned = true;
             } else if (groupBy === 'category') {
                 groupKey = service.category || 'Uncategorized';
@@ -643,10 +647,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let sortedGroupKeys = Object.keys(groups).sort();
         
-        // Ensure Favorites is always first
+        // Ensure Pinned is always first
         if (hasPinned) {
-            sortedGroupKeys = sortedGroupKeys.filter(k => k !== 'Favorites');
-            sortedGroupKeys.unshift('Favorites');
+            sortedGroupKeys = sortedGroupKeys.filter(k => k !== 'Pinned');
+            sortedGroupKeys.unshift('Pinned');
         }
 
         let cardIndex = 0;
@@ -654,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sortedGroupKeys.forEach(key => {
             const groupEl = document.createElement('div');
             groupEl.className = 'group';
-            if (key === 'Favorites') {
+            if (key === 'Pinned') {
                 groupEl.classList.add('favorites');
             }
 
@@ -665,12 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleSpan = document.createElement('span');
             titleSpan.textContent = key;
             
-            if (key === 'Favorites') {
-                // Special styling for favorites title
-                titleEl.style.setProperty('--title-border-img', `linear-gradient(to right, #ff512f, #f9d423) 1`);
-                titleSpan.style.color = '#ff512f';
-                titleSpan.innerHTML = '⭐ ' + key;
-            } else if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
+            if (currentConfig && currentConfig.category_colors && currentConfig.category_colors.enabled) {
                 const hue = getCategoryHue(key);
                 const gradient = `linear-gradient(to right, hsl(${hue}, 90%, 65%), hsl(${hue}, 90%, 35%))`;
                 titleEl.style.setProperty('--title-border-img', `${gradient} 1`);
