@@ -9,6 +9,8 @@
     --default-hover-border: #ffffff;
     --header-color-1: #38bdf8;
     --header-color-2: #a855f7;
+    --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
 }
 
 body.dark-mode {
@@ -20,6 +22,8 @@ body.dark-mode {
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
     --default-hover-shadow: rgba(255, 255, 255, 0.15);
     --default-hover-border: rgba(255, 255, 255, 0.6);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
 }
 
 body.dark-mode::before {
@@ -70,6 +74,26 @@ body {
 
 html {
     overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
 }
 
 body::before {
