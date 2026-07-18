@@ -928,9 +928,7 @@ body.dark-mode .list-table {
     .list-table.has-ping {
         grid-template-columns: max-content minmax(0, 1fr) max-content max-content max-content minmax(0, 1fr) max-content max-content;
     }
-    .desktop-only-header {
-        display: contents !important;
-    }
+    /* desktop-only-header inherits display: contents from .list-header */
 }
 
 .list-row {
@@ -986,8 +984,10 @@ body.dark-mode .list-table {
     letter-spacing: 0.5px;
     border-bottom: 1px solid var(--card-border);
 }
-.desktop-only-header {
-    display: none !important;
+@media (max-width: 1199px) {
+    .desktop-only-header {
+        display: none !important;
+    }
 }
 body.dark-mode .list-header > .list-col {
     background-color: rgba(255,255,255,0.03);
