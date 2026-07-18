@@ -782,6 +782,9 @@ body.dark-mode [data-tooltip]::after {
     .services-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
+    body:not(.list-view) .group.favorites .service-card {
+        flex-basis: 140px;
+    }
     .service-card {
         padding: 0.4rem 0.6rem;
     }
@@ -876,8 +879,7 @@ body:not(.list-view) .group.favorites .services-grid {
 }
 
 body:not(.list-view) .group.favorites .service-card {
-    flex: 1 1 320px;
-    max-width: 500px;
+    flex: 1 1 170px;
 }
 
 .flare-wrapper {
