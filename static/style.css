@@ -515,11 +515,31 @@ body.dark-mode [data-tooltip]::after {
     --ty: -3px;
     --s: 1.02;
     box-shadow: 0 8px 15px var(--hover-shadow-color, var(--default-hover-shadow));
-    border-color: var(--hover-color, var(--default-hover-border));
     background: linear-gradient(145deg, var(--card-bg), rgba(255,255,255,0.05));
     outline: none;
-    transition: transform 0.1s ease-out, box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s, background 0.2s, z-index 0s 0s;
+    transition: transform 0.1s ease-out, box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, z-index 0s 0s;
     z-index: 10;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--hover-color-1, var(--header-color-1, var(--default-hover-border))), var(--hover-color-2, var(--header-color-2, var(--default-hover-border))));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.service-card:hover::before,
+.service-card:focus::before {
+    opacity: 1;
 }
 
 .service-card:focus-visible {
