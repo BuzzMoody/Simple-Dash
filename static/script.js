@@ -526,23 +526,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let displayServices = [];
             if (isDesktop && sortedServices.length > 1) {
-                const half = Math.ceil(sortedServices.length / 2);
-                for (let i = 0; i < half; i++) {
-                    const isLastLeft = (i === half - 1);
-                    
-                    if (i + half < sortedServices.length) {
-                        const isLastRight = (i + half === sortedServices.length - 1);
+                const totalCells = sortedServices.length + 1; // +1 for the header
+                const leftItemsCount = Math.ceil(totalCells / 2) - 1;
+                const rightItemsCount = sortedServices.length - leftItemsCount;
+                const maxRows = Math.max(leftItemsCount, rightItemsCount);
+
+                for (let i = 0; i < maxRows; i++) {
+                    if (i < rightItemsCount) {
+                        const rightIndex = leftItemsCount + i;
                         displayServices.push({ 
-                            service: sortedServices[i + half], 
+                            service: sortedServices[rightIndex], 
                             side: 'right', 
-                            isLast: isLastRight 
+                            isLast: (rightIndex === sortedServices.length - 1) 
                         });
                     }
-                    displayServices.push({ 
-                        service: sortedServices[i], 
-                        side: 'left', 
-                        isLast: isLastLeft 
-                    });
+                    if (i < leftItemsCount) {
+                        displayServices.push({ 
+                            service: sortedServices[i], 
+                            side: 'left', 
+                            isLast: (i === leftItemsCount - 1) 
+                        });
+                    }
                 }
             } else {
                 displayServices = sortedServices.map((s, i) => ({ 
