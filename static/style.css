@@ -947,7 +947,7 @@ body.list-view #services-container {
 
 .list-table {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     overflow: hidden;
@@ -958,7 +958,7 @@ body.list-view #services-container {
     -webkit-backdrop-filter: blur(16px);
 }
 .list-table.has-ping {
-    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
 }
 body.dark-mode .list-table {
     background: rgba(24, 24, 27, 0.6);
@@ -997,7 +997,13 @@ body.dark-mode .list-table {
     border-bottom: none;
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 650px) {
+    .list-table {
+        grid-template-columns: max-content minmax(0, 1fr);
+    }
+    .list-table.has-ping {
+        grid-template-columns: max-content minmax(0, 1fr) max-content;
+    }
     .list-col.url {
         display: none;
     }
