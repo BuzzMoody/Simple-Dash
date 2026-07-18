@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 let pinnedHtml = '';
                 if (service.pinned) {
-                    pinnedHtml = ` <span class="list-pinned-star" style="background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset;"><svg viewBox="0 0 24 24" width="16" height="16" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.6V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.6a2 2 0 0 1-1.11 1.95l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg></span>`;
+                    pinnedHtml = ` <span class="list-pinned-star" style="background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset;"><svg viewBox="0 0 24 24" width="16" height="16" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5-1.5l1.5-4l4-4"/><line x1="9" y1="15" x2="4.5" y2="19.5"/><line x1="14.5" y1="4" x2="20" y2="9.5"/></svg></span>`;
                 }
                 nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>${pinnedHtml}`;
 
@@ -672,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
             titleSpan.style.gap = '0.5rem';
             
             if (key === 'Pinned') {
-                titleSpan.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.6V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.6a2 2 0 0 1-1.11 1.95l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg> <span>${key}</span>`;
+                titleSpan.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5-1.5l1.5-4l4-4"/><line x1="9" y1="15" x2="4.5" y2="19.5"/><line x1="14.5" y1="4" x2="20" y2="9.5"/></svg> <span>${key}</span>`;
             } else {
                 titleSpan.textContent = key;
             }
