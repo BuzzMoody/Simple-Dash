@@ -1006,6 +1006,7 @@ body.dark-mode .list-row:not(.list-header):hover > .list-col {
 .list-col.url {
     color: var(--accent-color);
     opacity: 0.8;
+    text-align: right;
 }
 .list-col.desc {
     opacity: 0.7;
