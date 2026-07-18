@@ -509,10 +509,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (layout === 'list') {
             const table = document.createElement('div');
-            table.className = 'list-table stagger-in';
-            
             const showPing = currentConfig && currentConfig.show_ping;
             const hasPingClass = showPing ? 'has-ping' : '';
+            table.className = `list-table stagger-in ${hasPingClass}`;
 
             const createHeader = (isDesktopOnly) => {
                 const headerRow = document.createElement('div');
