@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateClock = () => {
         if (!headerDesc) return;
-        const timeString = new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit', second: '2-digit'});
+        const timeString = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true});
         let descText = 'Loading...';
         if (currentConfig && currentConfig.description) {
             descText = currentConfig.description;
