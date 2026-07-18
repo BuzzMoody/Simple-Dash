@@ -515,7 +515,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const sortedServices = [...filteredServices].sort((a, b) => a.name.localeCompare(b.name));
+        const sortedServices = [...filteredServices].sort((a, b) => {
+            if (layout === 'list') {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+            }
+            return a.name.localeCompare(b.name);
+        });
         
         if (layout === 'list') {
             const table = document.createElement('div');
