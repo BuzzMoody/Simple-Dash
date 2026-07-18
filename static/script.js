@@ -88,6 +88,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    let isDesktop = window.innerWidth >= 1200;
+    window.addEventListener('resize', () => {
+        const nowDesktop = window.innerWidth >= 1200;
+        if (nowDesktop !== isDesktop) {
+            isDesktop = nowDesktop;
+            if (layout === 'list' && currentConfig) {
+                renderServices(currentConfig.services || []);
+            }
+        }
+    });
+
     if (layoutToggle) {
         updateLayoutToggleButton();
         layoutToggle.addEventListener('click', () => {
@@ -496,60 +507,73 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedServices = [...filteredServices].sort((a, b) => a.name.localeCompare(b.name));
         
         if (layout === 'list') {
-            const table = document.createElement('div');
-            table.className = 'list-table stagger-in';
-            
-            const headerRow = document.createElement('div');
-            headerRow.className = 'list-row list-header';
-            headerRow.innerHTML = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div><div class="list-col status"></div>';
-            table.appendChild(headerRow);
+            const createTable = (servicesChunk) => {
+                const table = document.createElement('div');
+                table.className = 'list-table stagger-in';
+                
+                const headerRow = document.createElement('div');
+                headerRow.className = 'list-row list-header';
+                headerRow.innerHTML = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div><div class="list-col status"></div>';
+                table.appendChild(headerRow);
 
-            sortedServices.forEach(service => {
-                const row = document.createElement('a');
-                row.className = 'list-row';
-                row.href = service.url;
-                row.setAttribute('data-url', service.url);
-                if (currentConfig && currentConfig.new_tabs !== false) {
-                    row.target = '_blank';
-                    row.rel = 'noopener noreferrer';
-                }
-
-                // name col
-                const nameCol = document.createElement('div');
-                nameCol.className = 'list-col name';
-                let iconHtml = '';
-                if (service.logo || service.logo_light || service.logo_dark) {
-                    const sLight = service.logo_light || service.logo;
-                    const sDark = service.logo_dark || service.logo;
-                    if (sLight && sDark && sLight !== sDark) {
-                        iconHtml = `<img src="logos/${sLight}" class="light-img" loading="lazy" alt=""><img src="logos/${sDark}" class="dark-img" loading="lazy" alt="">`;
-                    } else if (sLight) {
-                        iconHtml = `<img src="logos/${sLight}" loading="lazy" alt="">`;
+                servicesChunk.forEach(service => {
+                    const row = document.createElement('a');
+                    row.className = 'list-row';
+                    row.href = service.url;
+                    row.setAttribute('data-url', service.url);
+                    if (currentConfig && currentConfig.new_tabs !== false) {
+                        row.target = '_blank';
+                        row.rel = 'noopener noreferrer';
                     }
-                } else if (service.icon) {
-                    iconHtml = `<span style="font-size: 1.1em">${service.icon}</span>`;
-                } else {
-                    iconHtml = `<span style="font-size: 1.1em">🌍</span>`;
-                }
-                nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>`;
 
-                // desc col
-                const descCol = document.createElement('div');
-                descCol.className = 'list-col desc';
-                descCol.textContent = service.description || '';
+                    // name col
+                    const nameCol = document.createElement('div');
+                    nameCol.className = 'list-col name';
+                    let iconHtml = '';
+                    if (service.logo || service.logo_light || service.logo_dark) {
+                        const sLight = service.logo_light || service.logo;
+                        const sDark = service.logo_dark || service.logo;
+                        if (sLight && sDark && sLight !== sDark) {
+                            iconHtml = `<img src="logos/${sLight}" class="light-theme-logo" loading="lazy" alt=""><img src="logos/${sDark}" class="dark-theme-logo" loading="lazy" alt="">`;
+                        } else if (sLight) {
+                            iconHtml = `<img src="logos/${sLight}" loading="lazy" alt="">`;
+                        }
+                    } else if (service.icon) {
+                        iconHtml = `<span style="font-size: 1.1em">${service.icon}</span>`;
+                    } else {
+                        iconHtml = `<span style="font-size: 1.1em">🌍</span>`;
+                    }
+                    nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>`;
 
-                // url col
-                const urlCol = document.createElement('div');
-                urlCol.className = 'list-col url';
-                urlCol.textContent = service.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                    // desc col
+                    const descCol = document.createElement('div');
+                    descCol.className = 'list-col desc';
+                    descCol.textContent = service.description || '';
 
-                row.appendChild(nameCol);
-                row.appendChild(descCol);
-                row.appendChild(urlCol);
-                table.appendChild(row);
-            });
+                    // url col
+                    const urlCol = document.createElement('div');
+                    urlCol.className = 'list-col url';
+                    urlCol.textContent = service.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-            servicesContainer.appendChild(table);
+                    row.appendChild(nameCol);
+                    row.appendChild(descCol);
+                    row.appendChild(urlCol);
+                    table.appendChild(row);
+                });
+                return table;
+            };
+
+            if (isDesktop && sortedServices.length > 1) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'list-tables-container';
+                const half = Math.ceil(sortedServices.length / 2);
+                wrapper.appendChild(createTable(sortedServices.slice(0, half)));
+                wrapper.appendChild(createTable(sortedServices.slice(half)));
+                servicesContainer.appendChild(wrapper);
+            } else {
+                servicesContainer.appendChild(createTable(sortedServices));
+            }
+            
             updateStatusIndicators();
             return;
         }

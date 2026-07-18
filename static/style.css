@@ -902,6 +902,12 @@ body.list-view #services-container {
     display: block;
 }
 
+.list-tables-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
 .list-table {
     width: 100%;
     border-collapse: collapse;
@@ -911,10 +917,11 @@ body.list-view #services-container {
     overflow: hidden;
     margin-top: 1rem;
     box-shadow: var(--shadow);
+    align-self: start;
 }
 .list-row {
     display: grid;
-    grid-template-columns: minmax(150px, 20%) 1fr minmax(150px, 20%) auto;
+    grid-template-columns: minmax(150px, 25%) 1fr minmax(150px, 25%) 60px;
     align-items: center;
     padding: 0.5rem 1rem;
     border-bottom: 1px solid var(--card-border);
