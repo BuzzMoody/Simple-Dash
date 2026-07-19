@@ -947,7 +947,7 @@ body.list-view #services-container {
 
 .list-table {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-columns: max-content minmax(0, 1fr) auto;
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     overflow: hidden;
@@ -958,7 +958,7 @@ body.list-view #services-container {
     -webkit-backdrop-filter: blur(16px);
 }
 .list-table.has-ping {
-    grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
+    grid-template-columns: max-content minmax(0, 1fr) auto max-content;
 }
 body.dark-mode .list-table {
     background: rgba(24, 24, 27, 0.6);
@@ -966,10 +966,10 @@ body.dark-mode .list-table {
 
 @media (min-width: 1200px) {
     .list-table {
-        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content;
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto var(--name-col-width, max-content) minmax(0, 1fr) auto;
     }
     .list-table.has-ping {
-        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content max-content;
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto max-content var(--name-col-width, max-content) minmax(0, 1fr) auto max-content;
     }
     /* desktop-only-header inherits display: contents from .list-header */
 }
