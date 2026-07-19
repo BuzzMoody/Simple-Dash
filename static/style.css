@@ -645,7 +645,7 @@ body.dark-mode .card-tooltip {
     animation: status-pulse 2s infinite ease-in-out;
 }
 
-.status-ping {
+.list-row .status-ping {
     font-weight: 100;
 }
 
