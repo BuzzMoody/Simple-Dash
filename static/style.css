@@ -742,25 +742,27 @@ body.dark-mode .card-tooltip {
         flex-direction: row;
         align-items: center;
         margin-bottom: 1rem;
+        flex-wrap: nowrap;
     }
     .header-left {
         display: flex;
-        justify-content: space-between;
         align-items: center;
         text-align: left;
-        width: 100%;
-        min-width: 100%;
+        flex: 1;
+        min-width: 0;
     }
     .header-left > div {
         display: flex;
-        flex-direction: row;
-        align-items: baseline;
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
         width: 100%;
-        gap: 0.75rem;
+        gap: 0.25rem;
     }
     .mobile-menu-btn {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .header-right {
         position: fixed;
