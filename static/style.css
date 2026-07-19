@@ -1089,6 +1089,8 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
 /* Status dot overrides */
 .list-col.status {
     justify-content: flex-end;
+    overflow: visible;
+    min-width: max-content;
 }
 .list-row .status-dot {
     position: static;
