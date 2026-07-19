@@ -965,7 +965,7 @@ body.list-view #services-container {
 
 .list-table {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) auto;
+    grid-template-columns: max-content minmax(0, 1fr) auto max-content;
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     overflow: hidden;
@@ -975,16 +975,10 @@ body.list-view #services-container {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 }
-.list-table.has-ping {
-    grid-template-columns: max-content minmax(0, 1fr) auto max-content;
-}
 .list-table.hide-urls .list-col.url {
     display: none;
 }
 .list-table.hide-urls {
-    grid-template-columns: max-content minmax(0, 1fr);
-}
-.list-table.has-ping.hide-urls {
     grid-template-columns: max-content minmax(0, 1fr) max-content;
 }
 body.dark-mode .list-table {
@@ -993,15 +987,9 @@ body.dark-mode .list-table {
 
 @media (min-width: 1200px) {
     .list-table {
-        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto var(--name-col-width, max-content) minmax(0, 1fr) auto;
-    }
-    .list-table.has-ping {
         grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto max-content var(--name-col-width, max-content) minmax(0, 1fr) auto max-content;
     }
     .list-table.hide-urls {
-        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) var(--name-col-width, max-content) minmax(0, 1fr);
-    }
-    .list-table.has-ping.hide-urls {
         grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content;
     }
     /* desktop-only-header inherits display: contents from .list-header */
@@ -1051,12 +1039,8 @@ body.dark-mode .list-col {
 
 @media (min-width: 1200px) {
     /* Vertical separator for the left column and header */
-    .list-table:not(.has-ping) .list-row.left-column > .list-col:nth-child(3),
-    .list-table:not(.has-ping) .list-header > .list-col:nth-child(3) {
-        border-right: 1px solid var(--card-border);
-    }
-    .list-table.has-ping .list-row.left-column > .list-col:nth-child(4),
-    .list-table.has-ping .list-header > .list-col:nth-child(4) {
+    .list-table .list-row.left-column > .list-col:nth-child(4),
+    .list-table .list-header > .list-col:nth-child(4) {
         border-right: 1px solid var(--card-border);
     }
 }
@@ -1096,6 +1080,10 @@ body.dark-mode .list-row:not(.list-header):hover > .list-col {
 }
 .list-col.desc {
     color: color-mix(in srgb, var(--text-color) 70%, transparent);
+}
+.list-col.status {
+    justify-content: center;
+    position: relative;
 }
 .list-col.name {
     display: flex;

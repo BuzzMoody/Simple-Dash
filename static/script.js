@@ -570,14 +570,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (layout === 'list') {
             const table = document.createElement('div');
             const showPing = currentConfig && currentConfig.show_ping;
-            const hasPingClass = showPing ? 'has-ping' : '';
-            table.className = `list-table stagger-in ${hasPingClass}`;
+            table.className = `list-table stagger-in`;
 
             const createHeader = (isDesktopOnly) => {
                 const headerRow = document.createElement('div');
-                headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''} ${hasPingClass}`;
+                headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''}`;
                 let html = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div>';
-                if (showPing) html += '<div class="list-col status">PING</div>';
+                html += `<div class="list-col status">${showPing ? 'PING' : ''}</div>`;
                 headerRow.innerHTML = html;
                 return headerRow;
             };
@@ -619,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayServices.forEach(item => {
                 const service = item.service;
                 const row = document.createElement('a');
-                row.className = `list-row ${hasPingClass}`;
+                row.className = `list-row`;
                 if (item.side === 'left') row.classList.add('left-column');
                 if (item.isLast) row.classList.add('last-in-column');
                 row.href = service.url;
@@ -669,11 +668,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.appendChild(descCol);
                 row.appendChild(urlCol);
                 
-                if (showPing) {
-                    const statusCol = document.createElement('div');
-                    statusCol.className = 'list-col status';
-                    row.appendChild(statusCol);
-                }
+                const statusCol = document.createElement('div');
+                statusCol.className = 'list-col status';
+                row.appendChild(statusCol);
                 
                 table.appendChild(row);
             });
