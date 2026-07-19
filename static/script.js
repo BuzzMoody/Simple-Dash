@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateGroupToggleButton = () => {
         if (!groupToggle) return;
         const iconFolder = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
-        const iconAZ = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10V5a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v5M11 7h4M11 13h8l-8 8h8M4 15l3 3 3-3M7 4v14"/></svg>`;
+        const iconAZ = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 6h5"/></svg>`;
         const text = groupBy === 'category' ? 'A-Z Sort' : 'Categories';
         const svg = groupBy === 'category' ? iconAZ : iconFolder;
         groupToggle.innerHTML = `${svg}<span>${text}</span>`;
