@@ -767,7 +767,8 @@ body.dark-mode .card-tooltip {
     .header-right {
         position: fixed;
         top: 0;
-        right: -260px;
+        right: 0;
+        transform: translateX(110%);
         width: 240px;
         height: 100vh;
         background: color-mix(in srgb, var(--card-bg) 85%, transparent);
@@ -778,12 +779,13 @@ body.dark-mode .card-tooltip {
         flex-direction: column;
         align-items: stretch;
         gap: 1.5rem;
-        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
         box-shadow: -4px 0 15px rgba(0,0,0,0.3);
+        will-change: transform;
     }
     .header-right.show {
-        right: 0;
+        transform: translateX(0);
     }
     .close-menu-btn {
         display: block;
