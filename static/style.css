@@ -7,8 +7,8 @@
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     --default-hover-shadow: rgba(0, 0, 0, 0.15);
     --default-hover-border: #ffffff;
-    --header-color-1: #38bdf8;
-    --header-color-2: #a855f7;
+    --header-color-1: var(--accent-color);
+    --header-color-2: var(--accent-color);
     --scrollbar-thumb: rgba(0, 0, 0, 0.2);
     --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
 }
@@ -307,6 +307,7 @@ body.dark-mode .announcement.outage {
     position: relative;
     flex: 1;
     max-width: 300px;
+    border-radius: 0.5rem;
 }
 
 .search-icon {
@@ -381,8 +382,6 @@ body.dark-mode .announcement.outage {
 
 #search-input:focus {
     outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
 }
 
 html, body {
@@ -421,6 +420,10 @@ html, body {
     font-weight: 500;
     position: relative;
     transition: all 0.2s;
+}
+
+.toolbar-btn:focus-visible {
+    outline: none;
 }
 
 .toolbar-btn span {
@@ -585,12 +588,8 @@ body.dark-mode .card-tooltip {
 }
 
 .service-card:hover::before,
-.service-card:focus::before {
+.service-card:focus-visible::before {
     opacity: 1;
-}
-
-.service-card:focus-visible {
-    box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--accent-color);
 }
 
 .service-icon {
@@ -1146,4 +1145,46 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
     .container {
         max-width: 1536px;
     }
+}
+/* Universal Focus Outline Removal */
+*:focus-visible {
+    outline: none !important;
+}
+
+/* Base properties for gradient outline targets */
+.btn { position: relative; }
+.mobile-menu-btn, .close-menu-btn, .search-clear {
+    border-radius: 0.3rem;
+}
+
+/* Gradient Outline Shared Pseudo-element */
+.btn::before, 
+.toolbar-btn::before, 
+.search-container::before, 
+.mobile-menu-btn::before, 
+.close-menu-btn::before, 
+.search-clear::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--header-color-1, var(--accent-color)), var(--header-color-2, var(--accent-color)));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Trigger Gradient Outline */
+.btn:focus-visible::before, 
+.toolbar-btn:focus-visible::before, 
+.search-container:focus-within::before, 
+.mobile-menu-btn:focus-visible::before, 
+.close-menu-btn:focus-visible::before, 
+.search-clear:focus-visible::before {
+    opacity: 1;
 }
