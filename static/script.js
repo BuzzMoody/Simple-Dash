@@ -8,11 +8,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const servicesContainer = document.getElementById('services-container');
     const searchInput = document.getElementById('search-input');
     const searchClear = document.getElementById('search-clear');
+    
     let currentConfig = null;
     let currentSearchTerm = '';
     let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
     let layout = localStorage.getItem('dashy-layout') || 'grid'; // 'grid' or 'list'
     const layoutToggle = document.getElementById('layout-toggle');
+
+    const checkUrlVisibility = () => {
+        if (layout !== 'list') return;
+        const table = document.querySelector('.list-table');
+        if (!table) return;
+        
+        table.classList.remove('hide-urls');
+        void table.offsetWidth; 
+        
+        let isOverflowing = false;
+        const descCols = table.querySelectorAll('.list-col.desc');
+        for (const col of descCols) {
+            if (col.scrollWidth > col.clientWidth) {
+                isOverflowing = true;
+                break;
+            }
+        }
+        
+        if (isOverflowing) {
+            table.classList.add('hide-urls');
+        }
+    };
+
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(checkUrlVisibility, 50);
+    });
 
     const updateClock = () => {
         if (!headerDesc) return;
@@ -228,6 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentConfig && currentConfig.show_only_down && !showPing) {
                         if (isUp) {
                             if (dot) dot.remove();
+                            if (layout !== 'list') {
+                                const tp = card.querySelector('.tooltip-ping');
+                                if (tp) tp.innerHTML = '';
+                            }
                         } else {
                             if (!dot) {
                                 dot = document.createElement('div');
@@ -246,8 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         
                         if (showPing) {
-                            dot.className = 'status-ping';
-                            dot.textContent = latency + 'ms';
                             let pingColor = '#39c55c';
                             if (latency > 300) {
                                 pingColor = '#d64242';
@@ -256,11 +287,28 @@ document.addEventListener('DOMContentLoaded', () => {
                             } else if (latency > 50) {
                                 pingColor = '#eab308';
                             }
-                            dot.style.color = pingColor;
+
+                            if (layout === 'list') {
+                                dot.className = 'status-ping';
+                                dot.textContent = latency + 'ms';
+                                dot.style.color = pingColor;
+                            } else {
+                                dot.textContent = '';
+                                dot.style.color = '';
+                                dot.className = isUp ? 'status-dot up' : 'status-dot down';
+                                const tp = card.querySelector('.tooltip-ping');
+                                if (tp) {
+                                    tp.innerHTML = ` &bull; <span style="color: ${pingColor}">${latency}ms</span>`;
+                                }
+                            }
                         } else {
                             dot.textContent = '';
                             dot.style.color = '';
                             dot.className = isUp ? 'status-dot up' : 'status-dot down';
+                            if (layout !== 'list') {
+                                const tp = card.querySelector('.tooltip-ping');
+                                if (tp) tp.innerHTML = '';
+                            }
                         }
                     }
 
@@ -471,8 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.appendChild(flare);
         }
 
-        if (service.description) {
-            card.setAttribute('data-tooltip', service.description);
+        const tooltip = document.createElement('div');
+        tooltip.className = 'card-tooltip';
+        tooltip.innerHTML = `<span class="tooltip-desc">${service.description || ''}</span><span class="tooltip-ping"></span>`;
+        if (service.description || (currentConfig && currentConfig.show_ping)) {
+            card.appendChild(tooltip);
         }
 
         card.addEventListener('mousemove', (e) => {
@@ -535,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const headerRow = document.createElement('div');
                 headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''} ${hasPingClass}`;
                 let html = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div>';
-                if (showPing) html += '<div class="list-col status"></div>';
+                if (showPing) html += '<div class="list-col status">PING</div>';
                 headerRow.innerHTML = html;
                 return headerRow;
             };
@@ -649,7 +700,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (maxNameWidth > 0) {
                         table.style.setProperty('--name-col-width', `${Math.ceil(maxNameWidth)}px`);
                     }
+                    checkUrlVisibility();
                 });
+            } else {
+                requestAnimationFrame(checkUrlVisibility);
             }
             
             updateStatusIndicators();

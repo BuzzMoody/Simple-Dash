@@ -506,6 +506,9 @@ html, body {
 
 [data-tooltip]::after {
     content: attr(data-tooltip);
+}
+[data-tooltip]::after,
+.card-tooltip {
     position: absolute;
     bottom: 100%;
     left: 50%;
@@ -528,12 +531,15 @@ html, body {
     z-index: 100;
 }
 
-body.dark-mode [data-tooltip]::after {
+body.dark-mode [data-tooltip]::after,
+body.dark-mode .card-tooltip {
     background: rgba(30, 30, 30, 0.85);
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
 
-[data-tooltip]:hover::after {
+[data-tooltip]:hover::after,
+.service-card:hover .card-tooltip,
+.service-card:focus .card-tooltip {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(-8px);
@@ -960,6 +966,15 @@ body.list-view #services-container {
 .list-table.has-ping {
     grid-template-columns: max-content minmax(0, 1fr) auto max-content;
 }
+.list-table.hide-urls .list-col.url {
+    display: none;
+}
+.list-table.hide-urls {
+    grid-template-columns: max-content minmax(0, 1fr);
+}
+.list-table.has-ping.hide-urls {
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+}
 body.dark-mode .list-table {
     background: rgba(24, 24, 27, 0.6);
 }
@@ -970,6 +985,12 @@ body.dark-mode .list-table {
     }
     .list-table.has-ping {
         grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto max-content var(--name-col-width, max-content) minmax(0, 1fr) auto max-content;
+    }
+    .list-table.hide-urls {
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) var(--name-col-width, max-content) minmax(0, 1fr);
+    }
+    .list-table.has-ping.hide-urls {
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content;
     }
     /* desktop-only-header inherits display: contents from .list-header */
 }
