@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const buildTable = (forceSingleCol) => {
                 const table = document.createElement('div');
-                table.className = `list-table stagger-in ${forceSingleCol ? 'single-col' : ''}`;
+                table.className = `list-table stagger-in${forceSingleCol ? ' single-col' : ''}`;
 
                 const createHeader = (isDesktopOnly) => {
                     const headerRow = document.createElement('div');
@@ -587,7 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let displayServices = [];
                 if (isDesktop && sortedServices.length > 1 && !forceSingleCol) {
-                    table.appendChild(createHeader(true));
                     const totalCells = sortedServices.length + 1; // +1 for the header
                     const leftItemsCount = Math.ceil(totalCells / 2) - 1;
                     const rightItemsCount = sortedServices.length - leftItemsCount;
