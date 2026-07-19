@@ -223,7 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const targetContainer = layout === 'list' && card.querySelector('.list-col.status') ? card.querySelector('.list-col.status') : card;
-                    if (currentConfig && currentConfig.show_only_down) {
+                    const showPing = currentConfig && currentConfig.show_ping && isUp && latency !== null;
+
+                    if (currentConfig && currentConfig.show_only_down && !showPing) {
                         if (isUp) {
                             if (dot) dot.remove();
                         } else {
@@ -243,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetContainer.appendChild(dot);
                         }
                         
-                        if (currentConfig && currentConfig.show_ping && isUp && latency !== null) {
+                        if (showPing) {
                             dot.className = 'status-ping';
                             dot.textContent = latency + 'ms';
                             let pingColor = '#39c55c';
