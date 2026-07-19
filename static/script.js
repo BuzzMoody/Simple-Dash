@@ -253,62 +253,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const targetContainer = layout === 'list' && card.querySelector('.list-col.status') ? card.querySelector('.list-col.status') : card;
                     const showPing = currentConfig && currentConfig.show_ping && isUp && latency !== null;
+                    const showDot = isUp ? !(currentConfig && currentConfig.show_only_down) : true;
+                    
+                    if (dot) dot.remove();
+                    dot = null;
 
-                    if (currentConfig && currentConfig.show_only_down && !showPing) {
-                        if (isUp) {
-                            if (dot) dot.remove();
-                            if (layout !== 'list') {
-                                const tp = card.querySelector('.tooltip-ping');
-                                if (tp) tp.innerHTML = '';
-                            }
-                        } else {
-                            if (!dot) {
-                                dot = document.createElement('div');
-                                dot.className = 'status-dot down';
-                                targetContainer.appendChild(dot);
-                            } else {
-                                dot.className = 'status-dot down';
-                                dot.textContent = '';
-                                dot.style.color = '';
-                            }
-                        }
-                    } else {
-                        if (!dot) {
-                            dot = document.createElement('div');
-                            targetContainer.appendChild(dot);
-                        }
-                        
-                        if (showPing) {
-                            let pingColor = '#39c55c';
-                            if (latency > 300) {
-                                pingColor = '#d64242';
-                            } else if (latency > 150) {
-                                pingColor = '#f59e0b';
-                            } else if (latency > 50) {
-                                pingColor = '#eab308';
-                            }
+                    if (showDot || (layout === 'list' && showPing)) {
+                        dot = document.createElement('div');
+                        targetContainer.appendChild(dot);
+                    }
 
-                            if (layout === 'list') {
+                    // Reset tooltips
+                    if (layout !== 'list') {
+                        const tp = card.querySelector('.tooltip-ping');
+                        if (tp) tp.innerHTML = '';
+                    }
+                    
+                    if (showPing) {
+                        let pingColor = '#39c55c';
+                        if (latency > 300) {
+                            pingColor = '#d64242';
+                        } else if (latency > 150) {
+                            pingColor = '#f59e0b';
+                        } else if (latency > 50) {
+                            pingColor = '#eab308';
+                        }
+
+                        if (layout === 'list') {
+                            if (dot) {
                                 dot.className = 'status-ping';
                                 dot.textContent = latency + 'ms';
                                 dot.style.color = pingColor;
-                            } else {
-                                dot.textContent = '';
-                                dot.style.color = '';
-                                dot.className = isUp ? 'status-dot up' : 'status-dot down';
-                                const tp = card.querySelector('.tooltip-ping');
-                                if (tp) {
-                                    tp.innerHTML = ` &bull; <span style="color: ${pingColor}">${latency}ms</span>`;
-                                }
                             }
                         } else {
-                            dot.textContent = '';
-                            dot.style.color = '';
-                            dot.className = isUp ? 'status-dot up' : 'status-dot down';
-                            if (layout !== 'list') {
-                                const tp = card.querySelector('.tooltip-ping');
-                                if (tp) tp.innerHTML = '';
+                            const tp = card.querySelector('.tooltip-ping');
+                            if (tp) {
+                                tp.innerHTML = ` &bull; <span style="color: ${pingColor}">${latency}ms</span>`;
                             }
+                            if (dot && showDot) {
+                                dot.className = 'status-dot up';
+                            }
+                        }
+                    } else {
+                        if (dot && showDot) {
+                            dot.className = isUp ? 'status-dot up' : 'status-dot down';
                         }
                     }
 
