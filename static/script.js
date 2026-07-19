@@ -514,8 +514,10 @@ document.addEventListener('DOMContentLoaded', () => {
             card.appendChild(tooltip);
         }
 
+        let hoverFrame;
         card.addEventListener('mousemove', (e) => {
-            requestAnimationFrame(() => {
+            if (hoverFrame) cancelAnimationFrame(hoverFrame);
+            hoverFrame = requestAnimationFrame(() => {
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -532,6 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         card.addEventListener('mouseleave', () => {
+            if (hoverFrame) cancelAnimationFrame(hoverFrame);
             card.style.setProperty('--rx', `0deg`);
             card.style.setProperty('--ry', `0deg`);
         });
