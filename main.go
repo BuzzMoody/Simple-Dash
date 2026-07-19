@@ -252,6 +252,9 @@ func checkHealth() {
 					resp.Body.Close()
 					if cfg.ShowPing {
 						latencyMs = int(time.Since(start).Milliseconds())
+						if latencyMs == 0 {
+							latencyMs = 1
+						}
 					}
 				}
 			}
