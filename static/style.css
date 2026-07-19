@@ -560,10 +560,10 @@ body.dark-mode [data-tooltip]::after {
     content: '';
     position: absolute;
     inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, var(--hover-color-1, var(--header-color-1, var(--default-hover-border))), var(--hover-color-2, var(--header-color-2, var(--default-hover-border))));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    border-radius: calc(0.5rem + 1px);
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, var(--hover-color-1, var(--header-color-1, var(--default-hover-border))), var(--hover-color-2, var(--header-color-2, var(--default-hover-border)))) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
