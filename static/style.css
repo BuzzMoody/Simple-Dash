@@ -501,8 +501,8 @@ html, body {
 }
 
 @keyframes stagger-fade-up {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; translate: 0 15px; }
+    to { opacity: 1; translate: 0 0; }
 }
 
 .stagger-in {
@@ -643,6 +643,10 @@ body.dark-mode .card-tooltip {
     background: #d64242;
     box-shadow: 0 0 6px rgba(214, 66, 66, 0.6);
     animation: status-pulse 2s infinite ease-in-out;
+}
+
+.status-ping {
+    font-weight: 100;
 }
 
 @keyframes status-pulse {
@@ -1062,7 +1066,7 @@ body.dark-mode .list-col {
 }
 .list-header > .list-col {
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--text-color) !important;
     background-color: rgba(0,0,0,0.02);
     text-transform: uppercase;
     font-size: 0.75rem;

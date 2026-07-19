@@ -282,13 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (layout === 'list') {
                             if (dot) {
                                 dot.className = 'status-ping';
-                                dot.textContent = latency + 'ms';
+                                dot.textContent = latency + ' ms';
                                 dot.style.color = pingColor;
                             }
                         } else {
                             const tp = card.querySelector('.tooltip-ping');
                             if (tp) {
-                                tp.innerHTML = ` &bull; <span style="color: ${pingColor}">${latency}ms</span>`;
+                                tp.innerHTML = ` &bull; <span style="color: ${pingColor}">${latency} ms</span>`;
                             }
                             if (dot && showDot) {
                                 dot.className = 'status-dot up';
