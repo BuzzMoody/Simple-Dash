@@ -989,8 +989,14 @@ body.dark-mode .list-table {
     .list-table {
         grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto max-content var(--name-col-width, max-content) minmax(0, 1fr) auto max-content;
     }
+    .list-table.single-col {
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) auto max-content;
+    }
     .list-table.hide-urls {
         grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content var(--name-col-width, max-content) minmax(0, 1fr) max-content;
+    }
+    .list-table.single-col.hide-urls {
+        grid-template-columns: var(--name-col-width, max-content) minmax(0, 1fr) max-content;
     }
     /* desktop-only-header inherits display: contents from .list-header */
 }
@@ -1039,8 +1045,8 @@ body.dark-mode .list-col {
 
 @media (min-width: 1200px) {
     /* Vertical separator for the left column and header */
-    .list-table .list-row.left-column > .list-col:nth-child(4),
-    .list-table .list-header > .list-col:nth-child(4) {
+    .list-table:not(.single-col) .list-row.left-column > .list-col:nth-child(4),
+    .list-table:not(.single-col) .list-header > .list-col:nth-child(4) {
         border-right: 1px solid var(--card-border);
     }
 }

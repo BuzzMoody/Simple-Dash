@@ -568,52 +568,55 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         if (layout === 'list') {
-            const table = document.createElement('div');
             const showPing = currentConfig && currentConfig.show_ping;
-            table.className = `list-table stagger-in`;
+            
+            const buildTable = (forceSingleCol) => {
+                const table = document.createElement('div');
+                table.className = `list-table stagger-in ${forceSingleCol ? 'single-col' : ''}`;
 
-            const createHeader = (isDesktopOnly) => {
-                const headerRow = document.createElement('div');
-                headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''}`;
-                let html = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div>';
-                html += `<div class="list-col status">${showPing ? 'PING' : ''}</div>`;
-                headerRow.innerHTML = html;
-                return headerRow;
-            };
+                const createHeader = (isDesktopOnly) => {
+                    const headerRow = document.createElement('div');
+                    headerRow.className = `list-row list-header ${isDesktopOnly ? 'desktop-only-header' : ''}`;
+                    let html = '<div class="list-col name">Name</div><div class="list-col desc">Description</div><div class="list-col url">URL</div>';
+                    html += `<div class="list-col status">${showPing ? 'PING' : ''}</div>`;
+                    headerRow.innerHTML = html;
+                    return headerRow;
+                };
 
-            table.appendChild(createHeader());
+                table.appendChild(createHeader());
 
-            let displayServices = [];
-            if (isDesktop && sortedServices.length > 1) {
-                const totalCells = sortedServices.length + 1; // +1 for the header
-                const leftItemsCount = Math.ceil(totalCells / 2) - 1;
-                const rightItemsCount = sortedServices.length - leftItemsCount;
-                const maxRows = Math.max(leftItemsCount, rightItemsCount);
+                let displayServices = [];
+                if (isDesktop && sortedServices.length > 1 && !forceSingleCol) {
+                    table.appendChild(createHeader(true));
+                    const totalCells = sortedServices.length + 1; // +1 for the header
+                    const leftItemsCount = Math.ceil(totalCells / 2) - 1;
+                    const rightItemsCount = sortedServices.length - leftItemsCount;
+                    const maxRows = Math.max(leftItemsCount, rightItemsCount);
 
-                for (let i = 0; i < maxRows; i++) {
-                    if (i < rightItemsCount) {
-                        const rightIndex = leftItemsCount + i;
-                        displayServices.push({ 
-                            service: sortedServices[rightIndex], 
-                            side: 'right', 
-                            isLast: (rightIndex === sortedServices.length - 1) 
-                        });
+                    for (let i = 0; i < maxRows; i++) {
+                        if (i < rightItemsCount) {
+                            const rightIndex = leftItemsCount + i;
+                            displayServices.push({ 
+                                service: sortedServices[rightIndex], 
+                                side: 'right', 
+                                isLast: (rightIndex === sortedServices.length - 1) 
+                            });
+                        }
+                        if (i < leftItemsCount) {
+                            displayServices.push({ 
+                                service: sortedServices[i], 
+                                side: 'left', 
+                                isLast: (i === leftItemsCount - 1) 
+                            });
+                        }
                     }
-                    if (i < leftItemsCount) {
-                        displayServices.push({ 
-                            service: sortedServices[i], 
-                            side: 'left', 
-                            isLast: (i === leftItemsCount - 1) 
-                        });
-                    }
+                } else {
+                    displayServices = sortedServices.map((s, i) => ({ 
+                        service: s, 
+                        side: 'left', 
+                        isLast: i === sortedServices.length - 1 
+                    }));
                 }
-            } else {
-                displayServices = sortedServices.map((s, i) => ({ 
-                    service: s, 
-                    side: 'left', 
-                    isLast: i === sortedServices.length - 1 
-                }));
-            }
 
             displayServices.forEach(item => {
                 const service = item.service;
@@ -674,25 +677,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 table.appendChild(row);
             });
+            
+            return table;
+        };
 
-            servicesContainer.appendChild(table);
+        let table = buildTable(isDesktop);
+        servicesContainer.appendChild(table);
 
-            if (isDesktop && sortedServices.length > 1) {
-                requestAnimationFrame(() => {
-                    let maxNameWidth = 0;
-                    const nameCols = table.querySelectorAll('.list-col.name');
-                    nameCols.forEach(col => {
-                        const w = col.getBoundingClientRect().width;
-                        if (w > maxNameWidth) maxNameWidth = w;
-                    });
-                    if (maxNameWidth > 0) {
-                        table.style.setProperty('--name-col-width', `${Math.ceil(maxNameWidth)}px`);
-                    }
-                    checkUrlVisibility();
-                });
-            } else {
-                requestAnimationFrame(checkUrlVisibility);
+        if (isDesktop && sortedServices.length > 1) {
+            // Check if 1-column layout causes vertical overflow on the page
+            if (document.documentElement.scrollHeight > document.documentElement.clientHeight) {
+                table.remove();
+                table = buildTable(false); // Rebuild as 2-column fallback
+                servicesContainer.appendChild(table);
             }
+
+            requestAnimationFrame(() => {
+                let maxNameWidth = 0;
+                const nameCols = table.querySelectorAll('.list-col.name');
+                nameCols.forEach(col => {
+                    const w = col.getBoundingClientRect().width;
+                    if (w > maxNameWidth) maxNameWidth = w;
+                });
+                if (maxNameWidth > 0) {
+                    table.style.setProperty('--name-col-width', `${Math.ceil(maxNameWidth)}px`);
+                }
+                checkUrlVisibility();
+            });
+        } else {
+            requestAnimationFrame(checkUrlVisibility);
+        }
             
             updateStatusIndicators();
             return;
