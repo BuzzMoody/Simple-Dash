@@ -1081,7 +1081,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const groupResizeObserver = new ResizeObserver(window.updateGroupTitles);
 
-    const servicesContainer = document.getElementById('services-container');
     if (servicesContainer) {
         groupResizeObserver.observe(servicesContainer);
     }
