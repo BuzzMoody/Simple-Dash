@@ -170,8 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 currentSearchTerm = e.target.value.toLowerCase();
-                if (currentConfig) {
-                    renderServices(currentConfig.services || []);
+                if (currentConfig && typeof window.applySearchFilter === 'function') {
+                    window.applySearchFilter();
                 }
             }, 150);
         });
@@ -548,21 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderServices = (services) => {
         servicesContainer.innerHTML = '';
         
-        let filteredServices = services;
-        if (currentSearchTerm) {
-            filteredServices = services.filter(s => 
-                s.name.toLowerCase().includes(currentSearchTerm) || 
-                (s.description && s.description.toLowerCase().includes(currentSearchTerm)) ||
-                (s.category && s.category.toLowerCase().includes(currentSearchTerm))
-            );
-        }
-
-        if (filteredServices.length === 0 && currentSearchTerm) {
-            servicesContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 2rem;">No services match your search.</div>';
-            return;
-        }
-
-        const sortedServices = [...filteredServices].sort((a, b) => {
+        let sortedServices = [...services].sort((a, b) => {
             if (layout === 'list') {
                 if (a.pinned && !b.pinned) return -1;
                 if (!a.pinned && b.pinned) return 1;
@@ -804,8 +790,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         updateStatusIndicators();
-        if (typeof updateGroupTitles === 'function') {
-            // Need a slight delay to ensure DOM has rendered to measure layout
+        if (typeof window.applySearchFilter === 'function') {
+            window.applySearchFilter();
+        } else if (typeof updateGroupTitles === 'function') {
             setTimeout(updateGroupTitles, 50);
         }
     };
@@ -970,6 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         document.querySelectorAll('.group').forEach(group => {
+            if (group.style.display === 'none') return;
             const title = group.querySelector('.group-title');
             const grid = group.querySelector('.services-grid');
             if (!title || !grid) return;
@@ -994,6 +982,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 title.style.width = '';
             }
         });
+    };
+
+    window.applySearchFilter = () => {
+        const term = currentSearchTerm;
+        let visibleCount = 0;
+        
+        document.querySelectorAll('.service-card, .list-row:not(.list-header)').forEach(card => {
+            const desc = card.getAttribute('data-desc') || '';
+            const nameEl = card.querySelector('.service-name, .list-col.name');
+            const text = ((nameEl ? nameEl.textContent : card.textContent) + ' ' + desc).toLowerCase();
+            
+            let category = '';
+            const group = card.closest('.group');
+            if (group) {
+                const titleSpan = group.querySelector('.group-title span');
+                if (titleSpan) category = titleSpan.textContent.toLowerCase();
+            }
+            
+            if (!term || text.includes(term) || category.includes(term)) {
+                if (card.classList.contains('search-hidden') || card.style.display === 'none') {
+                    card.style.display = '';
+                    card.classList.remove('search-hidden');
+                    card.style.animation = 'none'; // reset
+                    void card.offsetWidth; // trigger reflow
+                    card.style.animation = 'simple-fade-in 0.3s forwards';
+                }
+                visibleCount++;
+            } else {
+                if (!card.classList.contains('search-hidden')) {
+                    card.style.animation = 'fade-out-shrink 0.3s forwards';
+                    card.classList.add('search-hidden');
+                    setTimeout(() => {
+                        if (card.classList.contains('search-hidden')) {
+                            card.style.display = 'none';
+                            if (typeof window.updateGroupTitles === 'function') window.updateGroupTitles();
+                        }
+                    }, 300);
+                }
+            }
+        });
+        
+        document.querySelectorAll('.group').forEach(group => {
+            const visibleCards = Array.from(group.querySelectorAll('.service-card')).filter(c => !c.classList.contains('search-hidden'));
+            if (visibleCards.length > 0 || !term) {
+                if (group.classList.contains('search-hidden') || group.style.display === 'none') {
+                    group.style.display = '';
+                    group.classList.remove('search-hidden');
+                    group.style.animation = 'none';
+                    void group.offsetWidth;
+                    group.style.animation = 'simple-fade-in 0.3s forwards';
+                }
+            } else {
+                if (!group.classList.contains('search-hidden')) {
+                    group.style.animation = 'fade-out-shrink 0.3s forwards';
+                    group.classList.add('search-hidden');
+                    setTimeout(() => {
+                        if (group.classList.contains('search-hidden')) {
+                            group.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }
+        });
+
+        let noRes = document.getElementById('no-results-msg');
+        if (visibleCount === 0 && term) {
+            if (!noRes) {
+                noRes = document.createElement('div');
+                noRes.id = 'no-results-msg';
+                noRes.style.textAlign = 'center';
+                noRes.style.opacity = '0';
+                noRes.style.animation = 'simple-fade-in 0.3s forwards';
+                noRes.style.padding = '2rem';
+                noRes.textContent = 'No services match your search.';
+                servicesContainer.appendChild(noRes);
+            }
+            noRes.style.display = '';
+        } else if (noRes) {
+            noRes.style.display = 'none';
+        }
+        
+        if (typeof window.updateGroupTitles === 'function') {
+            setTimeout(window.updateGroupTitles, 350);
+        }
     };
 
     const groupResizeObserver = new ResizeObserver(window.updateGroupTitles);
