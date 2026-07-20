@@ -266,7 +266,6 @@ body.dark-mode .announcement.outage {
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow);
-    border-color: var(--accent-color);
 }
 
 .btn-logo {
@@ -1181,6 +1180,7 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
 
 /* Trigger Gradient Outline */
 .btn:focus-visible::before, 
+.btn:hover::before,
 .toolbar-btn:focus-visible::before, 
 .search-container:focus-within::before, 
 .mobile-menu-btn:focus-visible::before, 
