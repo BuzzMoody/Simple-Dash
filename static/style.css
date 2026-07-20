@@ -1183,7 +1183,9 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
 .btn:focus-visible::before, 
 .btn:hover::before,
 .toolbar-btn:focus-visible::before, 
+.toolbar-btn:hover::before,
 .search-container:focus-within::before, 
+.search-container:hover::before,
 .mobile-menu-btn:focus-visible::before, 
 .close-menu-btn:focus-visible::before, 
 .search-clear:focus-visible::before {
