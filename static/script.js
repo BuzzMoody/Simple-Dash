@@ -804,6 +804,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         updateStatusIndicators();
+        if (typeof updateGroupTitles === 'function') {
+            // Need a slight delay to ensure DOM has rendered to measure layout
+            setTimeout(updateGroupTitles, 50);
+        }
     };
 
     fetchConfig();
@@ -958,7 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const groupResizeObserver = new ResizeObserver(() => {
+    window.updateGroupTitles = () => {
         if (layout === 'list') {
             document.querySelectorAll('.group-title').forEach(title => {
                 title.style.width = '';
@@ -990,7 +994,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 title.style.width = '';
             }
         });
-    });
+    };
+
+    const groupResizeObserver = new ResizeObserver(window.updateGroupTitles);
 
     const servicesContainer = document.getElementById('services-container');
     if (servicesContainer) {
