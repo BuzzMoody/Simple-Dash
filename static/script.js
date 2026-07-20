@@ -1004,14 +1004,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (card.classList.contains('search-hidden') || card.style.display === 'none') {
                     card.style.display = '';
                     card.classList.remove('search-hidden');
-                    card.style.animation = 'none'; // reset
-                    void card.offsetWidth; // trigger reflow
-                    card.style.animation = 'simple-fade-in 0.3s forwards';
+                    
+                    if (card.classList.contains('list-row')) {
+                        Array.from(card.children).forEach(child => {
+                            child.style.animation = 'none';
+                            void child.offsetWidth;
+                            child.style.animation = 'simple-fade-in 0.3s forwards';
+                        });
+                    } else {
+                        card.style.animation = 'none';
+                        void card.offsetWidth;
+                        card.style.animation = 'simple-fade-in 0.3s forwards';
+                    }
                 }
                 visibleCount++;
             } else {
                 if (!card.classList.contains('search-hidden')) {
-                    card.style.animation = 'fade-out-shrink 0.3s forwards';
+                    if (card.classList.contains('list-row')) {
+                        Array.from(card.children).forEach(child => {
+                            child.style.animation = 'fade-out-shrink 0.3s forwards';
+                        });
+                    } else {
+                        card.style.animation = 'fade-out-shrink 0.3s forwards';
+                    }
                     card.classList.add('search-hidden');
                     setTimeout(() => {
                         if (card.classList.contains('search-hidden')) {
