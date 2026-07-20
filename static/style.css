@@ -1192,3 +1192,34 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
 .search-clear:focus-visible::before {
     opacity: 1;
 }
+
+#no-results-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem;
+    color: var(--text-color);
+    opacity: 0;
+    animation: simple-fade-in 0.4s ease-out forwards;
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    opacity: 0.15;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+}
+
+.empty-state-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.empty-state-text {
+    font-size: 1.5rem;
+    font-weight: 300;
+    opacity: 0.7;
+    letter-spacing: 0.5px;
+}

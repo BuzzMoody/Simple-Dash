@@ -1051,14 +1051,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!noRes) {
                 noRes = document.createElement('div');
                 noRes.id = 'no-results-msg';
-                noRes.style.textAlign = 'center';
-                noRes.style.opacity = '0';
-                noRes.style.animation = 'simple-fade-in 0.3s forwards';
-                noRes.style.padding = '2rem';
-                noRes.textContent = 'No services match your search.';
+                noRes.innerHTML = `
+                    <div class="empty-state-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="2" width="18" height="20" rx="2" ry="2"></rect>
+                            <line x1="3" y1="8" x2="21" y2="8"></line>
+                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                            <circle cx="7" cy="5" r="1"></circle>
+                            <line x1="11" y1="5" x2="17" y2="5"></line>
+                            <circle cx="7" cy="11.5" r="1"></circle>
+                            <line x1="11" y1="11.5" x2="17" y2="11.5"></line>
+                            <circle cx="7" cy="18" r="1"></circle>
+                            <line x1="11" y1="18" x2="17" y2="18"></line>
+                        </svg>
+                    </div>
+                    <div class="empty-state-text">No services match your search</div>
+                `;
                 servicesContainer.appendChild(noRes);
             }
-            noRes.style.display = '';
+            noRes.style.display = 'flex';
         } else if (noRes) {
             noRes.style.display = 'none';
         }
