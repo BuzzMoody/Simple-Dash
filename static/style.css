@@ -1168,9 +1168,9 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, var(--header-color-1, var(--accent-color)), var(--header-color-2, var(--accent-color)));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, var(--header-color-1, var(--accent-color)), var(--header-color-2, var(--accent-color))) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
