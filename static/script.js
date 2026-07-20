@@ -268,8 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Reset tooltips
                     if (layout !== 'list') {
-                        const tp = card.querySelector('.tooltip-ping');
-                        if (tp) tp.innerHTML = '';
+                        const desc = card.getAttribute('data-desc');
+                        if (desc) card.setAttribute('data-tooltip', desc);
+                        else card.removeAttribute('data-tooltip');
                     }
                     
                     if (showPing) {
@@ -289,10 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 dot.style.color = pingColor;
                             }
                         } else {
-                            const tp = card.querySelector('.tooltip-ping');
-                            if (tp) {
-                                tp.innerHTML = ` &bull; <span style="color: ${pingColor}">${latency} ms</span>`;
-                            }
+                            const desc = card.getAttribute('data-desc') || '';
+                            const tip = desc ? `${desc} • ${latency} ms` : `${latency} ms`;
+                            card.setAttribute('data-tooltip', tip);
                             if (dot && showDot) {
                                 dot.className = 'status-dot up';
                             }
@@ -458,9 +458,10 @@ document.addEventListener('DOMContentLoaded', () => {
             card.target = '_blank';
             card.rel = 'noopener noreferrer';
         }
-        card.setAttribute('data-url', service.url);
-        // Removed data-tooltip attribute, we'll render it inside api-tooltip instead
-
+        if (service.description) {
+            card.setAttribute('data-desc', service.description);
+            card.setAttribute('data-tooltip', service.description);
+        }
         const shimmerBox = document.createElement('div');
         shimmerBox.className = 'shimmer-box';
         card.appendChild(shimmerBox);
@@ -514,12 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.appendChild(flare);
         }
 
-        const tooltip = document.createElement('div');
-        tooltip.className = 'card-tooltip';
-        tooltip.innerHTML = `<span class="tooltip-desc">${service.description || ''}</span><span class="tooltip-ping"></span>`;
-        if (service.description || (currentConfig && currentConfig.show_ping)) {
-            card.appendChild(tooltip);
-        }
 
         let hoverFrame;
         card.addEventListener('mousemove', (e) => {

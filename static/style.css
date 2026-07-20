@@ -516,8 +516,7 @@ html, body {
 [data-tooltip]::after {
     content: attr(data-tooltip);
 }
-[data-tooltip]::after,
-.card-tooltip {
+[data-tooltip]::after {
     position: absolute;
     bottom: 100%;
     left: 50%;
@@ -540,23 +539,15 @@ html, body {
     z-index: 100;
 }
 
-body.dark-mode [data-tooltip]::after,
-body.dark-mode .card-tooltip {
+body.dark-mode [data-tooltip]::after {
     background: rgba(30, 30, 30, 0.95);
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
 
 [data-tooltip]:hover::after,
-.service-card:hover .card-tooltip,
-.service-card:focus .card-tooltip {
+[data-tooltip]:focus-visible::after {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(-8px);
-}
-
-.service-card:hover[data-tooltip]::after,
-.service-card:focus[data-tooltip]::after {
-    opacity: 1;
     transform: translateX(-50%) translateY(-8px);
 }
 
