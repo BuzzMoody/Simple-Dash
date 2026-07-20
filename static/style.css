@@ -1036,9 +1036,6 @@ body.dark-mode .list-col {
 
 @media (max-width: 650px) {
     .list-table {
-        grid-template-columns: max-content minmax(0, 1fr);
-    }
-    .list-table.has-ping {
         grid-template-columns: max-content minmax(0, 1fr) max-content;
     }
     .list-col.url {
