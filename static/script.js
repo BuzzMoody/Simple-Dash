@@ -458,6 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.target = '_blank';
             card.rel = 'noopener noreferrer';
         }
+        card.setAttribute('data-url', service.url);
         if (service.description) {
             card.setAttribute('data-desc', service.description);
             card.setAttribute('data-tooltip', service.description);
