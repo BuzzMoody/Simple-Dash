@@ -521,7 +521,7 @@ html, body {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--card-bg);
     color: var(--text-color);
     padding: 0.4rem 0.8rem;
     border-radius: 0.5rem;
@@ -534,13 +534,10 @@ html, body {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border: 1px solid var(--card-border);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     z-index: 2000;
 }
 
 body.dark-mode [data-tooltip]::after {
-    background: rgba(30, 30, 30, 0.95);
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
 
