@@ -20,6 +20,9 @@ After successfully completing a task, making structural modifications, or implem
 ## 6. Strict Go Compilation & Unused Imports
 The backend is written in Go, which strictly prohibits unused imports and variables. Whenever you refactor code or remove features from `main.go`, you MUST thoroughly check for any leftover imported packages that are no longer referenced and remove them. Furthermore, before committing any backend changes, you MUST always verify your modifications by running `go build` locally to catch any compilation errors.
 
+## 7. Strict JavaScript Syntax Checking
+Before committing any changes to JavaScript files (e.g. `static/script.js`), you MUST verify there are no syntax errors (such as duplicate variable declarations, missing brackets, or invalid scope references) by running `node --check <path/to/file.js>` locally.
+
 # Language & Convention
-## 7. Australian English
+## 8. Australian English
 All written comments, code, instructions, and documentation must be in Australian English (e.g., using "colour" instead of "color"). This rule can be ignored only where code functions or functionality strictly rely on American English syntaxes (such as CSS property names).
