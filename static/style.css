@@ -133,6 +133,7 @@ header::after {
     background: linear-gradient(135deg, var(--header-color-1, var(--text-color)), var(--header-color-2, var(--accent-color)));
     border-radius: 2px;
     opacity: 0.6;
+    z-index: -1;
 }
 
 .header-top {
@@ -1165,9 +1166,9 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
 .search-clear::before {
     content: '';
     position: absolute;
-    inset: -3px;
+    inset: -1px;
     border-radius: inherit;
-    padding: 2px;
+    padding: 1px;
     background: linear-gradient(135deg, var(--header-color-1, var(--accent-color)), var(--header-color-2, var(--accent-color)));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
