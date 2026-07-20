@@ -66,7 +66,7 @@ body {
     color: var(--text-color);
     line-height: 1.5;
     transition: background-color 0.3s, color 0.3s;
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     z-index: 0;
     overflow-x: hidden;
@@ -111,7 +111,7 @@ body::before {
     margin: 0 auto;
     padding: 1rem;
     position: relative;
-    min-height: 100vh;
+    min-height: 100dvh;
     padding-bottom: 6rem;
 }
 
@@ -769,7 +769,7 @@ body.dark-mode .card-tooltip {
         right: 0;
         transform: translateX(110%);
         width: 240px;
-        height: 100vh;
+        height: 100dvh;
         background: color-mix(in srgb, var(--card-bg) 85%, transparent);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
@@ -894,7 +894,7 @@ body.dark-mode .card-tooltip {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
