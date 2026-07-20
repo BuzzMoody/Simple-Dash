@@ -536,7 +536,7 @@ html, body {
     border: 1px solid var(--card-border);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 100;
+    z-index: 2000;
 }
 
 body.dark-mode [data-tooltip]::after {
