@@ -617,6 +617,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.isLast) row.classList.add('last-in-column');
                 row.href = service.url;
                 row.setAttribute('data-url', service.url);
+                if (service.description) {
+                    row.setAttribute('data-desc', service.description);
+                }
+                if (service.category) {
+                    row.setAttribute('data-category', service.category);
+                }
                 if (currentConfig && currentConfig.new_tabs !== false) {
                     row.target = '_blank';
                     row.rel = 'noopener noreferrer';
@@ -993,9 +999,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameEl = card.querySelector('.service-name, .list-col.name');
             const text = ((nameEl ? nameEl.textContent : card.textContent) + ' ' + desc).toLowerCase();
             
-            let category = '';
+            let category = (card.getAttribute('data-category') || '').toLowerCase();
             const group = card.closest('.group');
-            if (group) {
+            if (group && !category) {
                 const titleSpan = group.querySelector('.group-title span');
                 if (titleSpan) category = titleSpan.textContent.toLowerCase();
             }
