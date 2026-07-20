@@ -522,7 +522,7 @@ html, body {
     bottom: auto;
     top: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%) translateY(0px);
     background: var(--card-bg);
     color: var(--text-color);
     padding: 0.4rem 0.8rem;
@@ -547,7 +547,7 @@ body.dark-mode [data-tooltip]::after {
 [data-tooltip]:focus-visible::after {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(8px);
+    transform: translateX(-50%) translateY(18px);
 }
 
 
