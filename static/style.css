@@ -519,9 +519,10 @@ html, body {
 }
 [data-tooltip]::after {
     position: absolute;
-    bottom: 100%;
+    bottom: auto;
+    top: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(-50%) translateY(-10px);
     background: var(--card-bg);
     color: var(--text-color);
     padding: 0.4rem 0.8rem;
@@ -546,31 +547,9 @@ body.dark-mode [data-tooltip]::after {
 [data-tooltip]:focus-visible::after {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(-8px);
-}
-
-.toolbar-btn[data-tooltip]::after,
-.btn[data-tooltip]::after,
-.search-clear[data-tooltip]::after,
-.mobile-menu-btn[data-tooltip]::after,
-.close-menu-btn[data-tooltip]::after {
-    bottom: auto;
-    top: 100%;
-    transform: translateX(-50%) translateY(-10px);
-}
-
-.toolbar-btn[data-tooltip]:hover::after,
-.toolbar-btn[data-tooltip]:focus-visible::after,
-.btn[data-tooltip]:hover::after,
-.btn[data-tooltip]:focus-visible::after,
-.search-clear[data-tooltip]:hover::after,
-.search-clear[data-tooltip]:focus-visible::after,
-.mobile-menu-btn[data-tooltip]:hover::after,
-.mobile-menu-btn[data-tooltip]:focus-visible::after,
-.close-menu-btn[data-tooltip]:hover::after,
-.close-menu-btn[data-tooltip]:focus-visible::after {
     transform: translateX(-50%) translateY(8px);
 }
+
 
 .service-card:hover,
 .service-card:focus {
