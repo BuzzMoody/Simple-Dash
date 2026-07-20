@@ -406,6 +406,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.rel = 'noopener noreferrer';
                 }
                 
+                if (btn.name) {
+                    el.setAttribute('data-tooltip', btn.name);
+                }
+                
                 let content = '';
                 const btnLight = btn.logo_light || btn.logo;
                 const btnDark = btn.logo_dark || btn.logo;
