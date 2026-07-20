@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // name col
                 const nameCol = document.createElement('div');
-                nameCol.className = 'list-col name stagger-in';
+                nameCol.className = 'list-col name simple-fade-in';
                 nameCol.style.animationDelay = `${item.rowIndex * 0.03}s`;
                 if (item.side === 'left') {
                     nameCol.style.gridColumn = '1';
@@ -664,13 +664,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // desc col
                 const descCol = document.createElement('div');
-                descCol.className = 'list-col desc stagger-in';
+                descCol.className = 'list-col desc simple-fade-in';
                 descCol.style.animationDelay = `${item.rowIndex * 0.03}s`;
                 descCol.textContent = service.description || '';
 
                 // url col
                 const urlCol = document.createElement('div');
-                urlCol.className = 'list-col url stagger-in';
+                urlCol.className = 'list-col url simple-fade-in';
                 urlCol.style.animationDelay = `${item.rowIndex * 0.03}s`;
                 urlCol.textContent = service.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
@@ -679,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.appendChild(urlCol);
                 
                 const statusCol = document.createElement('div');
-                statusCol.className = 'list-col status stagger-in';
+                statusCol.className = 'list-col status simple-fade-in';
                 statusCol.style.animationDelay = `${item.rowIndex * 0.03}s`;
                 row.appendChild(statusCol);
                 
