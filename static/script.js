@@ -615,6 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.className = `list-row`;
                 if (item.side === 'left') row.classList.add('left-column');
                 if (item.isLast) row.classList.add('last-in-column');
+                row.style.setProperty('--row-index', item.rowIndex);
                 row.href = service.url;
                 row.setAttribute('data-url', service.url);
                 if (service.description) {
@@ -1043,6 +1044,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+        
+        if (layout === 'list') {
+            const evaluateLayout = () => {
+                if (window.innerWidth < 1200) return;
+                const table = document.querySelector('.list-table');
+                if (!table) return;
+                
+                table.classList.add('single-col');
+                if (document.documentElement.scrollHeight > document.documentElement.clientHeight) {
+                    table.classList.remove('single-col');
+                }
+                if (typeof checkUrlVisibility === 'function') checkUrlVisibility();
+            };
+            evaluateLayout();
+            clearTimeout(window.listLayoutTimeout);
+            window.listLayoutTimeout = setTimeout(evaluateLayout, 320);
+        }
         
         document.querySelectorAll('.group').forEach(group => {
             const visibleCards = Array.from(group.querySelectorAll('.service-card')).filter(c => !c.classList.contains('search-hidden'));

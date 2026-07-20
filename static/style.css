@@ -1017,6 +1017,13 @@ body.dark-mode .list-table {
     display: contents;
 }
 
+.list-table.single-col .list-col {
+    order: var(--row-index);
+}
+.list-table.single-col .list-header > .list-col {
+    order: -1;
+}
+
 .list-col {
     display: flex;
     align-items: center;
