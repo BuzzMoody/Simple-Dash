@@ -1046,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         if (layout === 'list') {
-            const evaluateLayout = () => {
+            const evaluateLayout = (isDelayed) => {
                 if (window.innerWidth < 1200) return;
                 const table = document.querySelector('.list-table');
                 if (!table) return;
@@ -1054,12 +1054,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 table.classList.add('single-col');
                 if (document.documentElement.scrollHeight > document.documentElement.clientHeight) {
                     table.classList.remove('single-col');
+                    
+                    if (isDelayed) {
+                        const visibleRows = Array.from(table.querySelectorAll('.list-row:not(.list-header)')).filter(row => row.style.display !== 'none' && !row.classList.contains('search-hidden'));
+                        visibleRows.sort((a, b) => {
+                            const indexA = parseInt(a.style.getPropertyValue('--row-index') || 0);
+                            const indexB = parseInt(b.style.getPropertyValue('--row-index') || 0);
+                            return indexA - indexB;
+                        });
+                        
+                        const hasHeader = table.querySelector('.list-header') ? 1 : 0;
+                        const totalCells = visibleRows.length + hasHeader;
+                        const leftItemsCount = Math.max(0, Math.ceil(totalCells / 2) - hasHeader);
+                        const rightItemsCount = visibleRows.length - leftItemsCount;
+                        const maxRows = Math.max(leftItemsCount, rightItemsCount);
+                        
+                        visibleRows.forEach(row => row.classList.remove('left-column', 'last-in-column'));
+                        
+                        for (let i = 0; i < leftItemsCount; i++) {
+                            visibleRows[i].classList.add('left-column');
+                            if (i === leftItemsCount - 1) visibleRows[i].classList.add('last-in-column');
+                        }
+                        for (let i = 0; i < rightItemsCount; i++) {
+                            const rightIndex = leftItemsCount + i;
+                            if (i === rightItemsCount - 1) visibleRows[rightIndex].classList.add('last-in-column');
+                        }
+                        
+                        const interleaved = [];
+                        for (let i = 0; i < maxRows; i++) {
+                            if (i < rightItemsCount) interleaved.push(visibleRows[leftItemsCount + i]);
+                            if (i < leftItemsCount) interleaved.push(visibleRows[i]);
+                        }
+                        
+                        interleaved.forEach(row => {
+                            Array.from(row.children).forEach(child => {
+                                if (child.style.animation.includes('simple-fade-in')) {
+                                    child.style.animation = 'none';
+                                }
+                            });
+                            table.appendChild(row);
+                        });
+                    }
                 }
                 if (typeof checkUrlVisibility === 'function') checkUrlVisibility();
             };
-            evaluateLayout();
+            evaluateLayout(false);
             clearTimeout(window.listLayoutTimeout);
-            window.listLayoutTimeout = setTimeout(evaluateLayout, 320);
+            window.listLayoutTimeout = setTimeout(() => evaluateLayout(true), 320);
         }
         
         document.querySelectorAll('.group').forEach(group => {
