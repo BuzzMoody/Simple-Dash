@@ -895,6 +895,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === ' ' && (document.activeElement.tagName === 'BUTTON' || document.activeElement.tagName === 'A')) {
                 return;
             }
+            e.preventDefault();
+            searchInput.focus();
             searchInput.value += e.key;
             searchInput.dispatchEvent(new Event('input'));
             return;
@@ -902,6 +904,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Capture backspace
         if (!isInputFocused && e.key === 'Backspace' && searchInput) {
+            e.preventDefault();
+            searchInput.focus();
             if (searchInput.value.length > 0) {
                 searchInput.value = searchInput.value.slice(0, -1);
                 searchInput.dispatchEvent(new Event('input'));
@@ -954,4 +958,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const groupResizeObserver = new ResizeObserver(() => {
+        if (layout === 'list') {
+            document.querySelectorAll('.group-title').forEach(title => {
+                title.style.width = '';
+            });
+            return;
+        }
+        document.querySelectorAll('.group').forEach(group => {
+            const title = group.querySelector('.group-title');
+            const grid = group.querySelector('.services-grid');
+            if (!title || !grid) return;
+            
+            let maxRight = 0;
+            let hasCards = false;
+            const gridRect = grid.getBoundingClientRect();
+            
+            grid.querySelectorAll('.service-card').forEach(card => {
+                if (card.style.display === 'none') return;
+                const rect = card.getBoundingClientRect();
+                if (rect.right > maxRight) {
+                    maxRight = rect.right;
+                }
+                hasCards = true;
+            });
+            
+            if (hasCards) {
+                const newWidth = maxRight - gridRect.left;
+                title.style.width = `${newWidth}px`;
+            } else {
+                title.style.width = '';
+            }
+        });
+    });
+
+    const servicesContainer = document.getElementById('services-container');
+    if (servicesContainer) {
+        groupResizeObserver.observe(servicesContainer);
+    }
 });
