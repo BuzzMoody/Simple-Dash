@@ -269,8 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Reset tooltips
                     if (layout !== 'list') {
                         const desc = card.getAttribute('data-desc');
-                        if (desc) card.setAttribute('data-tooltip', desc);
-                        else card.removeAttribute('data-tooltip');
+                        const tbox = card.querySelector('.tooltip-box');
+                        if (tbox) tbox.innerHTML = desc || '';
                     }
                     
                     if (showPing) {
@@ -291,8 +291,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         } else {
                             const desc = card.getAttribute('data-desc') || '';
-                            const tip = desc ? `${desc} • ${latency} ms` : `${latency} ms`;
-                            card.setAttribute('data-tooltip', tip);
+                            const tbox = card.querySelector('.tooltip-box');
+                            if (tbox) {
+                                tbox.innerHTML = desc 
+                                    ? `${desc} &bull; <span style="color: ${pingColor}">${latency} ms</span>` 
+                                    : `<span style="color: ${pingColor}">${latency} ms</span>`;
+                            }
                             if (dot && showDot) {
                                 dot.className = 'status-dot up';
                             }
@@ -461,8 +465,13 @@ document.addEventListener('DOMContentLoaded', () => {
         card.setAttribute('data-url', service.url);
         if (service.description) {
             card.setAttribute('data-desc', service.description);
-            card.setAttribute('data-tooltip', service.description);
         }
+        
+        const tooltipBox = document.createElement('div');
+        tooltipBox.className = 'tooltip-box';
+        if (service.description) tooltipBox.innerHTML = service.description;
+        card.appendChild(tooltipBox);
+        
         const shimmerBox = document.createElement('div');
         shimmerBox.className = 'shimmer-box';
         card.appendChild(shimmerBox);

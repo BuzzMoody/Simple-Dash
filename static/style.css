@@ -532,7 +532,8 @@ html, body {
 [data-tooltip]::after {
     content: attr(data-tooltip);
 }
-[data-tooltip]::after {
+[data-tooltip]::after,
+.tooltip-box {
     position: absolute;
     bottom: 100%;
     left: 50%;
@@ -553,12 +554,15 @@ html, body {
     z-index: 2000;
 }
 
-body.dark-mode [data-tooltip]::after {
+body.dark-mode [data-tooltip]::after,
+body.dark-mode .tooltip-box {
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
 
 [data-tooltip]:hover::after,
-[data-tooltip]:focus-visible::after {
+[data-tooltip]:focus-visible::after,
+.service-card:hover .tooltip-box:not(:empty),
+.service-card:focus-visible .tooltip-box:not(:empty) {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(-8px);
