@@ -37,29 +37,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    let isDesktop = window.innerWidth >= 1200;
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(checkUrlVisibility, 50);
+        resizeTimeout = setTimeout(() => {
+            const nowDesktop = window.innerWidth >= 1200;
+            if (nowDesktop !== isDesktop) {
+                isDesktop = nowDesktop;
+                if (layout === 'list' && currentConfig) {
+                    renderServices(currentConfig.services || []);
+                }
+            } else {
+                checkUrlVisibility();
+            }
+        }, 50);
     });
 
+    const clockTime = document.getElementById('clock-time');
+    const clockDesc = document.getElementById('clock-desc');
+    let lastDesc = '';
+    
     const updateClock = () => {
-        if (!headerDesc) return;
+        if (!clockTime) return;
         const d = new Date();
         let h = d.getHours();
         const ampm = h >= 12 ? 'PM' : 'AM';
-        if (h === 0) h = '00';
+        if (h === 0) h = 12;
         else if (h > 12) h -= 12;
         const m = d.getMinutes().toString().padStart(2, '0');
         const s = d.getSeconds().toString().padStart(2, '0');
         const timeString = `${h}:${m}:${s} ${ampm}`;
-        let descText = 'Loading...';
-        if (currentConfig && currentConfig.description) {
-            descText = currentConfig.description;
-        } else if (currentConfig === false) {
-            descText = 'Failed to load configuration.';
+        clockTime.textContent = timeString;
+
+        if (clockDesc) {
+            let descText = 'Loading...';
+            if (currentConfig && currentConfig.description) {
+                descText = currentConfig.description;
+            } else if (currentConfig === false) {
+                descText = 'Failed to load configuration.';
+            }
+            if (descText !== lastDesc) {
+                clockDesc.textContent = descText;
+                lastDesc = descText;
+            }
         }
-        headerDesc.innerHTML = `${timeString} &bull; ${descText}`;
     };
     setInterval(updateClock, 1000); // 1s interval to update seconds
     updateClock();
@@ -130,16 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    let isDesktop = window.innerWidth >= 1200;
-    window.addEventListener('resize', () => {
-        const nowDesktop = window.innerWidth >= 1200;
-        if (nowDesktop !== isDesktop) {
-            isDesktop = nowDesktop;
-            if (layout === 'list' && currentConfig) {
-                renderServices(currentConfig.services || []);
-            }
-        }
-    });
 
     if (layoutToggle) {
         updateLayoutToggleButton();
@@ -220,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         setTimeout(() => {
             const cards = document.querySelectorAll('[data-url]');
+            const changedCards = [];
             cards.forEach(card => {
                 const configUrl = card.getAttribute('data-url');
                 if (!configUrl) return;
@@ -244,14 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (prev && prev.hasOwnProperty(configUrl) && prevIsUp !== isUp) {
                         card.classList.remove('shimmer-up', 'shimmer-down', 'shimmer-active');
-                        void card.offsetWidth; // trigger reflow
-                        const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
-                        card.classList.add(shimmerClass, 'shimmer-active');
-                        
-                        // Fade out opacity after 4s (allows 4 full 1s cycles)
-                        setTimeout(() => card.classList.remove('shimmer-active'), 4000);
-                        // Clean up base classes after transition finishes (4.5s)
-                        setTimeout(() => card.classList.remove(shimmerClass), 4500);
+                        changedCards.push({ card, isUp });
                     }
 
                     const targetContainer = layout === 'list' && card.querySelector('.list-col.status') ? card.querySelector('.list-col.status') : card;
@@ -266,11 +272,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         targetContainer.appendChild(dot);
                     }
 
-                    // Reset tooltips
+                    let tbox = null;
                     if (layout !== 'list') {
+                        tbox = card.querySelector('.tooltip-box');
                         const desc = card.getAttribute('data-desc');
-                        const tbox = card.querySelector('.tooltip-box');
-                        if (tbox) tbox.innerHTML = desc || '';
+                        if (tbox && !showPing) tbox.innerHTML = desc || '';
                     }
                     
                     if (showPing) {
@@ -291,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         } else {
                             const desc = card.getAttribute('data-desc') || '';
-                            const tbox = card.querySelector('.tooltip-box');
                             if (tbox) {
                                 tbox.innerHTML = desc 
                                     ? `${desc} &bull; <span style="color: ${pingColor}">${latency} ms</span>` 
@@ -310,6 +315,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 }
             });
+            
+            if (changedCards.length > 0) {
+                void document.body.offsetWidth; // single reflow
+                changedCards.forEach(({card, isUp}) => {
+                    const shimmerClass = isUp ? 'shimmer-up' : 'shimmer-down';
+                    card.classList.add(shimmerClass, 'shimmer-active');
+                    setTimeout(() => card.classList.remove('shimmer-active'), 4000);
+                    setTimeout(() => card.classList.remove(shimmerClass), 4500);
+                });
+            }
         }, 10);
     };
 
