@@ -799,8 +799,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatusIndicators();
         if (typeof window.applySearchFilter === 'function') {
             window.applySearchFilter();
-        } else if (typeof updateGroupTitles === 'function') {
-            setTimeout(updateGroupTitles, 50);
         }
     };
 
@@ -956,40 +954,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    window.updateGroupTitles = () => {
-        if (layout === 'list') {
-            document.querySelectorAll('.group-title').forEach(title => {
-                title.style.width = '';
-            });
-            return;
-        }
-        document.querySelectorAll('.group').forEach(group => {
-            if (group.style.display === 'none') return;
-            const title = group.querySelector('.group-title');
-            const grid = group.querySelector('.services-grid');
-            if (!title || !grid) return;
-            
-            let maxRight = 0;
-            let hasCards = false;
-            const gridRect = grid.getBoundingClientRect();
-            
-            grid.querySelectorAll('.service-card').forEach(card => {
-                if (card.style.display === 'none') return;
-                const rect = card.getBoundingClientRect();
-                if (rect.right > maxRight) {
-                    maxRight = rect.right;
-                }
-                hasCards = true;
-            });
-            
-            if (hasCards) {
-                const newWidth = maxRight - gridRect.left;
-                title.style.width = `${newWidth}px`;
-            } else {
-                title.style.width = '';
-            }
-        });
-    };
 
     window.applySearchFilter = () => {
         const term = currentSearchTerm;
@@ -1038,7 +1002,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         if (card.classList.contains('search-hidden')) {
                             card.style.display = 'none';
-                            if (typeof window.updateGroupTitles === 'function') window.updateGroupTitles();
                         }
                     }, 300);
                 }
@@ -1153,15 +1116,5 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (noRes) {
             noRes.style.display = 'none';
         }
-        
-        if (typeof window.updateGroupTitles === 'function') {
-            setTimeout(window.updateGroupTitles, 350);
-        }
     };
-
-    const groupResizeObserver = new ResizeObserver(window.updateGroupTitles);
-
-    if (servicesContainer) {
-        groupResizeObserver.observe(servicesContainer);
-    }
 });
