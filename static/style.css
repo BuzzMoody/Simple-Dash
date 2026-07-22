@@ -61,6 +61,10 @@ input, textarea {
     -webkit-user-select: text;
 }
 
+button, input, select, textarea {
+    font-family: inherit;
+}
+
 body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
