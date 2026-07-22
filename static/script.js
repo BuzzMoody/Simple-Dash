@@ -1147,13 +1147,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const rect = target.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) return;
         
+        let tooltipWidth = 120;
+        const tbox = target.querySelector('.tooltip-box');
+        if (tbox) {
+            tooltipWidth = tbox.offsetWidth;
+        } else {
+            const text = target.getAttribute('data-tooltip') || '';
+            tooltipWidth = Math.min(250, text.length * 7 + 26);
+        }
+        
         let translateX = '-50%';
         let leftPos = '50%';
+        const centerX = rect.left + rect.width / 2;
+        const padding = 10;
         
-        if (rect.left + rect.width / 2 < 120) {
+        if (centerX - tooltipWidth / 2 < padding) {
             translateX = '0';
             leftPos = '0';
-        } else if (window.innerWidth - (rect.left + rect.width / 2) < 120) {
+        } else if (centerX + tooltipWidth / 2 > window.innerWidth - padding) {
             translateX = '-100%';
             leftPos = '100%';
         }
