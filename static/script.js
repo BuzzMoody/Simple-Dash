@@ -1205,5 +1205,5 @@ document.addEventListener('DOMContentLoaded', () => {
             target.classList.add('hide-tooltip');
             target.blur();
         }
-    }, { passive: true });
+    }, { passive: true, capture: true });
 });
