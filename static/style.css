@@ -51,6 +51,7 @@ body:not(.dark-mode) .dark-theme-logo {
     box-sizing: border-box;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
     margin: 0;
     padding: 0;
 }
