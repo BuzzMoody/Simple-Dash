@@ -1141,4 +1141,27 @@ document.addEventListener('DOMContentLoaded', () => {
             noRes.style.display = 'none';
         }
     };
+
+    const updateTooltipBounds = (e) => {
+        const target = e.target.closest('[data-tooltip], .service-card');
+        if (!target) return;
+        
+        const rect = target.getBoundingClientRect();
+        let translateX = '-50%';
+        let leftPos = '50%';
+        
+        if (rect.left + rect.width / 2 < 120) {
+            translateX = '0';
+            leftPos = '0';
+        } else if (window.innerWidth - (rect.left + rect.width / 2) < 120) {
+            translateX = '-100%';
+            leftPos = '100%';
+        }
+        
+        target.style.setProperty('--tooltip-x', translateX);
+        target.style.setProperty('--tooltip-left', leftPos);
+    };
+
+    document.addEventListener('mouseover', updateTooltipBounds, { passive: true });
+    document.addEventListener('focusin', updateTooltipBounds, { passive: true });
 });

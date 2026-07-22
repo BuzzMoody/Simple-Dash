@@ -536,15 +536,18 @@ html, body {
 .tooltip-box {
     position: absolute;
     bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
+    left: var(--tooltip-left, 50%);
+    transform: translateX(var(--tooltip-x, -50%)) translateY(10px);
     background: var(--card-bg);
     color: var(--text-color);
     padding: 0.4rem 0.8rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;
     font-weight: 100;
-    white-space: nowrap;
+    white-space: normal;
+    width: max-content;
+    max-width: 250px;
+    text-align: center;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -565,7 +568,7 @@ body.dark-mode .tooltip-box {
 .service-card:focus-visible .tooltip-box:not(:empty) {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(-8px);
+    transform: translateX(var(--tooltip-x, -50%)) translateY(-8px);
 }
 
 .toolbar-btn[data-tooltip]::after,
@@ -575,7 +578,7 @@ body.dark-mode .tooltip-box {
 .close-menu-btn[data-tooltip]::after {
     bottom: auto;
     top: 100%;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(var(--tooltip-x, -50%)) translateY(-10px);
 }
 
 .toolbar-btn[data-tooltip]:hover::after,
@@ -588,7 +591,7 @@ body.dark-mode .tooltip-box {
 .mobile-menu-btn[data-tooltip]:focus-visible::after,
 .close-menu-btn[data-tooltip]:hover::after,
 .close-menu-btn[data-tooltip]:focus-visible::after {
-    transform: translateX(-50%) translateY(8px);
+    transform: translateX(var(--tooltip-x, -50%)) translateY(8px);
 }
 
 
