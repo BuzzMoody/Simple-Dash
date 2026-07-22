@@ -599,6 +599,13 @@ body.dark-mode .tooltip-box {
     transform: translateX(var(--tooltip-x, -50%)) translateY(8px);
 }
 
+.hide-tooltip::after,
+.hide-tooltip .tooltip-box {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: none !important;
+}
+
 
 .service-card:hover,
 .service-card:focus {

@@ -1189,10 +1189,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fallbacks for immediate interaction
     const handleTooltipInteraction = (e) => {
         const target = e.target.closest('[data-tooltip], .service-card');
-        if (target) updateTooltipBounds(target);
+        if (target) {
+            target.classList.remove('hide-tooltip');
+            updateTooltipBounds(target);
+        }
     };
     
     document.addEventListener('mouseover', handleTooltipInteraction, { passive: true });
     document.addEventListener('touchstart', handleTooltipInteraction, { passive: true });
     document.addEventListener('focusin', handleTooltipInteraction, { passive: true });
+    
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-tooltip], .service-card');
+        if (target) {
+            target.classList.add('hide-tooltip');
+            target.blur();
+        }
+    }, { passive: true });
 });
