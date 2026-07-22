@@ -1142,11 +1142,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateTooltipBounds = (e) => {
-        const target = e.target.closest('[data-tooltip], .service-card');
+    const updateTooltipBounds = (target) => {
         if (!target) return;
-        
         const rect = target.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return;
+        
         let translateX = '-50%';
         let leftPos = '50%';
         
@@ -1162,6 +1162,26 @@ document.addEventListener('DOMContentLoaded', () => {
         target.style.setProperty('--tooltip-left', leftPos);
     };
 
-    document.addEventListener('mouseover', updateTooltipBounds, { passive: true });
-    document.addEventListener('focusin', updateTooltipBounds, { passive: true });
+    const updateAllTooltips = () => {
+        document.querySelectorAll('[data-tooltip], .service-card').forEach(updateTooltipBounds);
+    };
+
+    let tooltipTimeout;
+    const debouncedUpdateTooltips = () => {
+        clearTimeout(tooltipTimeout);
+        tooltipTimeout = setTimeout(updateAllTooltips, 50);
+    };
+
+    window.addEventListener('resize', debouncedUpdateTooltips, { passive: true });
+    new MutationObserver(debouncedUpdateTooltips).observe(document.body, { childList: true, subtree: true });
+
+    // Fallbacks for immediate interaction
+    const handleTooltipInteraction = (e) => {
+        const target = e.target.closest('[data-tooltip], .service-card');
+        if (target) updateTooltipBounds(target);
+    };
+    
+    document.addEventListener('mouseover', handleTooltipInteraction, { passive: true });
+    document.addEventListener('touchstart', handleTooltipInteraction, { passive: true });
+    document.addEventListener('focusin', handleTooltipInteraction, { passive: true });
 });
