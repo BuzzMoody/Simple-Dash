@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="update-indicator"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span>`;
 
-            if (version !== 'dev') {
+            if (version !== 'dev' && !version.toLowerCase().includes('beta')) {
                 const fetchReleases = async () => {
                     try {
                         const response = await fetch('https://api.github.com/repos/BuzzMoody/Simple-Dash/releases');
