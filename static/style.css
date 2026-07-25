@@ -1344,8 +1344,7 @@ body.dark-mode .changelog-popup {
 
 .changelog-btn:hover {
     opacity: 1;
-    color: var(--accent-color);
-    background: rgba(128,128,128,0.1);
+    color: var(--header-color-2, var(--accent-color));
 }
 
 .update-indicator {
