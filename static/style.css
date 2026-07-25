@@ -1257,7 +1257,7 @@ body:not(.dark-mode) .list-col.name .dark-theme-logo {
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    width: 400px;
+    width: 500px;
     max-height: 300px;
     background: var(--card-bg);
     color: var(--text-color);
@@ -1303,6 +1303,7 @@ body.dark-mode .changelog-popup {
     cursor: pointer;
     padding: 0;
     margin-left: 0.3rem;
+    margin-top: -5px;
     vertical-align: middle;
     transition: opacity 0.2s, color 0.2s;
     border-radius: 4px;
@@ -1319,10 +1320,24 @@ body.dark-mode .changelog-popup {
 }
 
 .update-indicator {
+    position: relative;
     margin-left: 6px;
     font-weight: 600;
     color: var(--accent-color);
     text-decoration: none;
     font-size: 0.75rem;
+}
+
+.changelog-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    line-height: 1.4;
+    opacity: 0.85;
+}
+
+.changelog-list li {
+    margin-bottom: 0.4rem;
+    padding-left: 0;
 }
 

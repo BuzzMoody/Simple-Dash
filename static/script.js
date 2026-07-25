@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="update-indicator"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span>`;
 
-            if (version !== 'dev' && !version.toLowerCase().includes('beta')) {
+            if (version !== 'dev' && version.includes('.')) {
                 const fetchReleases = async () => {
                     try {
                         const response = await fetch('https://api.github.com/repos/BuzzMoody/Simple-Dash/releases');
@@ -419,7 +419,21 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 const popup = document.createElement('div');
                                 popup.className = 'changelog-popup';
-                                popup.innerHTML = `<h4>Changelog ${currentRelease.tag_name}</h4><pre>${currentRelease.body || 'No release notes available.'}</pre>`;
+                                
+                                let bodyText = currentRelease.body || 'No release notes available.';
+                                bodyText = bodyText.replace(/\*\*Full Changelog\*\*: .*/g, '');
+                                let listHtml = '<ul class="changelog-list">';
+                                bodyText.split('\n').forEach(line => {
+                                    line = line.trim();
+                                    if (line) {
+                                        let itemText = line.replace(/^[\*\-]\s+/, '');
+                                        itemText = itemText.replace(/\b([a-f0-9]{7,40})\b/gi, '<i>$1</i>');
+                                        listHtml += `<li>${itemText}</li>`;
+                                    }
+                                });
+                                listHtml += '</ul>';
+                                
+                                popup.innerHTML = `<h4>Changelog ${currentRelease.tag_name}</h4>${listHtml}`;
                                 
                                 btn.addEventListener('click', (e) => {
                                     e.stopPropagation();
