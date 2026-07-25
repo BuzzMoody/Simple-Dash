@@ -1282,9 +1282,14 @@ body.dark-mode .changelog-popup {
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--accent-color);
     border-bottom: 1px solid var(--card-border);
     padding-bottom: 0.25rem;
+}
+
+.changelog-popup h4 span {
+    background: linear-gradient(135deg, var(--header-color-1, var(--text-color)), var(--header-color-2, var(--accent-color)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .changelog-popup pre {

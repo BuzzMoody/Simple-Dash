@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 });
                                 listHtml += '</ul>';
                                 
-                                popup.innerHTML = `<h4>Changelog ${currentRelease.tag_name}</h4>${listHtml}`;
+                                popup.innerHTML = `<h4><span>Changelog ${currentRelease.tag_name}</span></h4>${listHtml}`;
                                 
                                 btn.addEventListener('click', (e) => {
                                     e.stopPropagation();
