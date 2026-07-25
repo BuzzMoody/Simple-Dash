@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version.replace(/^v/, '')}</a>`;
             }
             
-            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="update-indicator"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span>`;
+            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
 
             if (version !== 'dev') {
                 const fetchReleases = async () => {
