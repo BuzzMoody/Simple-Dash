@@ -385,12 +385,74 @@ document.addEventListener('DOMContentLoaded', () => {
             const version = versionMeta && versionMeta.content !== '{{VERSION}}' ? versionMeta.content : 'dev';
             
             if (footerHtml) {
-                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${version}</a>`;
+                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version.replace(/^v/, '')}</a>`;
             } else {
-                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${version}</a>`;
+                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version.replace(/^v/, '')}</a>`;
             }
             
-            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span>`;
+            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="update-indicator"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span>`;
+
+            if (version !== 'dev') {
+                const fetchReleases = async () => {
+                    try {
+                        const response = await fetch('https://api.github.com/repos/BuzzMoody/Simple-Dash/releases');
+                        if (!response.ok) return;
+                        const releases = await response.json();
+                        if (releases && releases.length > 0) {
+                            const latestRelease = releases[0];
+                            const currentVersionNumber = version.replace(/^v/, '');
+                            const latestVersionNumber = latestRelease.tag_name.replace(/^v/, '');
+                            
+                            const updateIndicator = document.getElementById('update-indicator');
+                            if (updateIndicator && latestVersionNumber !== currentVersionNumber) {
+                                updateIndicator.innerHTML = `<a href="${latestRelease.html_url}" target="_blank" class="update-indicator" data-tooltip="Update Available: v${latestVersionNumber}">(Update!)</a>`;
+                            }
+                            
+                            const currentRelease = releases.find(r => r.tag_name.replace(/^v/, '') === currentVersionNumber) || latestRelease;
+                            
+                            const changelogContainer = document.getElementById('changelog-container');
+                            if (changelogContainer) {
+                                const btn = document.createElement('button');
+                                btn.className = 'changelog-btn';
+                                btn.setAttribute('data-tooltip', 'Changelog');
+                                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+                                
+                                const popup = document.createElement('div');
+                                popup.className = 'changelog-popup';
+                                popup.innerHTML = `<h4>Changelog ${currentRelease.tag_name}</h4><pre>${currentRelease.body || 'No release notes available.'}</pre>`;
+                                
+                                btn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    const isVisible = popup.style.display === 'block';
+                                    document.querySelectorAll('.changelog-popup').forEach(p => p.style.display = 'none');
+                                    popup.style.display = isVisible ? 'none' : 'block';
+                                    if (!isVisible) {
+                                        // Update tooltip bounds to avoid being offscreen
+                                        const rect = popup.getBoundingClientRect();
+                                        if (rect.right > window.innerWidth) {
+                                            popup.style.right = '0';
+                                        }
+                                    }
+                                });
+                                
+                                document.addEventListener('click', () => {
+                                    popup.style.display = 'none';
+                                });
+                                
+                                popup.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                });
+                                
+                                changelogContainer.appendChild(btn);
+                                changelogContainer.appendChild(popup);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error fetching releases:", e);
+                    }
+                };
+                fetchReleases();
+            }
         }
 
         // Header Colors

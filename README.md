@@ -12,6 +12,7 @@ A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go 
 - **Dynamic Sorting & Grouping**: Instantly toggle between categorical grouping or alphabetical sorting.
 - **Real-Time Search**: Built-in, ultra-fast client-side search to quickly filter your services by name, description, or category.
 - **Hot-Reloading Configuration**: Edit your configuration file on the fly; the dashboard re-renders automatically without needing to restart the container!
+- **Automatic Updates & Changelogs**: Instantly see when a new version is available, and view your current version's changelog directly in the footer.
 
 ## Getting Started
 

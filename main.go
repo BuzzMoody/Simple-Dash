@@ -109,6 +109,15 @@ func initStaticFiles() {
 		log.Fatalf("Failed to read index.html: %v", err)
 	}
 
+	versionData, err := os.ReadFile("./VERSION")
+	if err == nil {
+		versionStr := strings.TrimSpace(string(versionData))
+		if versionStr != "" {
+			indexStr := strings.ReplaceAll(string(indexHTML), "{{VERSION}}", versionStr)
+			indexHTML = []byte(indexStr)
+		}
+	}
+
 	styleBytes, err := os.ReadFile("./static/style.css")
 	if err != nil {
 		log.Fatalf("Failed to read style.css: %v", err)
