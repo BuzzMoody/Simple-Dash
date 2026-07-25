@@ -1280,7 +1280,7 @@ body.dark-mode .changelog-popup {
     display: flex;
     justify-content: space-between;
     margin: 0;
-    padding: 1rem 1rem 0.5rem 1rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
     font-size: 0.95rem;
     font-weight: 600;
     border-bottom: 1px solid var(--card-border);
