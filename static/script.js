@@ -122,13 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const s = d.getSeconds().toString().padStart(2, '0');
         const timeString = `${h}:${m}:${s} ${ampm}`;
         
-        let finalTimeStr = timeString;
-        if (currentConfig && currentConfig.show_weather && weatherHtml) {
-            finalTimeStr = weatherHtml + timeString;
-        }
-        
-        if (clockTime.innerHTML !== finalTimeStr) {
-            clockTime.innerHTML = finalTimeStr;
+        if (clockTime.textContent !== timeString) {
+            clockTime.textContent = timeString;
         }
 
         if (clockDesc) {
@@ -139,9 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 descText = 'Failed to load configuration.';
             }
             
-            if (descText !== lastDesc) {
-                clockDesc.textContent = descText;
-                lastDesc = descText;
+            let finalDesc = descText;
+            if (currentConfig && currentConfig.show_weather && weatherHtml) {
+                finalDesc = weatherHtml + descText;
+            }
+            
+            if (finalDesc !== lastDesc) {
+                clockDesc.innerHTML = finalDesc;
+                lastDesc = finalDesc;
             }
         }
     };
