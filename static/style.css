@@ -1281,7 +1281,7 @@ body.dark-mode .changelog-popup {
     justify-content: space-between;
     margin: 0;
     padding: 0.5rem 1rem 0.5rem 1rem;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 600;
     border-bottom: 1px solid var(--card-border);
 }
@@ -1366,10 +1366,26 @@ body.dark-mode .changelog-popup {
     margin: 0;
     line-height: 1.4;
     opacity: 0.85;
+    font-size: 0.75rem;
 }
 
 .changelog-list li {
     margin-bottom: 0.4rem;
     padding-left: 0;
+}
+
+.changelog-list li:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 532px) {
+    .changelog-popup {
+        position: fixed;
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+        transform: none;
+        bottom: 60px;
+    }
 }
 
