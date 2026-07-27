@@ -6,6 +6,7 @@ favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
 show_ping: true
+show_weather: false
 category_colors:
   enabled: false
   titles: false

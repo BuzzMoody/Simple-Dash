@@ -86,6 +86,7 @@ favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
 show_ping: true
+show_weather: false
 category_colors:
   enabled: false
   titles: false
@@ -96,8 +97,9 @@ category_colors:
 - `footer`: *(String)* Custom text to be displayed at the very bottom of the page.
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
-- `show_only_down`: *(Boolean)* Default is `false`. If set to `true`, the UI will only display status indicator dots for services that are offline (hiding the green online dots for healthy services).
+- `show_only_down`: *(Boolean)* Default is `false`. Only display the status dot on services that are offline. Online services will have no dot, keeping the UI cleaner.
 - `show_ping`: *(Boolean)* Default is `false`. If set to `true`, the UI will dynamically display the ping latency in milliseconds for healthy online services (appended to tooltips in Grid view, and displayed in the status column in List view), colour-coded based on response time. This option operates entirely independently of `show_only_down`.
+- `show_weather`: *(Boolean)* Default is `false`. Uses the browser's Geolocation API to fetch and display the current local temperature and a weather icon in the dashboard subheading. Does not require any API keys.
 - `category_colors`: *(Boolean or Object)* Default is `false`. If set to `true`, cards will have uniquely generated colours based on their category. Can also be defined as a nested object to enable additional colouring options:
   - `enabled`: *(Boolean)* Colourises service cards and category title borders.
   - `titles`: *(Boolean)* Colourises the category title text itself to match.

@@ -58,6 +58,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const clockDesc = document.getElementById('clock-desc');
     let lastDesc = '';
     
+    let weatherHtml = '';
+    const weatherSunSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+    const weatherCloudSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 4.5 4.5 0 0 1 1.79 8.9z"></path></svg>';
+    const weatherRainSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 16H9a7 7 0 1 1 6.71-9.9 4.5 4.5 0 0 1 1.79 8.9z"></path><path d="M8 19v2"></path><path d="M12 19v2"></path><path d="M16 19v2"></path></svg>';
+    const weatherSnowSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"></path><path d="M8 16h.01"></path><path d="M8 20h.01"></path><path d="M12 18h.01"></path><path d="M12 22h.01"></path><path d="M16 16h.01"></path><path d="M16 20h.01"></path></svg>';
+    const weatherStormSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline></svg>';
+
+    const getWeatherSVG = (code) => {
+        if (code <= 1) return weatherSunSVG;
+        if (code <= 3) return weatherCloudSVG;
+        if (code <= 48) return weatherCloudSVG;
+        if (code <= 67 || (code >= 80 && code <= 82)) return weatherRainSVG;
+        if (code <= 77 || (code >= 85 && code <= 86)) return weatherSnowSVG;
+        if (code >= 95) return weatherStormSVG;
+        return weatherCloudSVG;
+    };
+
+    const fetchWeather = () => {
+        if (!navigator.geolocation) return;
+        
+        const cached = localStorage.getItem('dashy-weather');
+        if (cached) {
+            try {
+                const data = JSON.parse(cached);
+                if (Date.now() - data.timestamp < 30 * 60 * 1000) {
+                    weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${getWeatherSVG(data.code)} ${data.temp}&deg;</span> &bull; `;
+                    updateClock();
+                    return;
+                }
+            } catch (e) {}
+        }
+
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            try {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                if (!response.ok) return;
+                const data = await response.json();
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                
+                localStorage.setItem('dashy-weather', JSON.stringify({ temp, code, timestamp: Date.now() }));
+                weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${getWeatherSVG(code)} ${temp}&deg;</span> &bull; `;
+                updateClock();
+            } catch (error) {
+                console.error("Error fetching weather:", error);
+            }
+        }, (error) => {
+            console.warn("Geolocation error:", error);
+        });
+    };
+    
     const updateClock = () => {
         if (!clockTime) return;
         const d = new Date();
@@ -77,9 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (currentConfig === false) {
                 descText = 'Failed to load configuration.';
             }
-            if (descText !== lastDesc) {
-                clockDesc.textContent = descText;
-                lastDesc = descText;
+            
+            let finalDesc = descText;
+            if (currentConfig && currentConfig.show_weather && weatherHtml) {
+                finalDesc = weatherHtml + descText;
+            }
+            
+            if (finalDesc !== lastDesc) {
+                clockDesc.innerHTML = finalDesc;
+                lastDesc = finalDesc;
             }
         }
     };
@@ -351,6 +410,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error(`Network error (${response.status})`);
             const data = await response.json();
             currentConfig = data;
+            if (currentConfig.show_weather) {
+                fetchWeather();
+            }
             renderDashboard(data);
             initStatusStream();
         } catch (error) {

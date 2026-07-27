@@ -53,6 +53,7 @@ type Config struct {
 	NewTabs       *bool          `yaml:"new_tabs" json:"new_tabs"`
 	ShowOnlyDown  bool           `yaml:"show_only_down" json:"show_only_down"`
 	ShowPing      bool           `yaml:"show_ping" json:"show_ping"`
+	ShowWeather   bool           `yaml:"show_weather" json:"show_weather"`
 	CategoryColors CategoryColorsConfig  `yaml:"category_colors" json:"category_colors"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
 	Buttons       []Button       `yaml:"buttons" json:"buttons"`
