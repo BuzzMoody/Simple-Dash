@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const data = JSON.parse(cached);
                 if (Date.now() - data.timestamp < 30 * 60 * 1000) {
-                    weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${getWeatherSVG(data.code)} ${data.temp}&deg;</span> &bull; `;
+                    weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${data.temp}&deg; ${getWeatherSVG(data.code)}</span> &bull; `;
                     updateClock();
                     return;
                 }
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const code = data.current_weather.weathercode;
                 
                 localStorage.setItem('dashy-weather', JSON.stringify({ temp, code, timestamp: Date.now() }));
-                weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${getWeatherSVG(code)} ${temp}&deg;</span> &bull; `;
+                weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${temp}&deg; ${getWeatherSVG(code)}</span> &bull; `;
                 updateClock();
             } catch (error) {
                 console.error("Error fetching weather:", error);
