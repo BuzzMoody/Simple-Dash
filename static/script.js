@@ -688,7 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 service: sortedServices[rightIndex], 
                                 side: 'right', 
                                 isLast: (rightIndex === sortedServices.length - 1),
-                                rowIndex: i
+                                rowIndex: rightIndex
                             });
                         }
                         if (i < leftItemsCount) {
