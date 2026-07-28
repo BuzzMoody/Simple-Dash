@@ -186,9 +186,17 @@ h1 {
 #header-desc, #header-time-temp {
     color: inherit;
     opacity: 0.8;
-    font-size: 0.875rem;
     margin-bottom: 0;
     font-variant-numeric: tabular-nums;
+}
+
+#header-desc {
+    font-size: 1rem;
+    margin-top: -0.25rem;
+}
+
+#header-time-temp {
+    font-size: 0.75rem;
 }
 
 
