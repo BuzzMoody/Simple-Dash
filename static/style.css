@@ -123,7 +123,7 @@ body::before {
 
 header {
     margin-bottom: 1.5rem;
-    padding-bottom: 0.1rem;
+    padding-bottom: 1.5rem;
     position: relative;
     animation: simple-fade-in 0.5s ease-out both;
     z-index: 1000;
@@ -148,7 +148,6 @@ header::after {
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
-    margin-bottom: 0.5rem;
 }
 
 .header-left {
@@ -205,8 +204,12 @@ h1 {
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
     width: 100%;
+}
+
+.announcements:empty {
+    display: none;
 }
 
 .announcement {
