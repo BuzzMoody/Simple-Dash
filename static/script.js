@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const data = JSON.parse(cached);
                 if (Date.now() - data.timestamp < 30 * 60 * 1000) {
-                    weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${data.temp}&deg; ${getWeatherSVG(data.code)}</span> &bull; `;
+                    weatherHtml = ` <span id="clock-sep">&bull;</span> <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${data.temp}&deg; ${getWeatherSVG(data.code)}</span>`;
                     updateClock();
                     return;
                 }
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const code = data.current_weather.weathercode;
                 
                 localStorage.setItem('dashy-weather', JSON.stringify({ temp, code, timestamp: Date.now() }));
-                weatherHtml = `<span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${temp}&deg; ${getWeatherSVG(code)}</span> &bull; `;
+                weatherHtml = ` <span id="clock-sep">&bull;</span> <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${temp}&deg; ${getWeatherSVG(code)}</span>`;
                 updateClock();
             } catch (error) {
                 console.error("Error fetching weather:", error);
@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clockTime.textContent = timeString;
         }
 
+        const weatherContainer = document.getElementById('weather-container');
         if (clockDesc) {
             let descText = 'Loading...';
             if (currentConfig && currentConfig.description) {
@@ -134,14 +135,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 descText = 'Failed to load configuration.';
             }
             
-            let finalDesc = descText;
-            if (currentConfig && currentConfig.show_weather && weatherHtml) {
-                finalDesc = weatherHtml + descText;
+            if (descText !== lastDesc) {
+                clockDesc.innerHTML = descText;
+                lastDesc = descText;
             }
-            
-            if (finalDesc !== lastDesc) {
-                clockDesc.innerHTML = finalDesc;
-                lastDesc = finalDesc;
+        }
+        
+        if (weatherContainer) {
+            if (currentConfig && currentConfig.show_weather && weatherHtml) {
+                weatherContainer.innerHTML = weatherHtml;
+            } else {
+                weatherContainer.innerHTML = '';
             }
         }
     };

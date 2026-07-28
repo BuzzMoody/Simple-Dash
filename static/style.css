@@ -183,7 +183,7 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-#header-desc {
+#header-desc, #header-time-temp {
     color: inherit;
     opacity: 0.8;
     font-size: 0.875rem;
@@ -880,7 +880,7 @@ body.dark-mode .tooltip-box {
         font-size: 1.5rem;
         margin-bottom: 0;
     }
-    #header-desc {
+    #header-desc, #header-time-temp {
         margin-bottom: 0;
     }
 }
