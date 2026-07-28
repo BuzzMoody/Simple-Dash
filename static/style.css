@@ -156,6 +156,13 @@ header::after {
     min-width: 250px;
 }
 
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: right;
+}
+
 .header-right {
     display: flex;
     flex-direction: column;
@@ -195,7 +202,8 @@ h1 {
 }
 
 #header-time-temp {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 
