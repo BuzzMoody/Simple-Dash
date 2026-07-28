@@ -779,7 +779,6 @@ body.dark-mode .tooltip-box {
     .header-top {
         flex-direction: row;
         align-items: center;
-        margin-bottom: 1rem;
         flex-wrap: nowrap;
     }
     .header-left {
