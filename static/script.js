@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchClear = document.getElementById('search-clear');
     
     let currentConfig = null;
+    let weatherHtml = '';
     let currentSearchTerm = '';
     let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
     let layout = localStorage.getItem('dashy-layout') || 'grid'; // 'grid' or 'list'
