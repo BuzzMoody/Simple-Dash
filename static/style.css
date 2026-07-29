@@ -11,6 +11,12 @@
     --header-color-2: var(--accent-color);
     --scrollbar-thumb: rgba(0, 0, 0, 0.2);
     --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+    
+    --weather-sun: #f59e0b;
+    --weather-cloud: #94a3b8;
+    --weather-rain: #3b82f6;
+    --weather-snow: #bae6fd;
+    --weather-lightning: #eab308;
 }
 
 body.dark-mode {
@@ -24,6 +30,12 @@ body.dark-mode {
     --default-hover-border: rgba(255, 255, 255, 0.6);
     --scrollbar-thumb: rgba(255, 255, 255, 0.2);
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+    
+    --weather-sun: #fcd34d;
+    --weather-cloud: #cbd5e1;
+    --weather-rain: #60a5fa;
+    --weather-snow: #e0f2fe;
+    --weather-lightning: #fde047;
 }
 
 body.dark-mode::before {

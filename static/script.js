@@ -59,20 +59,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastDesc = '';
     
     let weatherHtml = '';
-    const weatherSunSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
-    const weatherCloudSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 4.5 4.5 0 0 1 1.79 8.9z"></path></svg>';
-    const weatherRainSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 16H9a7 7 0 1 1 6.71-9.9 4.5 4.5 0 0 1 1.79 8.9z"></path><path d="M8 19v2"></path><path d="M12 19v2"></path><path d="M16 19v2"></path></svg>';
-    const weatherSnowSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"></path><path d="M8 16h.01"></path><path d="M8 20h.01"></path><path d="M12 18h.01"></path><path d="M12 22h.01"></path><path d="M16 16h.01"></path><path d="M16 20h.01"></path></svg>';
-    const weatherStormSVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline></svg>';
-
     const getWeatherSVG = (code) => {
-        if (code <= 1) return weatherSunSVG;
-        if (code <= 3) return weatherCloudSVG;
-        if (code <= 48) return weatherCloudSVG;
-        if (code <= 67 || (code >= 80 && code <= 82)) return weatherRainSVG;
-        if (code <= 77 || (code >= 85 && code <= 86)) return weatherSnowSVG;
-        if (code >= 95) return weatherStormSVG;
-        return weatherCloudSVG;
+        const anim = (currentConfig && currentConfig.animate_weather !== false) ? ' animated' : '';
+        
+        const sun = `<svg class="weather-icon sun${anim}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5" class="sun-core"></circle><g class="sun-rays"><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></g></svg>`;
+        
+        const cloud = `<svg class="weather-icon cloud${anim}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 4.5 4.5 0 0 1 1.79 8.9z" class="cloud-path"></path></svg>`;
+        
+        const rain = `<svg class="weather-icon rain${anim}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 16H9a7 7 0 1 1 6.71-9.9 4.5 4.5 0 0 1 1.79 8.9z" class="cloud-path"></path><g class="rain-drops"><path d="M8 19v2" class="drop-1"></path><path d="M12 19v2" class="drop-2"></path><path d="M16 19v2" class="drop-3"></path></g></svg>`;
+        
+        const snow = `<svg class="weather-icon snow${anim}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" class="cloud-path"></path><g class="snow-flakes"><path d="M8 16h.01" class="flake-1"></path><path d="M8 20h.01" class="flake-2"></path><path d="M12 18h.01" class="flake-3"></path><path d="M12 22h.01" class="flake-4"></path><path d="M16 16h.01" class="flake-5"></path><path d="M16 20h.01" class="flake-6"></path></g></svg>`;
+        
+        const storm = `<svg class="weather-icon storm${anim}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9" class="cloud-path"></path><polyline points="13 11 9 17 15 17 11 23" class="lightning-bolt"></polyline></svg>`;
+
+        if (code <= 1) return sun;
+        if (code <= 3) return cloud;
+        if (code <= 48) return cloud;
+        if (code <= 67 || (code >= 80 && code <= 82)) return rain;
+        if (code <= 77 || (code >= 85 && code <= 86)) return snow;
+        if (code >= 95) return storm;
+        return cloud;
     };
 
     const fetchWeather = async () => {

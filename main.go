@@ -56,6 +56,7 @@ type Config struct {
 	ShowOnlyDown  bool           `yaml:"show_only_down" json:"show_only_down"`
 	ShowPing      bool           `yaml:"show_ping" json:"show_ping"`
 	ShowWeather   bool           `yaml:"show_weather" json:"show_weather"`
+	AnimateWeather *bool         `yaml:"animate_weather" json:"animate_weather"`
 	WeatherCoords string         `yaml:"weather_coords" json:"weather_coords"`
 	CategoryColors CategoryColorsConfig  `yaml:"category_colors" json:"category_colors"`
 	Announcements []Announcement `yaml:"announcements" json:"announcements"`
