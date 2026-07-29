@@ -28,3 +28,7 @@ Thumbs.db
 data/*
 !data/config.example.yaml
 .agents/
+
+# Ignore local test binaries and screenshots
+Screenshot*.png
+test_build
