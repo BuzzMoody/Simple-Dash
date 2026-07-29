@@ -874,8 +874,8 @@ body.dark-mode .tooltip-box {
     .services-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
-    body:not(.list-view) .group.favorites .service-card {
-        flex-basis: 140px;
+    body:not(.list-view) .group.favorites .services-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
     .service-card {
         padding: 0.4rem 0.6rem;
@@ -969,7 +969,7 @@ body.dark-mode .tooltip-box {
 
 body:not(.list-view) .group.favorites .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .flare-wrapper {
