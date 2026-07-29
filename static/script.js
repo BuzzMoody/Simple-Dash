@@ -116,29 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const fetchIpLocationFallback = async () => {
-            console.warn("Using IP-based location fallback for weather.");
-            try {
-                const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                const data = await res.json();
-                if (data.latitude && data.longitude) {
-                    getWeatherFromCoords(data.latitude, data.longitude);
-                }
-            } catch (e) {
-                console.error("IP geolocation fallback failed:", e);
+        try {
+            const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            const data = await res.json();
+            if (data.latitude && data.longitude) {
+                getWeatherFromCoords(data.latitude, data.longitude);
             }
-        };
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => getWeatherFromCoords(position.coords.latitude, position.coords.longitude),
-                (error) => {
-                    console.warn("Geolocation error or denied:", error);
-                    fetchIpLocationFallback();
-                }
-            );
-        } else {
-            fetchIpLocationFallback();
+        } catch (e) {
+            console.error("IP geolocation fallback failed:", e);
         }
     };
     

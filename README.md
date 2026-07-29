@@ -101,7 +101,7 @@ category_colors:
 - `show_only_down`: *(Boolean)* Default is `false`. Only display the status dot on services that are offline. Online services will have no dot, keeping the UI cleaner.
 - `show_ping`: *(Boolean)* Default is `false`. If set to `true`, the UI will dynamically display the ping latency in milliseconds for healthy online services (appended to tooltips in Grid view, and displayed in the status column in List view), colour-coded based on response time. This option operates entirely independently of `show_only_down`.
 - `show_weather`: *(Boolean)* Default is `false`. Fetches and displays the current local temperature and a weather icon in the dashboard subheading. Does not require any API keys.
-- `weather_coords`: *(String)* (Optional) Hardcode your latitude and longitude as a comma-separated string (e.g. `"-37.81826872134725, 144.96705907138596"`) for the weather module. This seamlessly bypasses browser location prompts. If omitted, the dashboard falls back to the browser's Geolocation API or an IP-based location API.
+- `weather_coords`: *(String)* (Optional) Hardcode your latitude and longitude as a comma-separated string (e.g. `"-37.81826872134725, 144.96705907138596"`) for the weather module. If omitted, the dashboard will automatically fall back to an IP-based location API to approximate your location without needing browser permissions.
 - `category_colors`: *(Boolean or Object)* Default is `false`. If set to `true`, cards will have uniquely generated colours based on their category. Can also be defined as a nested object to enable additional colouring options:
   - `enabled`: *(Boolean)* Colourises service cards and category title borders.
   - `titles`: *(Boolean)* Colourises the category title text itself to match.
