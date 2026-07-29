@@ -17,6 +17,7 @@
     --weather-rain: #3b82f6;
     --weather-snow: #bae6fd;
     --weather-lightning: #eab308;
+    --weather-moon: #64748b;
 }
 
 body.dark-mode {
@@ -36,6 +37,7 @@ body.dark-mode {
     --weather-rain: #60a5fa;
     --weather-snow: #e0f2fe;
     --weather-lightning: #fde047;
+    --weather-moon: #e2e8f0;
 }
 
 body.dark-mode::before {
@@ -1016,6 +1018,49 @@ body:not(.list-view) .group.favorites .services-grid {
 
 @keyframes rotate-flare {
     to { transform: rotate(360deg); }
+}
+
+/* Weather Icons Colours & Animations */
+.weather-icon.sun { stroke: var(--weather-sun); }
+.weather-icon.moon .moon-core { stroke: var(--weather-moon); }
+.weather-icon.partly-cloudy-day .sun-core, .weather-icon.partly-cloudy-day .sun-rays { stroke: var(--weather-sun); }
+.weather-icon.partly-cloudy-day .cloud-path { stroke: var(--weather-cloud); }
+.weather-icon.partly-cloudy-night .moon-core { stroke: var(--weather-moon); }
+.weather-icon.partly-cloudy-night .cloud-path { stroke: var(--weather-cloud); }
+.weather-icon.fog .cloud-path, .weather-icon.fog .fog-1, .weather-icon.fog .fog-2 { stroke: var(--weather-cloud); }
+.weather-icon.cloud .cloud-path { stroke: var(--weather-cloud); }
+.weather-icon.rain .cloud-path { stroke: var(--weather-cloud); }
+.weather-icon.rain .rain-drops { stroke: var(--weather-rain); }
+.weather-icon.snow .cloud-path { stroke: var(--weather-cloud); }
+.weather-icon.snow .snow-flakes { stroke: var(--weather-snow); }
+.weather-icon.storm .cloud-path { stroke: var(--weather-cloud); }
+.weather-icon.storm .lightning-bolt { stroke: var(--weather-lightning); }
+
+/* Sun Spin */
+.weather-icon.sun.animated .sun-rays, .weather-icon.partly-cloudy-day.animated .sun-rays {
+    transform-origin: 50% 50%;
+    animation: weather-spin 10s linear infinite;
+}
+@keyframes weather-spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* Moon Rock */
+.weather-icon.moon.animated .moon-core, .weather-icon.partly-cloudy-night.animated .moon-core {
+    transform-origin: 50% 50%;
+    animation: moon-rock 8s ease-in-out infinite;
+}
+@keyframes moon-rock {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+/* Fog Drift */
+.weather-icon.fog.animated .fog-1 { animation: fog-drift 4s ease-in-out infinite; }
+.weather-icon.fog.animated .fog-2 { animation: fog-drift 4s ease-in-out infinite 2s; }
+@keyframes fog-drift {
+    0%, 100% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
 }
 
 /* List Layout - CSS Table */
