@@ -24,5 +24,11 @@ The backend is written in Go, which strictly prohibits unused imports and variab
 Before committing any changes to JavaScript files (e.g. `static/script.js`), you MUST verify there are no syntax errors (such as duplicate variable declarations, missing brackets, or invalid scope references) by running `node --check <path/to/file.js>` locally.
 
 # Language & Convention
-## 8. Australian English
+## 8. Strict Go Modules Cleanliness
+Whenever you add, modify, or remove packages from Go files, you MUST run `go mod tidy` to ensure `go.mod` and `go.sum` remain perfectly clean and accurate before committing.
+
+## 9. Security & XSS Prevention
+Since the dashboard renders user-defined configuration values (like URLs, Names, and custom HTML), you must actively ensure that all user-supplied outputs are safely escaped or sanitised to prevent Cross-Site Scripting (XSS) vulnerabilities.
+
+## 10. Australian English
 All written comments, code, instructions, and documentation must be in Australian English (e.g., using "colour" instead of "color"). This rule can be ignored only where code functions or functionality strictly rely on American English syntaxes (such as CSS property names).

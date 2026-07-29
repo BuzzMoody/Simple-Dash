@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
 )
 
@@ -188,13 +189,48 @@ func reloadConfigIfModified() {
 }
 
 func startConfigWatcher() {
-	// Check config file every 5 seconds
-	ticker := time.NewTicker(5 * time.Second)
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Printf("Failed to create fsnotify watcher: %v. Falling back to polling.", err)
+		ticker := time.NewTicker(5 * time.Second)
+		go func() {
+			for range ticker.C {
+				reloadConfigIfModified()
+			}
+		}()
+		return
+	}
+
 	go func() {
-		for range ticker.C {
-			reloadConfigIfModified()
+		defer watcher.Close()
+		var timer *time.Timer
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if strings.HasSuffix(event.Name, "config.yaml") && (event.Has(fsnotify.Write) || event.Has(fsnotify.Create)) {
+					if timer != nil {
+						timer.Stop()
+					}
+					timer = time.AfterFunc(100*time.Millisecond, func() {
+						reloadConfigIfModified()
+					})
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Printf("Config watcher error: %v", err)
+			}
 		}
 	}()
+
+	err = watcher.Add("data")
+	if err != nil {
+		log.Printf("Failed to add data directory to watcher: %v", err)
+	}
 }
 
 func loadInitialConfig() error {
@@ -380,6 +416,12 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+var gzipPool = sync.Pool{
+	New: func() interface{} {
+		return gzip.NewWriter(io.Discard)
+	},
+}
+
 // gzipMiddleware compresses HTTP responses for clients that support it
 func gzipMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -390,8 +432,13 @@ func gzipMiddleware(next http.Handler) http.Handler {
 
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Set("Vary", "Accept-Encoding")
-		gz := gzip.NewWriter(w)
-		defer gz.Close()
+		
+		gz := gzipPool.Get().(*gzip.Writer)
+		gz.Reset(w)
+		defer func() {
+			gz.Close()
+			gzipPool.Put(gz)
+		}()
 
 		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
 		next.ServeHTTP(gzw, r)
