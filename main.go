@@ -415,9 +415,22 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 type gzipResponseWriter struct {
 	io.Writer
 	http.ResponseWriter
+	wroteHeader bool
 }
 
-func (w gzipResponseWriter) Write(b []byte) (int, error) {
+func (w *gzipResponseWriter) WriteHeader(statusCode int) {
+	if w.wroteHeader {
+		return
+	}
+	w.wroteHeader = true
+	w.ResponseWriter.Header().Del("Content-Length")
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (w *gzipResponseWriter) Write(b []byte) (int, error) {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
 	return w.Writer.Write(b)
 }
 
@@ -445,7 +458,7 @@ func gzipMiddleware(next http.Handler) http.Handler {
 			gzipPool.Put(gz)
 		}()
 
-		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		gzw := &gzipResponseWriter{Writer: gz, ResponseWriter: w}
 		next.ServeHTTP(gzw, r)
 	})
 }
