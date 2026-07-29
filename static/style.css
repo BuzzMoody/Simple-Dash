@@ -968,12 +968,8 @@ body.dark-mode .tooltip-box {
 }
 
 body:not(.list-view) .group.favorites .services-grid {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-body:not(.list-view) .group.favorites .service-card {
-    flex: 1 1 170px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .flare-wrapper {
