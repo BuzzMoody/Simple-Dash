@@ -368,8 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             const desc = card.getAttribute('data-desc') || '';
                             if (tbox) {
                                 tbox.innerHTML = desc 
-                                    ? `${desc} &bull; <span style="color: ${pingColor}">${latency} ms</span>` 
-                                    : `<span style="color: ${pingColor}">${latency} ms</span>`;
+                                    ? `${desc} &bull; <span style="color: ${pingColor}; -webkit-text-fill-color: ${pingColor}">${latency} ms</span>` 
+                                    : `<span style="color: ${pingColor}; -webkit-text-fill-color: ${pingColor}">${latency} ms</span>`;
                             }
                             if (dot && showDot) {
                                 dot.className = 'status-dot up';
