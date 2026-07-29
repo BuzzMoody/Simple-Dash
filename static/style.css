@@ -1463,27 +1463,27 @@ body.dark-mode .changelog-popup {
 
 /* Raindrops */
 .weather-icon.rain.animated .drop-1 { animation: rain-drop 1.5s infinite linear; }
-.weather-icon.rain.animated .drop-2 { animation: rain-drop 1.5s infinite linear 0.5s; }
-.weather-icon.rain.animated .drop-3 { animation: rain-drop 1.5s infinite linear 1s; }
+.weather-icon.rain.animated .drop-2 { animation: rain-drop 1.5s infinite linear -0.5s; }
+.weather-icon.rain.animated .drop-3 { animation: rain-drop 1.5s infinite linear -1s; }
 @keyframes rain-drop {
     0% { transform: translateY(-3px); opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { transform: translateY(4px); opacity: 0; }
+    25% { transform: translateY(-1px); opacity: 1; }
+    75% { transform: translateY(3px); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0; }
 }
 
 /* Snowflakes */
 .weather-icon.snow.animated .flake-1 { animation: snow-fall 2.5s infinite linear; }
-.weather-icon.snow.animated .flake-2 { animation: snow-fall 2.5s infinite linear 1s; }
-.weather-icon.snow.animated .flake-3 { animation: snow-fall 2.5s infinite linear 0.5s; }
-.weather-icon.snow.animated .flake-4 { animation: snow-fall 2.5s infinite linear 1.5s; }
-.weather-icon.snow.animated .flake-5 { animation: snow-fall 2.5s infinite linear 0.2s; }
-.weather-icon.snow.animated .flake-6 { animation: snow-fall 2.5s infinite linear 1.2s; }
+.weather-icon.snow.animated .flake-2 { animation: snow-fall 2.5s infinite linear -1s; }
+.weather-icon.snow.animated .flake-3 { animation: snow-fall 2.5s infinite linear -0.5s; }
+.weather-icon.snow.animated .flake-4 { animation: snow-fall 2.5s infinite linear -1.5s; }
+.weather-icon.snow.animated .flake-5 { animation: snow-fall 2.5s infinite linear -0.2s; }
+.weather-icon.snow.animated .flake-6 { animation: snow-fall 2.5s infinite linear -1.2s; }
 @keyframes snow-fall {
     0% { transform: translateY(-3px); opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { transform: translateY(4px); opacity: 0; }
+    25% { transform: translateY(-1px); opacity: 1; }
+    75% { transform: translateY(3px); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0; }
 }
 
 /* Lightning */
