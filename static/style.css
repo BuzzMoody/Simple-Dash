@@ -564,6 +564,7 @@ html, body {
     transform: translateX(var(--tooltip-x, -50%)) translateY(10px);
     background: var(--card-bg);
     color: var(--text-color);
+    -webkit-text-fill-color: var(--text-color);
     padding: 0.4rem 0.8rem;
     border-radius: 0.5rem;
     font-size: 0.75rem;

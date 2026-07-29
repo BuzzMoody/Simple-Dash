@@ -481,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             const updateIndicator = document.getElementById('update-indicator');
                             if (updateIndicator && latestVersionNumber !== currentVersionNumber) {
-                                updateIndicator.innerHTML = `<a href="${latestRelease.html_url}" target="_blank" class="update-indicator" data-tooltip="Update Available: v${latestVersionNumber}">Update</a>`;
+                                updateIndicator.innerHTML = `<a href="${latestRelease.html_url}" target="_blank" class="update-indicator" data-tooltip="Update Available: ${displayVersion} &#8594; v${latestVersionNumber}">Update</a>`;
                             }
                             
                             const currentRelease = releases.find(r => r.tag_name.replace(/^v/, '') === currentVersionNumber) || latestRelease;
