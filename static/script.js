@@ -75,9 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return weatherCloudSVG;
     };
 
-    const fetchWeather = () => {
-        if (!navigator.geolocation) return;
-        
+    const fetchWeather = async () => {
         const cached = localStorage.getItem('dashy-weather');
         if (cached) {
             try {
@@ -90,10 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {}
         }
 
-        navigator.geolocation.getCurrentPosition(async (position) => {
+        const getWeatherFromCoords = async (lat, lon) => {
             try {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
                 const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
                 if (!response.ok) return;
                 const data = await response.json();
@@ -106,9 +102,38 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error("Error fetching weather:", error);
             }
-        }, (error) => {
-            console.warn("Geolocation error:", error);
-        });
+        };
+
+        if (currentConfig.weather_lat !== undefined && currentConfig.weather_lat !== null &&
+            currentConfig.weather_lon !== undefined && currentConfig.weather_lon !== null) {
+            getWeatherFromCoords(currentConfig.weather_lat, currentConfig.weather_lon);
+            return;
+        }
+
+        const fetchIpLocationFallback = async () => {
+            console.warn("Using IP-based location fallback for weather.");
+            try {
+                const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                const data = await res.json();
+                if (data.latitude && data.longitude) {
+                    getWeatherFromCoords(data.latitude, data.longitude);
+                }
+            } catch (e) {
+                console.error("IP geolocation fallback failed:", e);
+            }
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => getWeatherFromCoords(position.coords.latitude, position.coords.longitude),
+                (error) => {
+                    console.warn("Geolocation error or denied:", error);
+                    fetchIpLocationFallback();
+                }
+            );
+        } else {
+            fetchIpLocationFallback();
+        }
     };
     
     const updateClock = () => {
