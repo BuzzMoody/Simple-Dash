@@ -453,10 +453,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const versionMeta = document.querySelector('meta[name="version"]');
             const version = versionMeta && versionMeta.content !== '{{VERSION}}' ? versionMeta.content : 'dev';
             
+            let displayVersion = version;
+            if (version === 'dev') {
+                displayVersion = 'vdev';
+            } else if (version.includes('.')) {
+                displayVersion = version.startsWith('v') ? version : `v${version}`;
+            }
+
             if (footerHtml) {
-                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version.replace(/^v/, '')}</a>`;
+                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${displayVersion}</a>`;
             } else {
-                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">v${version.replace(/^v/, '')}</a>`;
+                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${displayVersion}</a>`;
             }
             
             footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
