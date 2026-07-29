@@ -104,10 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (currentConfig.weather_lat !== undefined && currentConfig.weather_lat !== null &&
-            currentConfig.weather_lon !== undefined && currentConfig.weather_lon !== null) {
-            getWeatherFromCoords(currentConfig.weather_lat, currentConfig.weather_lon);
-            return;
+        if (currentConfig.weather_coords && typeof currentConfig.weather_coords === 'string') {
+            const parts = currentConfig.weather_coords.split(',');
+            if (parts.length === 2) {
+                const lat = parseFloat(parts[0].trim());
+                const lon = parseFloat(parts[1].trim());
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    getWeatherFromCoords(lat, lon);
+                    return;
+                }
+            }
         }
 
         const fetchIpLocationFallback = async () => {

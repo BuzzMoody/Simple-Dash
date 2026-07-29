@@ -7,8 +7,7 @@ new_tabs: true
 show_only_down: false
 show_ping: true
 show_weather: false
-# weather_lat: -33.8688
-# weather_lon: 151.2093
+# weather_coords: "-33.8688, 151.2093"
 category_colors:
   enabled: false
   titles: false
