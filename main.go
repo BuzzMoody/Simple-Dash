@@ -11,6 +11,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"context"
 
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
@@ -287,7 +288,9 @@ func checkHealth() {
 			}
 			
 			start := time.Now()
-			req, err := http.NewRequest("GET", pingUrl, nil)
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			req, err := http.NewRequestWithContext(ctx, "GET", pingUrl, nil)
 			isUp := false
 			latencyMs := 0
 			if err == nil {
