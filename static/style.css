@@ -1038,17 +1038,20 @@ body:not(.list-view) .group.favorites .services-grid {
 
 /* Sun Spin */
 .weather-icon.sun.animated .sun-rays, .weather-icon.partly-cloudy-day.animated .sun-rays {
-    transform-origin: 50% 50%;
-    animation: weather-spin 10s linear infinite;
+    transform-origin: center;
+    transform-box: view-box;
+    animation: weather-spin 20s linear infinite;
 }
 @keyframes weather-spin {
+    0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
 /* Moon Rock */
 .weather-icon.moon.animated .moon-core, .weather-icon.partly-cloudy-night.animated .moon-core {
-    transform-origin: 50% 50%;
-    animation: moon-rock 8s ease-in-out infinite;
+    transform-origin: center;
+    transform-box: view-box;
+    animation: moon-rock 12s ease-in-out infinite;
 }
 @keyframes moon-rock {
     0%, 100% { transform: rotate(-5deg); }
@@ -1056,8 +1059,8 @@ body:not(.list-view) .group.favorites .services-grid {
 }
 
 /* Fog Drift */
-.weather-icon.fog.animated .fog-1 { animation: fog-drift 4s ease-in-out infinite; }
-.weather-icon.fog.animated .fog-2 { animation: fog-drift 4s ease-in-out infinite 2s; }
+.weather-icon.fog.animated .fog-1 { animation: fog-drift 12s ease-in-out infinite; }
+.weather-icon.fog.animated .fog-2 { animation: fog-drift 12s ease-in-out infinite -6s; }
 @keyframes fog-drift {
     0%, 100% { transform: translateX(-2px); }
     50% { transform: translateX(2px); }
@@ -1462,39 +1465,36 @@ body.dark-mode .changelog-popup {
 }
 
 /* Raindrops */
-.weather-icon.rain.animated .drop-1 { animation: rain-drop 1.5s infinite linear; }
-.weather-icon.rain.animated .drop-2 { animation: rain-drop 1.5s infinite linear -0.5s; }
-.weather-icon.rain.animated .drop-3 { animation: rain-drop 1.5s infinite linear -1s; }
+.weather-icon.rain.animated .drop-1 { animation: rain-drop 6s infinite linear; }
+.weather-icon.rain.animated .drop-2 { animation: rain-drop 6s infinite linear -2s; }
+.weather-icon.rain.animated .drop-3 { animation: rain-drop 6s infinite linear -4s; }
 @keyframes rain-drop {
-    0% { transform: translateY(-3px); opacity: 0; }
-    25% { transform: translateY(-1px); opacity: 1; }
-    75% { transform: translateY(3px); opacity: 1; }
+    0% { transform: translateY(-4px); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
     100% { transform: translateY(6px); opacity: 0; }
 }
 
 /* Snowflakes */
-.weather-icon.snow.animated .flake-1 { animation: snow-fall 2.5s infinite linear; }
-.weather-icon.snow.animated .flake-2 { animation: snow-fall 2.5s infinite linear -1s; }
-.weather-icon.snow.animated .flake-3 { animation: snow-fall 2.5s infinite linear -0.5s; }
-.weather-icon.snow.animated .flake-4 { animation: snow-fall 2.5s infinite linear -1.5s; }
-.weather-icon.snow.animated .flake-5 { animation: snow-fall 2.5s infinite linear -0.2s; }
-.weather-icon.snow.animated .flake-6 { animation: snow-fall 2.5s infinite linear -1.2s; }
+.weather-icon.snow.animated .flake-1 { animation: snow-fall 8s infinite linear; }
+.weather-icon.snow.animated .flake-2 { animation: snow-fall 8s infinite linear -4s; }
+.weather-icon.snow.animated .flake-3 { animation: snow-fall 8s infinite linear -2s; }
+.weather-icon.snow.animated .flake-4 { animation: snow-fall 8s infinite linear -6s; }
+.weather-icon.snow.animated .flake-5 { animation: snow-fall 8s infinite linear -1s; }
+.weather-icon.snow.animated .flake-6 { animation: snow-fall 8s infinite linear -5s; }
 @keyframes snow-fall {
-    0% { transform: translateY(-3px); opacity: 0; }
-    25% { transform: translateY(-1px); opacity: 1; }
-    75% { transform: translateY(3px); opacity: 1; }
+    0% { transform: translateY(-4px); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
     100% { transform: translateY(6px); opacity: 0; }
 }
 
 /* Lightning */
 .weather-icon.storm.animated .lightning-bolt {
-    animation: lightning-flash 3s infinite;
+    animation: lightning-flash 6s ease-in-out infinite;
 }
 @keyframes lightning-flash {
-    0%, 90%, 100% { opacity: 1; }
-    92% { opacity: 0.2; }
-    94% { opacity: 1; }
-    96% { opacity: 0.2; }
-    98% { opacity: 1; }
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
 }
 
