@@ -537,6 +537,7 @@ html, body {
 
 .slot-machine {
     display: inline-flex;
+    align-items: flex-start;
     height: 1.5rem;
     overflow: hidden;
     line-height: 1.5rem;
@@ -551,6 +552,7 @@ html, body {
 .slot-char {
     height: 1.5rem;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
 }
