@@ -395,11 +395,7 @@ func getSysMetrics() *SysMetrics {
 			uptimeSecs, _ := strconv.ParseFloat(fields[0], 64)
 			days := int(uptimeSecs) / 86400
 			hours := (int(uptimeSecs) % 86400) / 3600
-			if days > 0 {
-				metrics.Uptime = fmt.Sprintf("%dd %dh", days, hours)
-			} else {
-				metrics.Uptime = fmt.Sprintf("%dh", hours)
-			}
+			metrics.Uptime = fmt.Sprintf("%2dd %2dh", days, hours)
 		}
 	}
 
