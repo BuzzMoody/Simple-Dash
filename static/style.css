@@ -535,20 +535,19 @@ html, body {
 
 .slot-machine {
     display: inline-flex;
-    height: 1.2em;
+    height: 1.5rem;
     overflow: hidden;
-    line-height: 1.2em;
+    line-height: 1.5rem;
     font-variant-numeric: tabular-nums;
 }
 
 .slot-digit {
     display: inline-flex;
     flex-direction: column;
-    transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .slot-char {
-    height: 1.2em;
+    height: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;

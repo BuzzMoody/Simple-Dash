@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return { base: '#39c55c', flash: '#9ce2ad' };
         };
 
-        const updateSlot = (el, id, val, suffix) => {
+        const updateSlot = (el, id, val, suffix, isFirstLoad) => {
             let slot = el.querySelector('.slot-machine');
             if (!slot) {
                 el.innerHTML = '';
@@ -414,14 +414,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.appendChild(slot);
             }
             
-            let sVal = val.toString().padStart(3, ' ');
+            let sVal = Math.round(Number(val)).toString().padStart(3, ' ');
             const idx1 = sVal[0] === ' ' ? 0 : 1;
             const idx2 = sVal[1] === ' ' ? 0 : parseInt(sVal[1], 10) + 1;
-            const idx3 = parseInt(sVal[2], 10);
+            const idx3 = parseInt(sVal[2], 10) || 0;
             
-            document.getElementById(`slot-${id}-1`).style.transform = `translateY(calc(-100% / 2 * ${idx1}))`;
-            document.getElementById(`slot-${id}-2`).style.transform = `translateY(calc(-100% / 11 * ${idx2}))`;
-            document.getElementById(`slot-${id}-3`).style.transform = `translateY(calc(-100% / 10 * ${idx3}))`;
+            const d1 = document.getElementById(`slot-${id}-1`);
+            const d2 = document.getElementById(`slot-${id}-2`);
+            const d3 = document.getElementById(`slot-${id}-3`);
+            
+            if (isFirstLoad) {
+                d1.style.transition = 'none';
+                d2.style.transition = 'none';
+                d3.style.transition = 'none';
+            } else {
+                const trans = 'transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                d1.style.transition = trans;
+                d2.style.transition = trans;
+                d3.style.transition = trans;
+            }
+            
+            d1.style.transform = `translateY(calc(-100% / 2 * ${idx1}))`;
+            d2.style.transform = `translateY(calc(-100% / 11 * ${idx2}))`;
+            d3.style.transform = `translateY(calc(-100% / 10 * ${idx3}))`;
         };
 
         const animateMetric = (id, endVal, suffix) => {
@@ -430,22 +445,27 @@ document.addEventListener('DOMContentLoaded', () => {
             let startVal = currentStr ? parseInt(currentStr, 10) : 0;
             if (startVal === endVal && currentStr !== null) return;
             
+            const isFirstLoad = currentStr === null;
             const colors = getColor(endVal);
             el.setAttribute('data-val', endVal);
             
-            const duration = 1500;
-            
             el.style.transition = 'none';
-            el.style.color = colors.flash;
-            el.style.textShadow = `0 0 10px ${colors.base}`;
+            if (!isFirstLoad) {
+                el.style.color = colors.flash;
+                el.style.textShadow = `0 0 10px ${colors.base}`;
+            }
+            
+            updateSlot(el, id, endVal, suffix, isFirstLoad);
             
             void el.offsetWidth;
             
-            el.style.transition = `color ${duration}ms ease-out, text-shadow ${duration}ms ease-out`;
-            el.style.color = colors.base;
-            el.style.textShadow = 'none';
-            
-            updateSlot(el, id, endVal, suffix);
+            if (!isFirstLoad) {
+                el.style.transition = `color 1.5s ease-out, text-shadow 1.5s ease-out`;
+                el.style.color = colors.base;
+                el.style.textShadow = 'none';
+            } else {
+                el.style.color = colors.base;
+            }
         };
 
         animateMetric('cpu', metrics.cpu, '%');
