@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentConfig = null;
     let weatherHtml = '';
+    let renderedWeatherHtml = '';
     let currentSearchTerm = '';
     let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
     let layout = localStorage.getItem('dashy-layout') || 'grid'; // 'grid' or 'list'
@@ -177,12 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (weatherContainer) {
             if (currentConfig && currentConfig.show_weather && weatherHtml) {
-                if (weatherContainer.innerHTML !== weatherHtml) {
+                if (renderedWeatherHtml !== weatherHtml) {
                     weatherContainer.innerHTML = weatherHtml;
+                    renderedWeatherHtml = weatherHtml;
                 }
             } else {
-                if (weatherContainer.innerHTML !== '') {
+                if (renderedWeatherHtml !== '') {
                     weatherContainer.innerHTML = '';
+                    renderedWeatherHtml = '';
                 }
             }
         }
