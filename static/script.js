@@ -458,8 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        const cpuStr = Math.round(Number(metrics.cpu)).toString().padStart(3, ' ') + '%';
-        const ramStr = Math.round(Number(metrics.ram)).toString().padStart(3, ' ') + '%';
+        const cpuStr = Math.round(Number(metrics.cpu)).toString().padStart(2, ' ') + '%';
+        const ramStr = Math.round(Number(metrics.ram)).toString().padStart(2, ' ') + '%';
         animateMetric('cpu', cpuStr, metrics.cpu);
         animateMetric('ram', ramStr, metrics.ram);
         animateMetric('uptime', metrics.uptime, null);
