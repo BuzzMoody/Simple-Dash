@@ -47,7 +47,6 @@ Whenever you add, modify, or remove packages from Go files, you MUST run `go mod
 Since the dashboard renders user-defined configuration values (like URLs, Names, and custom HTML), you must actively ensure that all user-supplied outputs are safely escaped or sanitised to prevent Cross-Site Scripting (XSS) vulnerabilities.
 *   **Backend Constraint:** Always use Go's `html/template` package (never `text/template`) for anything rendering config-supplied values.
 *   **Frontend Constraint:** Never assign config-derived strings to `innerHTML` in JavaScript; strictly use `textContent` or `setAttribute`.
-    *   *Exemption:* The `footer` configuration value is designed to accept raw HTML (like links and symbols) and is exempt from this rule.
 
 ## 11. Australian English
 All written comments, code, instructions, and documentation must be in Australian English (e.g., using "colour" instead of "color"). This rule can be ignored only where code functions or functionality strictly rely on American English syntaxes (such as CSS property names).

@@ -146,7 +146,7 @@ func applyDefaults(cfg *Config) {
 		cfg.Description = "A simple homelab dashboard"
 	}
 	if cfg.Footer == "" {
-		cfg.Footer = "&copy; 2026 Buzz Moody &bull; <a href='https://github.com/BuzzMoody' target='_blank'>GitHub</a> &bull; Built with ☕ and Go"
+		cfg.Footer = "\u00a9 2026 Buzz Moody \u2022 [GitHub](https://github.com/BuzzMoody) \u2022 Built with \u2615 and Go"
 	}
 	if cfg.NewTabs == nil {
 		defaultTabs := true
@@ -456,15 +456,15 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
 	if cfg != nil && cfg.Favicon != "" {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		
+
 		baseDir := filepath.Clean("data/logos")
 		cleanPath := filepath.Clean(filepath.Join(baseDir, cfg.Favicon))
-		
+
 		if !strings.HasPrefix(cleanPath, baseDir) {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
-		
+
 		http.ServeFile(w, r, cleanPath)
 		return
 	}

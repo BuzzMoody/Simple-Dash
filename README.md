@@ -81,7 +81,7 @@ The entire dashboard is driven by a single `config.yaml` file mounted into the `
 header: "Homelab"
 description: "My personal server dashboard"
 header_colors: ["#38bdf8", "#a855f7"]
-footer: "&copy; 2026 Buzz Moody &middot; <a href='https://github.com/BuzzMoody'>GitHub</a>"
+footer: "\u00a9 2026 Buzz Moody \u00b7 [GitHub](https://github.com/BuzzMoody)"
 favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false

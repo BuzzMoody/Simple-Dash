@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const footerEl = document.getElementById('footer');
         if (footerEl) {
-            let footerHtml = config.footer || '';
+            let footerText = config.footer || '';
             const versionMeta = document.querySelector('meta[name="version"]');
             const version = versionMeta && versionMeta.content !== '{{VERSION}}' ? versionMeta.content : 'dev';
             
@@ -504,13 +504,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayVersion = version.startsWith('v') ? version : `v${version}`;
             }
 
-            if (footerHtml) {
-                footerHtml += ` &bull; <a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${displayVersion}</a>`;
+            if (footerText) {
+                footerText += ` \u2022 [${displayVersion}](https://github.com/BuzzMoody/Simple-Dash)`;
             } else {
-                footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${displayVersion}</a>`;
+                footerText = `[${displayVersion}](https://github.com/BuzzMoody/Simple-Dash)`;
             }
             
-            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
+            const parseMarkdownLinks = (text) => {
+                const frag = document.createDocumentFragment();
+                text = text.replace(/&copy;/gi, '\u00a9').replace(/&bull;/gi, '\u2022').replace(/&middot;/gi, '\u00b7').replace(/&mdash;/gi, '\u2014').replace(/&ndash;/gi, '\u2013');
+                const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+                let lastIdx = 0, match;
+                while ((match = regex.exec(text)) !== null) {
+                    if (match.index > lastIdx) {
+                        frag.appendChild(document.createTextNode(text.substring(lastIdx, match.index)));
+                    }
+                    const a = document.createElement('a');
+                    a.href = match[2];
+                    a.target = '_blank';
+                    a.textContent = match[1];
+                    frag.appendChild(a);
+                    lastIdx = regex.lastIndex;
+                }
+                if (lastIdx < text.length) frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+                return frag;
+            };
+
+            footerEl.innerHTML = `<span id="footer-text" style="opacity: 0.7"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
+            footerEl.querySelector('#footer-text').appendChild(parseMarkdownLinks(footerText));
 
             if (version !== 'dev') {
                 const fetchReleases = async () => {
