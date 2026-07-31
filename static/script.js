@@ -384,11 +384,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const colors = getColor(endVal);
             el.setAttribute('data-val', endVal);
             
+            const duration = 1500;
+            
             el.style.transition = 'none';
             el.style.color = colors.flash;
             el.style.textShadow = `0 0 10px ${colors.base}`;
             
-            const duration = 600;
+            void el.offsetWidth;
+            
+            el.style.transition = `color ${duration}ms ease-out, text-shadow ${duration}ms ease-out`;
+            el.style.color = colors.base;
+            el.style.textShadow = 'none';
+            
             const startTime = performance.now();
             
             const step = (now) => {
@@ -399,10 +406,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (progress < 1) {
                     requestAnimationFrame(step);
-                } else {
-                    el.style.transition = 'color 0.8s ease, text-shadow 0.8s ease';
-                    el.style.color = colors.base;
-                    el.style.textShadow = 'none';
                 }
             };
             requestAnimationFrame(step);
