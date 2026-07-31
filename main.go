@@ -2,17 +2,18 @@ package main
 
 import (
 	"compress/gzip"
+	"context"
+	_ "embed"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-	"context"
-	_ "embed"
 
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
@@ -37,7 +38,7 @@ func (c *CategoryColorsConfig) UnmarshalYAML(value *yaml.Node) error {
 		c.Enabled = b
 		return nil
 	}
-	
+
 	type alias CategoryColorsConfig
 	var a alias
 	if err := value.Decode(&a); err != nil {
@@ -48,21 +49,21 @@ func (c *CategoryColorsConfig) UnmarshalYAML(value *yaml.Node) error {
 }
 
 type Config struct {
-	Header        string         `yaml:"header" json:"header"`
-	Description   string         `yaml:"description" json:"description"`
-	HeaderColors  []string       `yaml:"header_colors" json:"header_colors"`
-	Footer        string         `yaml:"footer" json:"footer"`
-	Favicon       string         `yaml:"favicon" json:"favicon"`
-	NewTabs       *bool          `yaml:"new_tabs" json:"new_tabs"`
-	ShowOnlyDown  bool           `yaml:"show_only_down" json:"show_only_down"`
-	ShowPing      bool           `yaml:"show_ping" json:"show_ping"`
-	ShowWeather   bool           `yaml:"show_weather" json:"show_weather"`
-	WeatherAnimate *bool         `yaml:"weather_animate" json:"weather_animate"`
-	WeatherCoords string         `yaml:"weather_coords" json:"weather_coords"`
-	CategoryColors CategoryColorsConfig  `yaml:"category_colors" json:"category_colors"`
-	Announcements []Announcement `yaml:"announcements" json:"announcements"`
-	Buttons       []Button       `yaml:"buttons" json:"buttons"`
-	Services      []Service      `yaml:"services" json:"services"`
+	Header         string               `yaml:"header" json:"header"`
+	Description    string               `yaml:"description" json:"description"`
+	HeaderColors   []string             `yaml:"header_colors" json:"header_colors"`
+	Footer         string               `yaml:"footer" json:"footer"`
+	Favicon        string               `yaml:"favicon" json:"favicon"`
+	NewTabs        *bool                `yaml:"new_tabs" json:"new_tabs"`
+	ShowOnlyDown   bool                 `yaml:"show_only_down" json:"show_only_down"`
+	ShowPing       bool                 `yaml:"show_ping" json:"show_ping"`
+	ShowWeather    bool                 `yaml:"show_weather" json:"show_weather"`
+	WeatherAnimate *bool                `yaml:"weather_animate" json:"weather_animate"`
+	WeatherCoords  string               `yaml:"weather_coords" json:"weather_coords"`
+	CategoryColors CategoryColorsConfig `yaml:"category_colors" json:"category_colors"`
+	Announcements  []Announcement       `yaml:"announcements" json:"announcements"`
+	Buttons        []Button             `yaml:"buttons" json:"buttons"`
+	Services       []Service            `yaml:"services" json:"services"`
 }
 
 type Button struct {
@@ -74,24 +75,22 @@ type Button struct {
 	LogoLight string `yaml:"logo_light" json:"logo_light"`
 }
 
-
-
 type Service struct {
-	Name        string     `yaml:"name" json:"name"`
-	URL         string     `yaml:"url" json:"url"`
-	Category    string     `yaml:"category" json:"category"`
-	Server      string     `yaml:"server" json:"server"`
-	Logo        string     `yaml:"logo" json:"logo"`
-	LogoDark    string     `yaml:"logo_dark" json:"logo_dark"`
-	LogoLight   string     `yaml:"logo_light" json:"logo_light"`
-	Icon        string     `yaml:"icon" json:"icon"`
-	Description string     `yaml:"description" json:"description"`
-	Pinned      bool       `yaml:"pinned" json:"pinned"`
+	Name        string `yaml:"name" json:"name"`
+	URL         string `yaml:"url" json:"url"`
+	Category    string `yaml:"category" json:"category"`
+	Server      string `yaml:"server" json:"server"`
+	Logo        string `yaml:"logo" json:"logo"`
+	LogoDark    string `yaml:"logo_dark" json:"logo_dark"`
+	LogoLight   string `yaml:"logo_light" json:"logo_light"`
+	Icon        string `yaml:"icon" json:"icon"`
+	Description string `yaml:"description" json:"description"`
+	Pinned      bool   `yaml:"pinned" json:"pinned"`
 }
 
 type ServiceStatus struct {
-	IsUp    bool              `json:"is_up"`
-	Latency int               `json:"latency,omitempty"`
+	IsUp    bool `json:"is_up"`
+	Latency int  `json:"latency,omitempty"`
 }
 
 var (
@@ -100,8 +99,8 @@ var (
 	lastModTime   atomic.Int64 // UnixNano
 	configPath    = "data/config.yaml"
 	statusClients sync.Map // map[chan string]bool
-	
-	globalClient  = &http.Client{Timeout: 3 * time.Second}
+
+	globalClient = &http.Client{Timeout: 3 * time.Second}
 
 	//go:embed VERSION
 	versionData []byte
@@ -252,7 +251,6 @@ func loadInitialConfig() error {
 	return nil
 }
 
-
 func checkHealth() {
 	cfg := configCache.Load()
 	if cfg == nil {
@@ -272,15 +270,15 @@ func checkHealth() {
 		wg.Add(1)
 		go func(srv Service) {
 			defer wg.Done()
-			
+
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			
+
 			pingUrl := srv.URL
 			if srv.Server != "" {
 				pingUrl = srv.Server
 			}
-			
+
 			start := time.Now()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
@@ -385,7 +383,6 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func configHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
 	if cfg == nil {
@@ -442,7 +439,7 @@ func gzipMiddleware(next http.Handler) http.Handler {
 
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Set("Vary", "Accept-Encoding")
-		
+
 		gz := gzipPool.Get().(*gzip.Writer)
 		gz.Reset(w)
 		defer func() {
@@ -455,14 +452,20 @@ func gzipMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-
-
-
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := configCache.Load()
 	if cfg != nil && cfg.Favicon != "" {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-		http.ServeFile(w, r, "./data/logos/"+cfg.Favicon)
+		
+		baseDir := filepath.Clean("data/logos")
+		cleanPath := filepath.Clean(filepath.Join(baseDir, cfg.Favicon))
+		
+		if !strings.HasPrefix(cleanPath, baseDir) {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+		
+		http.ServeFile(w, r, cleanPath)
 		return
 	}
 	http.NotFound(w, r)
@@ -483,7 +486,7 @@ func main() {
 	mux.HandleFunc("/api/status/stream", statusStreamHandler)
 	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./data/logos"))))
-	
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/", "/index.html":
@@ -501,7 +504,7 @@ func main() {
 
 	port := "8888"
 	log.Printf("Server starting on port %s...", port)
-	
+
 	// Apply gzip middleware to the entire mux router
 	if err := http.ListenAndServe(":"+port, gzipMiddleware(mux)); err != nil {
 		log.Fatal(err)

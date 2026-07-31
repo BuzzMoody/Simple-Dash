@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (descText !== lastDesc) {
-                clockDesc.innerHTML = descText;
+                clockDesc.textContent = descText;
                 lastDesc = descText;
             }
         }
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (layout !== 'list') {
                         tbox = card.querySelector('.tooltip-box');
                         const desc = card.getAttribute('data-desc');
-                        if (tbox && !showPing) tbox.innerHTML = desc || '';
+                        if (tbox && !showPing) tbox.textContent = desc || '';
                     }
                     
                     if (showPing) {
@@ -408,9 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             const desc = card.getAttribute('data-desc') || '';
                             if (tbox) {
-                                tbox.innerHTML = desc 
-                                    ? `${desc} &bull; <span style="color: ${pingColor}; -webkit-text-fill-color: ${pingColor}">${latency} ms</span>` 
-                                    : `<span style="color: ${pingColor}; -webkit-text-fill-color: ${pingColor}">${latency} ms</span>`;
+                                tbox.innerHTML = '';
+                                if (desc) {
+                                    tbox.appendChild(document.createTextNode(desc + ' \u2022 '));
+                                }
+                                const pingSpan = document.createElement('span');
+                                pingSpan.style.color = pingColor;
+                                pingSpan.style.webkitTextFillColor = pingColor;
+                                pingSpan.textContent = latency + ' ms';
+                                tbox.appendChild(pingSpan);
                             }
                             if (dot && showDot) {
                                 dot.className = 'status-dot up';
@@ -504,7 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 footerHtml = `<a href="https://github.com/BuzzMoody/Simple-Dash" target="_blank">${displayVersion}</a>`;
             }
             
-            footerEl.innerHTML = `<span style="opacity: 0.7">${footerHtml}</span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
+            footerEl.innerHTML = `<span id="footer-text" style="opacity: 0.7"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
+            footerEl.querySelector('#footer-text').textContent = footerHtml;
 
             if (version !== 'dev') {
                 const fetchReleases = async () => {
@@ -636,7 +643,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (btn.icon) {
                     content = `<span style="margin-right:0.3rem">${btn.icon}</span>`;
                 }
-                el.innerHTML = `${content}${btn.name}`;
+                el.innerHTML = `${content}<span></span>`;
+                el.querySelector('span').textContent = btn.name;
                 
                 buttonsContainer.appendChild(el);
             });
@@ -675,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const tooltipBox = document.createElement('div');
         tooltipBox.className = 'tooltip-box';
-        if (service.description) tooltipBox.innerHTML = service.description;
+        if (service.description) tooltipBox.textContent = service.description;
         card.appendChild(tooltipBox);
         
         const shimmerBox = document.createElement('div');
@@ -869,7 +877,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (service.pinned) {
                     pinnedHtml = ` <span class="list-pinned-star" style="background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset;"><svg viewBox="0 0 24 24" width="16" height="16" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5-1.5l1.5-4l4-4"/><line x1="9" y1="15" x2="4.5" y2="19.5"/><line x1="14.5" y1="4" x2="20" y2="9.5"/></svg></span>`;
                 }
-                nameCol.innerHTML = `${iconHtml} <span>${service.name}</span>${pinnedHtml}`;
+                nameCol.innerHTML = `${iconHtml} <span></span>${pinnedHtml}`;
+                nameCol.querySelector('span').textContent = service.name;
 
                 // desc col
                 const descCol = document.createElement('div');
