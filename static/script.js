@@ -370,10 +370,10 @@ document.addEventListener('DOMContentLoaded', () => {
             container.parentNode.insertBefore(metricsEl, container);
         }
         const getColor = (val) => {
-            if (val > 90) return '#d64242';
-            if (val > 75) return '#f59e0b';
-            if (val > 60) return '#eab308';
-            return '#39c55c';
+            if (val > 90) return { base: '#d64242', flash: '#eaa0a0' };
+            if (val > 75) return { base: '#f59e0b', flash: '#face85' };
+            if (val > 60) return { base: '#eab308', flash: '#f4d983' };
+            return { base: '#39c55c', flash: '#9ce2ad' };
         };
 
         const animateMetric = (el, endVal, suffix) => {
@@ -381,12 +381,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let startVal = currentStr ? parseInt(currentStr, 10) : 0;
             if (startVal === endVal && currentStr !== null) return;
             
-            const targetColor = getColor(endVal);
+            const colors = getColor(endVal);
             el.setAttribute('data-val', endVal);
             
             el.style.transition = 'none';
-            el.style.color = '#ffffff';
-            el.style.textShadow = `0 0 10px ${targetColor}`;
+            el.style.color = colors.flash;
+            el.style.textShadow = `0 0 10px ${colors.base}`;
             
             const duration = 600;
             const startTime = performance.now();
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     requestAnimationFrame(step);
                 } else {
                     el.style.transition = 'color 0.8s ease, text-shadow 0.8s ease';
-                    el.style.color = targetColor;
+                    el.style.color = colors.base;
                     el.style.textShadow = 'none';
                 }
             };
