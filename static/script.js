@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = JSON.parse(event.data);
                 if (data.services !== undefined) {
                     updateStatusIndicators(data.services);
-                    if (data.metrics && config.show_sys_metrics) {
+                    if (data.metrics && currentConfig && currentConfig.show_sys_metrics) {
                         renderSysMetrics(data.metrics);
                     } else {
                         const m = document.getElementById('sys-metrics');
