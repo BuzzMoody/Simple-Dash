@@ -514,7 +514,7 @@ html, body {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .metric-icon {
