@@ -23,8 +23,6 @@ WORKDIR /app
 # Copy the binary from the builder stage
 COPY --from=builder /build/dash .
 
-# Copy the static assets
-COPY --from=builder /build/static ./static
 
 # Expose the default port
 EXPOSE 8888

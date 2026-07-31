@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 	"context"
+	_ "embed"
 
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
@@ -99,43 +100,35 @@ var (
 	lastModTime   atomic.Int64 // UnixNano
 	configPath    = "data/config.yaml"
 	statusClients sync.Map // map[chan string]bool
+	
+	globalClient  = &http.Client{Timeout: 3 * time.Second}
 
-	// In-memory static assets
+	//go:embed VERSION
+	versionData []byte
+
+	//go:embed static/index.html
+	rawIndexHTML []byte
+
+	//go:embed static/style.css
+	styleCSS []byte
+
+	//go:embed static/script.js
+	scriptJS []byte
+
+	//go:embed static/sw.js
+	swJS []byte
+
 	indexHTML []byte
-	styleCSS  []byte
-	scriptJS  []byte
-	swJS      []byte
 )
 
 func initStaticFiles() {
-	var err error
-	indexHTML, err = os.ReadFile("./static/index.html")
-	if err != nil {
-		log.Fatalf("Failed to read index.html: %v", err)
+	versionStr := strings.TrimSpace(string(versionData))
+	if versionStr != "" {
+		indexStr := strings.ReplaceAll(string(rawIndexHTML), "{{VERSION}}", versionStr)
+		indexHTML = []byte(indexStr)
+	} else {
+		indexHTML = rawIndexHTML
 	}
-
-	versionData, err := os.ReadFile("./VERSION")
-	if err == nil {
-		versionStr := strings.TrimSpace(string(versionData))
-		if versionStr != "" {
-			indexStr := strings.ReplaceAll(string(indexHTML), "{{VERSION}}", versionStr)
-			indexHTML = []byte(indexStr)
-		}
-	}
-
-	styleBytes, err := os.ReadFile("./static/style.css")
-	if err != nil {
-		log.Fatalf("Failed to read style.css: %v", err)
-	}
-	
-	styleCSS = styleBytes
-
-	scriptJS, err = os.ReadFile("./static/script.js")
-	if err != nil {
-		log.Fatalf("Failed to read script.js: %v", err)
-	}
-	
-	swJS, _ = os.ReadFile("./static/sw.js")
 }
 
 func handleMemFile(content []byte, contentType string) http.HandlerFunc {
@@ -271,7 +264,6 @@ func checkHealth() {
 	var mu sync.Mutex
 
 	sem := make(chan struct{}, 10) // Limit to 10 concurrent requests
-	client := http.Client{Timeout: 3 * time.Second}
 
 	for _, s := range cfg.Services {
 		if s.URL == "" {
@@ -296,7 +288,7 @@ func checkHealth() {
 			isUp := false
 			latencyMs := 0
 			if err == nil {
-				if resp, err := client.Do(req); err == nil {
+				if resp, err := globalClient.Do(req); err == nil {
 					if resp.StatusCode < 500 {
 						isUp = true
 					}

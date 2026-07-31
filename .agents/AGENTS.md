@@ -32,3 +32,7 @@ Since the dashboard renders user-defined configuration values (like URLs, Names,
 
 ## 10. Australian English
 All written comments, code, instructions, and documentation must be in Australian English (e.g., using "colour" instead of "color"). This rule can be ignored only where code functions or functionality strictly rely on American English syntaxes (such as CSS property names).
+
+# Architecture & Deployment
+## 11. Docker & Volume Architecture
+This application is designed to be run exclusively as a Docker container by end-users. The static assets and Go binary are baked into the container image. The end-user provides configuration and assets by mounting a persistent volume to `/app/data/` (e.g. `config.yaml` and `/logos/`). Any decisions regarding file paths, file reading/writing, or asset management MUST take this immutable container and volume-mount architecture into account.

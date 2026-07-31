@@ -79,9 +79,6 @@ jobs:
             --title "Release v${{ steps.bump.outputs.version }}" \
             --notes-file CHANGELOG.md
 
-      - name: Inject Version
-        run: |
-          sed -i "s/{{VERSION}}/v${{ steps.bump.outputs.version }}/g" static/index.html
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4

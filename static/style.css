@@ -535,7 +535,6 @@ html, body {
     transform-style: preserve-3d;
     backface-visibility: hidden;
     outline: 1px solid transparent;
-    will-change: transform;
 }
 
 @keyframes simple-fade-in {
@@ -726,11 +725,6 @@ body.dark-mode .tooltip-box {
     transition: opacity 0.3s;
 }
 
-@keyframes shimmer-down-anim {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
 
 .service-card .status-dot.disconnected {
     background: #888;

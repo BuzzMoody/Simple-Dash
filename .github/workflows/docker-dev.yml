@@ -41,7 +41,7 @@ jobs:
       - name: Inject Version
         run: |
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          sed -i "s/{{VERSION}}/$SHORT_SHA/g" static/index.html
+          echo "$SHORT_SHA" > VERSION
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7

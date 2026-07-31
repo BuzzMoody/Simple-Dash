@@ -965,6 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let cardIndex = 0;
+        const fragment = document.createDocumentFragment();
 
         sortedGroupKeys.forEach(key => {
             const groupEl = document.createElement('div');
@@ -1014,8 +1015,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             groupEl.appendChild(gridEl);
-            servicesContainer.appendChild(groupEl);
+            fragment.appendChild(groupEl);
         });
+
+        servicesContainer.appendChild(fragment);
 
         updateStatusIndicators();
         if (typeof window.applySearchFilter === 'function') {
