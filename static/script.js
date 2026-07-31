@@ -376,7 +376,56 @@ document.addEventListener('DOMContentLoaded', () => {
             return { base: '#39c55c', flash: '#9ce2ad' };
         };
 
-        const animateMetric = (el, endVal, suffix) => {
+        const updateSlot = (el, id, val, suffix) => {
+            let slot = el.querySelector('.slot-machine');
+            if (!slot) {
+                el.innerHTML = '';
+                slot = document.createElement('div');
+                slot.className = 'slot-machine';
+                
+                const d1 = document.createElement('div');
+                d1.className = 'slot-digit';
+                d1.id = `slot-${id}-1`;
+                d1.innerHTML = `<div class="slot-char">&nbsp;</div><div class="slot-char">1</div>`;
+                
+                const d2 = document.createElement('div');
+                d2.className = 'slot-digit';
+                d2.id = `slot-${id}-2`;
+                let chars2 = `<div class="slot-char">&nbsp;</div>`;
+                for(let i=0; i<=9; i++) chars2 += `<div class="slot-char">${i}</div>`;
+                d2.innerHTML = chars2;
+                
+                const d3 = document.createElement('div');
+                d3.className = 'slot-digit';
+                d3.id = `slot-${id}-3`;
+                let chars3 = '';
+                for(let i=0; i<=9; i++) chars3 += `<div class="slot-char">${i}</div>`;
+                d3.innerHTML = chars3;
+                
+                slot.appendChild(d1);
+                slot.appendChild(d2);
+                slot.appendChild(d3);
+                
+                const suff = document.createElement('div');
+                suff.className = 'slot-char';
+                suff.textContent = suffix;
+                slot.appendChild(suff);
+                
+                el.appendChild(slot);
+            }
+            
+            let sVal = val.toString().padStart(3, ' ');
+            const idx1 = sVal[0] === ' ' ? 0 : 1;
+            const idx2 = sVal[1] === ' ' ? 0 : parseInt(sVal[1], 10) + 1;
+            const idx3 = parseInt(sVal[2], 10);
+            
+            document.getElementById(`slot-${id}-1`).style.transform = `translateY(calc(-100% / 2 * ${idx1}))`;
+            document.getElementById(`slot-${id}-2`).style.transform = `translateY(calc(-100% / 11 * ${idx2}))`;
+            document.getElementById(`slot-${id}-3`).style.transform = `translateY(calc(-100% / 10 * ${idx3}))`;
+        };
+
+        const animateMetric = (id, endVal, suffix) => {
+            const el = document.getElementById(`metric-val-${id}`);
             const currentStr = el.getAttribute('data-val');
             let startVal = currentStr ? parseInt(currentStr, 10) : 0;
             if (startVal === endVal && currentStr !== null) return;
@@ -396,23 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
             el.style.color = colors.base;
             el.style.textShadow = 'none';
             
-            const startTime = performance.now();
-            
-            const step = (now) => {
-                const progress = Math.min((now - startTime) / duration, 1);
-                const easeProgress = 1 - Math.pow(1 - progress, 3);
-                const currentVal = Math.round(startVal + (endVal - startVal) * easeProgress);
-                el.textContent = currentVal + suffix;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(step);
-                }
-            };
-            requestAnimationFrame(step);
+            updateSlot(el, id, endVal, suffix);
         };
 
-        animateMetric(document.getElementById('metric-val-cpu'), metrics.cpu, '%');
-        animateMetric(document.getElementById('metric-val-ram'), metrics.ram, '%');
+        animateMetric('cpu', metrics.cpu, '%');
+        animateMetric('ram', metrics.ram, '%');
         document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 

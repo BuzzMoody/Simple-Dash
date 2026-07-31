@@ -530,6 +530,28 @@ html, body {
 
 .metric-value {
     font-variant-numeric: tabular-nums;
+    display: inline-flex;
+}
+
+.slot-machine {
+    display: inline-flex;
+    height: 1.2em;
+    overflow: hidden;
+    line-height: 1.2em;
+    font-variant-numeric: tabular-nums;
+}
+
+.slot-digit {
+    display: inline-flex;
+    flex-direction: column;
+    transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.slot-char {
+    height: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #services-container {
