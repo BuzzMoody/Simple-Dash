@@ -397,7 +397,6 @@ body.dark-mode .announcement.outage {
     opacity: 0.5;
     cursor: pointer;
     padding: 0.25rem;
-    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -411,7 +410,7 @@ body.dark-mode .announcement.outage {
 
 .search-hint {
     position: absolute;
-    right: 0.8rem;
+    right: 1.2rem;
     top: 50%;
     transform: translateY(-50%);
     font-size: 0.65rem;
@@ -1133,7 +1132,7 @@ body.dark-mode .list-table {
 .list-col {
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1rem 0.45rem;
     text-decoration: none;
     color: var(--text-color);
     transition: background 0.1s;
