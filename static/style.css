@@ -283,6 +283,15 @@ body.dark-mode .announcement.outage {
     color: #f87171;
 }
 
+.announcement.toast {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
 .buttons {
     display: flex;
     gap: 0.5rem;
@@ -383,6 +392,7 @@ body.dark-mode .announcement.outage {
     transform: translateY(-50%);
     background: none;
     border: none;
+    display: none;
     color: var(--text-color);
     opacity: 0.5;
     cursor: pointer;
@@ -503,6 +513,12 @@ html, body {
     border-bottom: 1px solid var(--card-border);
     border-image: var(--title-border-img, none);
     opacity: 0.9;
+}
+
+.group-title span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .services-grid {
