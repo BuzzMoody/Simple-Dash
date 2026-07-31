@@ -376,101 +376,93 @@ document.addEventListener('DOMContentLoaded', () => {
             return { base: '#39c55c', flash: '#9ce2ad' };
         };
 
-        const updateSlot = (el, id, val, suffix, isFirstLoad) => {
+        const updateSlotGeneric = (el, id, formattedStr, isFirstLoad) => {
             let slot = el.querySelector('.slot-machine');
+            if (slot && slot.getAttribute('data-len') !== formattedStr.length.toString()) {
+                slot.remove();
+                slot = null;
+            }
+            
             if (!slot) {
                 el.innerHTML = '';
                 slot = document.createElement('div');
                 slot.className = 'slot-machine';
+                slot.setAttribute('data-len', formattedStr.length);
                 
-                const d1 = document.createElement('div');
-                d1.className = 'slot-digit';
-                d1.id = `slot-${id}-1`;
-                d1.innerHTML = `<div class="slot-char">&nbsp;</div><div class="slot-char">1</div>`;
-                
-                const d2 = document.createElement('div');
-                d2.className = 'slot-digit';
-                d2.id = `slot-${id}-2`;
-                let chars2 = `<div class="slot-char">&nbsp;</div>`;
-                for(let i=0; i<=9; i++) chars2 += `<div class="slot-char">${i}</div>`;
-                d2.innerHTML = chars2;
-                
-                const d3 = document.createElement('div');
-                d3.className = 'slot-digit';
-                d3.id = `slot-${id}-3`;
-                let chars3 = '';
-                for(let i=0; i<=9; i++) chars3 += `<div class="slot-char">${i}</div>`;
-                d3.innerHTML = chars3;
-                
-                slot.appendChild(d1);
-                slot.appendChild(d2);
-                slot.appendChild(d3);
-                
-                const suff = document.createElement('div');
-                suff.className = 'slot-char';
-                suff.textContent = suffix;
-                slot.appendChild(suff);
-                
+                for (let i = 0; i < formattedStr.length; i++) {
+                    const char = formattedStr[i];
+                    if ((char >= '0' && char <= '9') || char === ' ') {
+                        const d = document.createElement('div');
+                        d.className = 'slot-digit';
+                        d.id = `slot-${id}-${i}`;
+                        let chars = `<div class="slot-char">&nbsp;</div>`;
+                        for(let j=0; j<=9; j++) chars += `<div class="slot-char">${j}</div>`;
+                        d.innerHTML = chars;
+                        slot.appendChild(d);
+                    } else {
+                        const suff = document.createElement('div');
+                        suff.className = 'slot-char';
+                        suff.innerHTML = char;
+                        slot.appendChild(suff);
+                    }
+                }
                 el.appendChild(slot);
             }
             
-            let sVal = Math.round(Number(val)).toString().padStart(3, ' ');
-            const idx1 = sVal[0] === ' ' ? 0 : 1;
-            const idx2 = sVal[1] === ' ' ? 0 : parseInt(sVal[1], 10) + 1;
-            const idx3 = parseInt(sVal[2], 10) || 0;
-            
-            const d1 = document.getElementById(`slot-${id}-1`);
-            const d2 = document.getElementById(`slot-${id}-2`);
-            const d3 = document.getElementById(`slot-${id}-3`);
-            
-            if (isFirstLoad) {
-                d1.style.transition = 'none';
-                d2.style.transition = 'none';
-                d3.style.transition = 'none';
-            } else {
-                const trans = 'transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                d1.style.transition = trans;
-                d2.style.transition = trans;
-                d3.style.transition = trans;
+            for (let i = 0; i < formattedStr.length; i++) {
+                const char = formattedStr[i];
+                if ((char >= '0' && char <= '9') || char === ' ') {
+                    const d = document.getElementById(`slot-${id}-${i}`);
+                    if (!d) continue;
+                    
+                    const idx = char === ' ' ? 0 : parseInt(char, 10) + 1;
+                    
+                    if (isFirstLoad) {
+                        d.style.transition = 'none';
+                    } else {
+                        d.style.transition = 'transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    }
+                    d.style.transform = `translateY(calc(-100% / 11 * ${idx}))`;
+                }
             }
-            
-            d1.style.transform = `translateY(calc(-100% / 2 * ${idx1}))`;
-            d2.style.transform = `translateY(calc(-100% / 11 * ${idx2}))`;
-            d3.style.transform = `translateY(calc(-100% / 10 * ${idx3}))`;
         };
 
-        const animateMetric = (id, endVal, suffix) => {
+        const animateMetric = (id, targetStr, colorEndVal) => {
             const el = document.getElementById(`metric-val-${id}`);
             const currentStr = el.getAttribute('data-val');
-            let startVal = currentStr ? parseInt(currentStr, 10) : 0;
-            if (startVal === endVal && currentStr !== null) return;
+            if (currentStr === targetStr) return;
             
             const isFirstLoad = currentStr === null;
-            const colors = getColor(endVal);
-            el.setAttribute('data-val', endVal);
+            el.setAttribute('data-val', targetStr);
             
-            el.style.transition = 'none';
-            if (!isFirstLoad) {
-                el.style.color = colors.flash;
-                el.style.textShadow = `0 0 10px ${colors.base}`;
-            }
-            
-            updateSlot(el, id, endVal, suffix, isFirstLoad);
-            
-            void el.offsetWidth;
-            
-            if (!isFirstLoad) {
-                el.style.transition = `color 1.5s ease-out, text-shadow 1.5s ease-out`;
-                el.style.color = colors.base;
-                el.style.textShadow = 'none';
+            if (colorEndVal !== null) {
+                const colors = getColor(colorEndVal);
+                el.style.transition = 'none';
+                if (!isFirstLoad) {
+                    el.style.color = colors.flash;
+                    el.style.textShadow = `0 0 10px ${colors.base}`;
+                }
+                
+                updateSlotGeneric(el, id, targetStr, isFirstLoad);
+                void el.offsetWidth;
+                
+                if (!isFirstLoad) {
+                    el.style.transition = `color 1.5s ease-out, text-shadow 1.5s ease-out`;
+                    el.style.color = colors.base;
+                    el.style.textShadow = 'none';
+                } else {
+                    el.style.color = colors.base;
+                }
             } else {
-                el.style.color = colors.base;
+                updateSlotGeneric(el, id, targetStr, isFirstLoad);
             }
         };
 
-        animateMetric('cpu', metrics.cpu, '%');
-        animateMetric('ram', metrics.ram, '%');
-        document.getElementById('metric-val-uptime').textContent = metrics.uptime;
+        const cpuStr = Math.round(Number(metrics.cpu)).toString().padStart(3, ' ') + '%';
+        const ramStr = Math.round(Number(metrics.ram)).toString().padStart(3, ' ') + '%';
+        animateMetric('cpu', cpuStr, metrics.cpu);
+        animateMetric('ram', ramStr, metrics.ram);
+        animateMetric('uptime', metrics.uptime, null);
     };
 
     const updateStatusIndicators = (incomingStatus) => {
