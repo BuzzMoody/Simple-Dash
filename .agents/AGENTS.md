@@ -68,3 +68,6 @@ Before making any modifications to CSS, HTML, or JavaScript (especially when ref
 1. You MUST read at least 20 lines of surrounding code to ensure you aren't missing duplicate properties, media queries, or conflicting logic.
 2. You MUST actively search the file to ensure the property you are adding or removing isn't overridden immediately below it.
 3. Never make assumptions about how a class is currently styled; always verify its existing properties first.
+
+## 16. Strict Git Staging & Data Privacy
+Never use wildcard staging commands like `git add .`, `git add -A`, or `git commit -a`. You MUST explicitly name the specific files you have modified or created when staging (e.g., `git add main.go static/style.css`). Before committing, you must run `git status` to verify exactly what is being staged. This strict policy ensures that generated reports, internal scratchpads, or sensitive data are never accidentally committed to the public repository.
