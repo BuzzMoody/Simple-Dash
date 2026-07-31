@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!container) return;
             metricsEl = document.createElement('div');
             metricsEl.id = 'sys-metrics';
-            metricsEl.className = 'sys-metrics-widget simple-fade-in';
+            metricsEl.className = 'sys-metrics-widget stagger-in';
             
             const createMetric = (id, iconSvg, label) => {
                 const item = document.createElement('div');
