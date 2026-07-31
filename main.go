@@ -62,7 +62,7 @@ type Config struct {
 	ShowWeather    bool                 `yaml:"show_weather" json:"show_weather"`
 	WeatherAnimate *bool                `yaml:"weather_animate" json:"weather_animate"`
 	WeatherCoords  string               `yaml:"weather_coords" json:"weather_coords"`
-	ShowSysMetrics bool                 `yaml:"show_sys_metrics" json:"show_sys_metrics"`
+	ShowSysMetrics *bool                `yaml:"show_sys_metrics" json:"show_sys_metrics"`
 	CategoryColors CategoryColorsConfig `yaml:"category_colors" json:"category_colors"`
 	Announcements  []Announcement       `yaml:"announcements" json:"announcements"`
 	Buttons        []Button             `yaml:"buttons" json:"buttons"`
@@ -165,6 +165,10 @@ func applyDefaults(cfg *Config) {
 	if cfg.NewTabs == nil {
 		defaultTabs := true
 		cfg.NewTabs = &defaultTabs
+	}
+	if cfg.ShowSysMetrics == nil {
+		defaultMetrics := true
+		cfg.ShowSysMetrics = &defaultMetrics
 	}
 }
 
@@ -423,7 +427,7 @@ func broadcastStatus() {
 	payload := StreamPayload{
 		Services: *status,
 	}
-	if cfg != nil && cfg.ShowSysMetrics {
+	if cfg != nil && cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
 		payload.Metrics = getSysMetrics()
 	}
 	data, _ := json.Marshal(payload)
@@ -463,7 +467,7 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 		payload := StreamPayload{
 			Services: *status,
 		}
-		if cfg != nil && cfg.ShowSysMetrics {
+		if cfg != nil && cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
 			payload.Metrics = getSysMetrics()
 		}
 		data, _ := json.Marshal(payload)
