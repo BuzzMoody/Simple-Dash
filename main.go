@@ -5,11 +5,13 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -60,6 +62,7 @@ type Config struct {
 	ShowWeather    bool                 `yaml:"show_weather" json:"show_weather"`
 	WeatherAnimate *bool                `yaml:"weather_animate" json:"weather_animate"`
 	WeatherCoords  string               `yaml:"weather_coords" json:"weather_coords"`
+	ShowSysMetrics bool                 `yaml:"show_sys_metrics" json:"show_sys_metrics"`
 	CategoryColors CategoryColorsConfig `yaml:"category_colors" json:"category_colors"`
 	Announcements  []Announcement       `yaml:"announcements" json:"announcements"`
 	Buttons        []Button             `yaml:"buttons" json:"buttons"`
@@ -91,6 +94,17 @@ type Service struct {
 type ServiceStatus struct {
 	IsUp    bool `json:"is_up"`
 	Latency int  `json:"latency,omitempty"`
+}
+
+type SysMetrics struct {
+	CPU    int    `json:"cpu"`
+	RAM    int    `json:"ram"`
+	Uptime string `json:"uptime"`
+}
+
+type StreamPayload struct {
+	Services map[string]ServiceStatus `json:"services"`
+	Metrics  *SysMetrics              `json:"metrics,omitempty"`
 }
 
 var (
@@ -311,6 +325,83 @@ func checkHealth() {
 	statusCache.Store(&newStatus)
 }
 
+var (
+	lastCPUTotal float64
+	lastCPUIdle  float64
+)
+
+func getSysMetrics() *SysMetrics {
+	metrics := &SysMetrics{}
+
+	// CPU
+	statBytes, err := os.ReadFile("/proc/stat")
+	if err == nil {
+		lines := strings.Split(string(statBytes), "\n")
+		if len(lines) > 0 {
+			fields := strings.Fields(lines[0])
+			if len(fields) > 4 && fields[0] == "cpu" {
+				var total float64
+				for _, f := range fields[1:] {
+					v, _ := strconv.ParseFloat(f, 64)
+					total += v
+				}
+				idle, _ := strconv.ParseFloat(fields[4], 64)
+
+				if lastCPUTotal > 0 {
+					diffTotal := total - lastCPUTotal
+					diffIdle := idle - lastCPUIdle
+					if diffTotal > 0 {
+						metrics.CPU = int((diffTotal - diffIdle) / diffTotal * 100)
+					}
+				}
+				lastCPUTotal = total
+				lastCPUIdle = idle
+			}
+		}
+	}
+
+	// RAM
+	memBytes, err := os.ReadFile("/proc/meminfo")
+	if err == nil {
+		lines := strings.Split(string(memBytes), "\n")
+		var memTotal, memAvailable float64
+		for _, line := range lines {
+			if strings.HasPrefix(line, "MemTotal:") {
+				fields := strings.Fields(line)
+				if len(fields) > 1 {
+					memTotal, _ = strconv.ParseFloat(fields[1], 64)
+				}
+			} else if strings.HasPrefix(line, "MemAvailable:") {
+				fields := strings.Fields(line)
+				if len(fields) > 1 {
+					memAvailable, _ = strconv.ParseFloat(fields[1], 64)
+				}
+			}
+		}
+		if memTotal > 0 {
+			metrics.RAM = int(((memTotal - memAvailable) / memTotal) * 100)
+		}
+	}
+
+	// Uptime
+	uptimeBytes, err := os.ReadFile("/proc/uptime")
+	if err == nil {
+		fields := strings.Fields(string(uptimeBytes))
+		if len(fields) > 0 {
+			uptimeSecs, _ := strconv.ParseFloat(fields[0], 64)
+			days := int(uptimeSecs) / 86400
+			hours := (int(uptimeSecs) % 86400) / 3600
+			if days > 0 {
+				metrics.Uptime = fmt.Sprintf("%dd %dh", days, hours)
+			} else {
+				metrics.Uptime = fmt.Sprintf("%dh", hours)
+			}
+		}
+	}
+
+	return metrics
+}
+
 func startHealthChecker() {
 	go func() {
 		checkHealth()
@@ -328,7 +419,14 @@ func broadcastStatus() {
 	if status == nil {
 		return
 	}
-	data, _ := json.Marshal(*status)
+	cfg := configCache.Load()
+	payload := StreamPayload{
+		Services: *status,
+	}
+	if cfg != nil && cfg.ShowSysMetrics {
+		payload.Metrics = getSysMetrics()
+	}
+	data, _ := json.Marshal(payload)
 	msg := string(data)
 	statusClients.Range(func(key, value interface{}) bool {
 		ch := key.(chan string)
@@ -361,7 +459,14 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	if status := statusCache.Load(); status != nil {
-		data, _ := json.Marshal(*status)
+		cfg := configCache.Load()
+		payload := StreamPayload{
+			Services: *status,
+		}
+		if cfg != nil && cfg.ShowSysMetrics {
+			payload.Metrics = getSysMetrics()
+		}
+		data, _ := json.Marshal(payload)
 		w.Write([]byte("data: " + string(data) + "\n\n"))
 		flusher.Flush()
 	}

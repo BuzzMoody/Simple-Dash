@@ -317,7 +317,17 @@ document.addEventListener('DOMContentLoaded', () => {
         statusSource.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                updateStatusIndicators(data);
+                if (data.services !== undefined) {
+                    updateStatusIndicators(data.services);
+                    if (data.metrics && config.show_sys_metrics) {
+                        renderSysMetrics(data.metrics);
+                    } else {
+                        const m = document.getElementById('sys-metrics');
+                        if (m) m.remove();
+                    }
+                } else {
+                    updateStatusIndicators(data);
+                }
             } catch (error) {
                 console.error("Error parsing SSE data", error);
             }
@@ -331,6 +341,33 @@ document.addEventListener('DOMContentLoaded', () => {
             
             setTimeout(initStatusStream, 5000);
         };
+    };
+
+    const renderSysMetrics = (metrics) => {
+        let metricsEl = document.getElementById('sys-metrics');
+        if (!metricsEl) {
+            const container = document.getElementById('services-container');
+            if (!container) return;
+            metricsEl = document.createElement('div');
+            metricsEl.id = 'sys-metrics';
+            metricsEl.className = 'sys-metrics-widget simple-fade-in';
+            
+            const createMetric = (id, icon, label) => {
+                const item = document.createElement('div');
+                item.className = 'metric-item';
+                item.innerHTML = `<span class="metric-icon">${icon}</span><span class="metric-label">${label}</span><span class="metric-value" id="metric-val-${id}"></span>`;
+                metricsEl.appendChild(item);
+            };
+            createMetric('cpu', '💻', 'CPU');
+            createMetric('ram', '🧠', 'RAM');
+            createMetric('uptime', '⏱️', 'Uptime');
+            
+            container.parentNode.insertBefore(metricsEl, container);
+        }
+        
+        document.getElementById('metric-val-cpu').textContent = metrics.cpu + '%';
+        document.getElementById('metric-val-ram').textContent = metrics.ram + '%';
+        document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
     const updateStatusIndicators = (incomingStatus) => {
