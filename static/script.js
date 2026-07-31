@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ramStr = Math.round(Number(metrics.ram)).toString().padStart(2, ' ') + '%';
         animateMetric('cpu', cpuStr, metrics.cpu);
         animateMetric('ram', ramStr, metrics.ram);
-        animateMetric('uptime', metrics.uptime, null);
+        document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
     const updateStatusIndicators = (incomingStatus) => {
