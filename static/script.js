@@ -177,9 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (weatherContainer) {
             if (currentConfig && currentConfig.show_weather && weatherHtml) {
-                weatherContainer.innerHTML = weatherHtml;
+                if (weatherContainer.innerHTML !== weatherHtml) {
+                    weatherContainer.innerHTML = weatherHtml;
+                }
             } else {
-                weatherContainer.innerHTML = '';
+                if (weatherContainer.innerHTML !== '') {
+                    weatherContainer.innerHTML = '';
+                }
             }
         }
     };
