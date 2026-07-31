@@ -369,9 +369,47 @@ document.addEventListener('DOMContentLoaded', () => {
             
             container.parentNode.insertBefore(metricsEl, container);
         }
-        
-        document.getElementById('metric-val-cpu').textContent = metrics.cpu + '%';
-        document.getElementById('metric-val-ram').textContent = metrics.ram + '%';
+        const getColor = (val) => {
+            if (val > 90) return '#d64242';
+            if (val > 75) return '#f59e0b';
+            if (val > 60) return '#eab308';
+            return '#39c55c';
+        };
+
+        const animateMetric = (el, endVal, suffix) => {
+            const currentStr = el.getAttribute('data-val');
+            let startVal = currentStr ? parseInt(currentStr, 10) : 0;
+            if (startVal === endVal && currentStr !== null) return;
+            
+            const targetColor = getColor(endVal);
+            el.setAttribute('data-val', endVal);
+            
+            el.style.transition = 'none';
+            el.style.color = '#ffffff';
+            el.style.textShadow = `0 0 10px ${targetColor}`;
+            
+            const duration = 600;
+            const startTime = performance.now();
+            
+            const step = (now) => {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const currentVal = Math.round(startVal + (endVal - startVal) * easeProgress);
+                el.textContent = currentVal + suffix;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    el.style.transition = 'color 0.8s ease, text-shadow 0.8s ease';
+                    el.style.color = targetColor;
+                    el.style.textShadow = 'none';
+                }
+            };
+            requestAnimationFrame(step);
+        };
+
+        animateMetric(document.getElementById('metric-val-cpu'), metrics.cpu, '%');
+        animateMetric(document.getElementById('metric-val-ram'), metrics.ram, '%');
         document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
