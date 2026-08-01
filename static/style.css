@@ -496,10 +496,12 @@ html, body {
 .sys-metrics-widget {
     display: flex;
     justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
+    min-height: 44px;
     gap: 1.5rem;
     margin-bottom: 2rem;
-    padding: 0.6rem 1.5rem;
+    padding: 0.25rem 1.5rem;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
