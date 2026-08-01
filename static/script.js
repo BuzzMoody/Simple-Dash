@@ -673,13 +673,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return frag;
             };
 
-            footerEl.innerHTML = `<span id="footer-text" style="opacity: 0.7"></span><span id="changelog-container" style="position: relative; display: inline-block;"></span><span id="update-indicator"></span>`;
-            footerEl.querySelector('#footer-text').appendChild(parseMarkdownLinks(footerText));
+            footerEl.innerHTML = '';
+            const footerTextSpan = document.createElement('span');
+            footerTextSpan.id = 'footer-text';
+            footerTextSpan.style.opacity = '0.7';
+            footerTextSpan.appendChild(parseMarkdownLinks(footerText));
+            footerEl.appendChild(footerTextSpan);
+
+            const changelogContainer = document.createElement('span');
+            changelogContainer.id = 'changelog-container';
+            changelogContainer.style.position = 'relative';
+            changelogContainer.style.display = 'inline-block';
+            footerEl.appendChild(changelogContainer);
+
+            const updateIndicator = document.createElement('span');
+            updateIndicator.id = 'update-indicator';
+            footerEl.appendChild(updateIndicator);
 
             if (version !== 'dev') {
                 const fetchReleases = async () => {
                     try {
-                        const response = await fetch('https://api.github.com/repos/BuzzMoody/Simple-Dash/releases');
+                        const response = await fetch('/api/releases');
                         if (!response.ok) return;
                         const releases = await response.json();
                         if (releases && releases.length > 0) {
@@ -687,14 +701,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             const currentVersionNumber = version.replace(/^v/, '');
                             const latestVersionNumber = latestRelease.tag_name.replace(/^v/, '');
                             
-                            const updateIndicator = document.getElementById('update-indicator');
-                            if (updateIndicator && latestVersionNumber !== currentVersionNumber) {
-                                updateIndicator.innerHTML = `<a href="${latestRelease.html_url}" target="_blank" class="update-indicator" data-tooltip="Update Available: ${displayVersion} &#8594; v${latestVersionNumber}">Update</a>`;
+                            if (latestVersionNumber !== currentVersionNumber) {
+                                updateIndicator.innerHTML = '';
+                                const updateA = document.createElement('a');
+                                updateA.href = latestRelease.html_url;
+                                updateA.target = '_blank';
+                                updateA.className = 'update-indicator';
+                                updateA.setAttribute('data-tooltip', `Update Available: ${displayVersion} \u2192 v${latestVersionNumber}`);
+                                updateA.textContent = 'Update';
+                                updateIndicator.appendChild(updateA);
                             }
                             
                             const currentRelease = releases.find(r => r.tag_name.replace(/^v/, '') === currentVersionNumber) || latestRelease;
                             
-                            const changelogContainer = document.getElementById('changelog-container');
                             if (changelogContainer) {
                                 const btn = document.createElement('button');
                                 btn.className = 'changelog-btn';
@@ -705,20 +724,49 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const popup = document.createElement('div');
                                 popup.className = 'changelog-popup';
                                 
+                                const header4 = document.createElement('h4');
+                                const clSpan = document.createElement('span');
+                                clSpan.textContent = 'Changelog';
+                                const tagSpan = document.createElement('span');
+                                tagSpan.textContent = currentRelease.tag_name;
+                                header4.appendChild(clSpan);
+                                header4.appendChild(document.createTextNode(' '));
+                                header4.appendChild(tagSpan);
+                                popup.appendChild(header4);
+
+                                const contentWrapper = document.createElement('div');
+                                contentWrapper.className = 'changelog-content-wrapper';
+                                
                                 let bodyText = currentRelease.body || 'No release notes available.';
                                 bodyText = bodyText.replace(/\*\*Full Changelog\*\*: .*/g, '');
-                                let listHtml = '<ul class="changelog-list">';
+                                
+                                const ul = document.createElement('ul');
+                                ul.className = 'changelog-list';
                                 bodyText.split('\n').forEach(line => {
                                     line = line.trim();
                                     if (line) {
                                         let itemText = line.replace(/^[\*\-]\s+/, '');
-                                        itemText = itemText.replace(/\b([a-f0-9]{7,40})\b/gi, '<i>$1</i>');
-                                        listHtml += `<li>${itemText}</li>`;
+                                        const li = document.createElement('li');
+                                        
+                                        // Simple regex to find commit hashes and wrap them in <i> safely
+                                        const match = itemText.match(/\b([a-f0-9]{7,40})\b/i);
+                                        if (match) {
+                                            const before = itemText.substring(0, match.index);
+                                            const hash = match[0];
+                                            const after = itemText.substring(match.index + hash.length);
+                                            li.appendChild(document.createTextNode(before));
+                                            const i = document.createElement('i');
+                                            i.textContent = hash;
+                                            li.appendChild(i);
+                                            li.appendChild(document.createTextNode(after));
+                                        } else {
+                                            li.textContent = itemText;
+                                        }
+                                        ul.appendChild(li);
                                     }
                                 });
-                                listHtml += '</ul>';
-                                
-                                popup.innerHTML = `<h4><span>Changelog</span> <span>${currentRelease.tag_name}</span></h4><div class="changelog-content-wrapper">${listHtml}</div>`;
+                                contentWrapper.appendChild(ul);
+                                popup.appendChild(contentWrapper);
                                 
                                 btn.addEventListener('click', (e) => {
                                     e.stopPropagation();
@@ -790,24 +838,45 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.setAttribute('data-tooltip', btn.name);
                 }
                 
-                let content = '';
+                el.innerHTML = '';
                 const btnLight = btn.logo_light || btn.logo;
                 const btnDark = btn.logo_dark || btn.logo;
 
                 if (btnLight && btnDark && btnLight !== btnDark) {
-                    content = `
-                        <span class="btn-logo-wrapper">
-                            <img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo light-theme-logo" onerror="this.style.display='none'">
-                            <img src="logos/${btnDark}" alt="${btn.name}" class="btn-logo dark-theme-logo" onerror="this.style.display='none'">
-                        </span>
-                    `;
+                    const span = document.createElement('span');
+                    span.className = 'btn-logo-wrapper';
+                    
+                    const imgLight = document.createElement('img');
+                    imgLight.src = `logos/${btnLight}`;
+                    imgLight.alt = btn.name;
+                    imgLight.className = 'btn-logo light-theme-logo';
+                    imgLight.onerror = () => { imgLight.style.display = 'none'; };
+                    
+                    const imgDark = document.createElement('img');
+                    imgDark.src = `logos/${btnDark}`;
+                    imgDark.alt = btn.name;
+                    imgDark.className = 'btn-logo dark-theme-logo';
+                    imgDark.onerror = () => { imgDark.style.display = 'none'; };
+                    
+                    span.appendChild(imgLight);
+                    span.appendChild(imgDark);
+                    el.appendChild(span);
                 } else if (btnLight) {
-                    content = `<img src="logos/${btnLight}" alt="${btn.name}" class="btn-logo" onerror="this.style.display='none'">`;
+                    const img = document.createElement('img');
+                    img.src = `logos/${btnLight}`;
+                    img.alt = btn.name;
+                    img.className = 'btn-logo';
+                    img.onerror = () => { img.style.display = 'none'; };
+                    el.appendChild(img);
                 } else if (btn.icon) {
-                    content = `<span style="margin-right:0.3rem">${btn.icon}</span>`;
+                    const iconSpan = document.createElement('span');
+                    iconSpan.style.marginRight = '0.3rem';
+                    iconSpan.textContent = btn.icon;
+                    el.appendChild(iconSpan);
                 }
-                el.innerHTML = `${content}<span></span>`;
-                el.querySelector('span').textContent = btn.name;
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = btn.name;
+                el.appendChild(nameSpan);
                 
                 buttonsContainer.appendChild(el);
             });
@@ -1022,26 +1091,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.side === 'left') {
                     nameCol.style.gridColumn = '1';
                 }
-                let iconHtml = '';
                 if (service.logo || service.logo_light || service.logo_dark) {
                     const sLight = service.logo_light || service.logo;
                     const sDark = service.logo_dark || service.logo;
                     if (sLight && sDark && sLight !== sDark) {
-                        iconHtml = `<img src="logos/${sLight}" class="light-theme-logo" loading="lazy" alt=""><img src="logos/${sDark}" class="dark-theme-logo" loading="lazy" alt="">`;
+                        const imgLight = document.createElement('img');
+                        imgLight.src = `logos/${sLight}`;
+                        imgLight.className = 'light-theme-logo';
+                        imgLight.loading = 'lazy';
+                        imgLight.alt = '';
+                        
+                        const imgDark = document.createElement('img');
+                        imgDark.src = `logos/${sDark}`;
+                        imgDark.className = 'dark-theme-logo';
+                        imgDark.loading = 'lazy';
+                        imgDark.alt = '';
+                        
+                        nameCol.appendChild(imgLight);
+                        nameCol.appendChild(imgDark);
                     } else if (sLight) {
-                        iconHtml = `<img src="logos/${sLight}" loading="lazy" alt="">`;
+                        const img = document.createElement('img');
+                        img.src = `logos/${sLight}`;
+                        img.loading = 'lazy';
+                        img.alt = '';
+                        nameCol.appendChild(img);
                     }
-                } else if (service.icon) {
-                    iconHtml = `<span style="font-size: 1.1em">${service.icon}</span>`;
                 } else {
-                    iconHtml = `<span style="font-size: 1.1em">🌍</span>`;
+                    const iconSpan = document.createElement('span');
+                    iconSpan.style.fontSize = '1.1em';
+                    iconSpan.textContent = service.icon || '🌍';
+                    nameCol.appendChild(iconSpan);
                 }
-                let pinnedHtml = '';
+                
+                // Add space before name
+                nameCol.appendChild(document.createTextNode(' '));
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = service.name;
+                nameCol.appendChild(nameSpan);
+
                 if (service.pinned) {
-                    pinnedHtml = ` <span class="list-pinned-star" style="background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset;"><svg viewBox="0 0 24 24" width="16" height="16" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5-1.5l1.5-4l4-4"/><line x1="9" y1="15" x2="4.5" y2="19.5"/><line x1="14.5" y1="4" x2="20" y2="9.5"/></svg></span>`;
+                    const pinnedSpan = document.createElement('span');
+                    pinnedSpan.className = 'list-pinned-star';
+                    pinnedSpan.style.background = 'none';
+                    pinnedSpan.style.webkitBackgroundClip = 'unset';
+                    pinnedSpan.style.webkitTextFillColor = 'unset';
+                    pinnedSpan.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="url(#pin-gradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5-1.5l1.5-4l4-4"/><line x1="9" y1="15" x2="4.5" y2="19.5"/><line x1="14.5" y1="4" x2="20" y2="9.5"/></svg>`;
+                    nameCol.appendChild(pinnedSpan);
                 }
-                nameCol.innerHTML = `${iconHtml} <span></span>${pinnedHtml}`;
-                nameCol.querySelector('span').textContent = service.name;
 
                 // desc col
                 const descCol = document.createElement('div');

@@ -1,7 +1,8 @@
 header: "Simple Dash"
 description: "A simple homelab dashboard"
 header_colors: ["#38bdf8", "#a855f7"]
-footer: "&copy; 2026 Buzz Moody &bull; <a href='https://github.com/BuzzMoody' target='_blank'>GitHub</a> &bull; Built with ☕ and Go"
+# Note: The footer supports standard Markdown links `[text](url)`. HTML entities (like &copy;) are NOT fully supported; use raw unicode characters (like ©) instead.
+footer: "© 2026 Buzz Moody • [GitHub](https://github.com/BuzzMoody) • Built with ☕ and Go"
 favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false

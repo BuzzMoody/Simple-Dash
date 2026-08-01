@@ -10,11 +10,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -128,10 +130,9 @@ var (
 	//go:embed static/script.js
 	scriptJS []byte
 
-	//go:embed static/sw.js
-	swJS []byte
-
 	indexHTML []byte
+
+	releasesCache atomic.Pointer[[]byte]
 )
 
 func initStaticFiles() {
@@ -330,8 +331,9 @@ func checkHealth() {
 }
 
 var (
-	lastCPUTotal float64
-	lastCPUIdle  float64
+	cpuMetricsMutex sync.Mutex
+	lastCPUTotal    float64
+	lastCPUIdle     float64
 )
 
 func getSysMetrics() *SysMetrics {
@@ -351,6 +353,7 @@ func getSysMetrics() *SysMetrics {
 				}
 				idle, _ := strconv.ParseFloat(fields[4], 64)
 
+				cpuMetricsMutex.Lock()
 				if lastCPUTotal > 0 {
 					diffTotal := total - lastCPUTotal
 					diffIdle := idle - lastCPUIdle
@@ -360,6 +363,7 @@ func getSysMetrics() *SysMetrics {
 				}
 				lastCPUTotal = total
 				lastCPUIdle = idle
+				cpuMetricsMutex.Unlock()
 			}
 		}
 	}
@@ -580,6 +584,64 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
+func releasesHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	if data := releasesCache.Load(); data != nil {
+		w.Write(*data)
+		return
+	}
+	w.Write([]byte("[]"))
+}
+
+func startReleasesFetcher() {
+	fetch := func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		req, err := http.NewRequestWithContext(ctx, "GET", "https://api.github.com/repos/BuzzMoody/Simple-Dash/releases", nil)
+		if err != nil {
+			return
+		}
+		resp, err := globalClient.Do(req)
+		if err != nil {
+			return
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode == 200 {
+			if body, err := io.ReadAll(resp.Body); err == nil {
+				releasesCache.Store(&body)
+			}
+		}
+	}
+	go func() {
+		fetch()
+		for range time.Tick(1 * time.Hour) {
+			fetch()
+		}
+	}()
+}
+
+type noDirFS struct {
+	fs http.FileSystem
+}
+
+func (n noDirFS) Open(name string) (http.File, error) {
+	f, err := n.fs.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	if stat.IsDir() {
+		f.Close()
+		return nil, os.ErrNotExist
+	}
+	return f, nil
+}
+
 func main() {
 	if err := loadInitialConfig(); err != nil {
 		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted in data/): %v", err)
@@ -587,14 +649,16 @@ func main() {
 
 	startConfigWatcher()
 	startHealthChecker()
+	startReleasesFetcher()
 
 	initStaticFiles()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/config", configHandler)
 	mux.HandleFunc("/api/status/stream", statusStreamHandler)
+	mux.HandleFunc("/api/releases", releasesHandler)
 	mux.HandleFunc("/favicon.ico", faviconHandler)
-	mux.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(http.Dir("./data/logos"))))
+	mux.Handle("/logos/", http.StripPrefix("/logos/", http.FileServer(noDirFS{http.Dir("./data/logos")})))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -604,8 +668,6 @@ func main() {
 			handleMemFile(styleCSS, "text/css; charset=utf-8")(w, r)
 		case "/script.js":
 			handleMemFile(scriptJS, "application/javascript; charset=utf-8")(w, r)
-		case "/sw.js":
-			handleMemFile(swJS, "application/javascript; charset=utf-8")(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -614,8 +676,29 @@ func main() {
 	port := "8888"
 	log.Printf("Server starting on port %s...", port)
 
-	// Apply gzip middleware to the entire mux router
-	if err := http.ListenAndServe(":"+port, gzipMiddleware(mux)); err != nil {
-		log.Fatal(err)
+	srv := &http.Server{
+		Addr:              ":" + port,
+		Handler:           gzipMiddleware(mux),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	<-ctx.Done()
+
+	log.Println("Shutting down server gracefully...")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Graceful shutdown failed: %v", err)
 	}
 }

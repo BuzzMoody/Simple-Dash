@@ -8,7 +8,7 @@ A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go 
 - **Native Light/Dark Mode**: Built-in theme toggle that perfectly adjusts gradients, backgrounds, text colours, and shadows.
 - **Theme-Aware Logos**: Support for dynamically switching custom SVG/PNG logos based on the active light/dark theme.
 - **Live Health Checks**: Automatically polls your internal services every 60 seconds and pushes instant updates to the UI via Server-Sent Events (SSE).
-- **Progressive Web App**: Fully responsive mobile UI with standalone web app support.
+
 - **Dynamic Sorting & Grouping**: Instantly toggle between categorical grouping or alphabetical sorting.
 - **Real-Time Search**: Built-in, ultra-fast client-side search to quickly filter your services by name, description, or category.
 - **Hot-Reloading Configuration**: Edit your configuration file on the fly; the dashboard re-renders automatically without needing to restart the container!
@@ -97,7 +97,7 @@ category_colors:
 - `header`: *(String)* The primary title of your dashboard.
 - `description`: *(String)* A subtitle displayed inline with the header.
 - `header_colors`: *(Array of Strings)* A list of precisely two hex colours (e.g. `["#38bdf8", "#a855f7"]`) to create a custom gradient for your header text. If omitted, falls back to the default theme colours.
-- `footer`: *(String)* Custom text to be displayed at the very bottom of the page.
+- `footer`: *(String)* Custom text to be displayed at the very bottom of the page. Supports standard Markdown links `[text](url)`. Note: HTML entities (like `&copy;`) are not fully supported; use literal Unicode characters (like `©`) instead.
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
 - `show_sys_metrics`: *(Boolean)* Default is `true`. If set to `true`, a live hardware metrics pill (CPU, RAM, Uptime) is elegantly displayed at the top of the dashboard, updating every 60 seconds with zero backend overhead.
@@ -159,5 +159,11 @@ services:
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 - `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
 - `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
+## Security Note
+
+**Simple Dash has no built-in authentication.** The entire configuration file—including internal IP addresses used for the `server` health-check field—is exposed via the unauthenticated `/api/config` endpoint. 
+
+This dashboard is designed to be run safely within an internal homelab environment (LAN or VPN). If you intend to expose Simple Dash to the public internet, you **must** place it behind a reverse proxy with an authentication layer (such as Authelia, Authentik, Tailscale, or Cloudflare Access).
+
 ---
 *Built with Go & Vanilla JS*
