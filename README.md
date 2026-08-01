@@ -4,9 +4,9 @@ A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go 
 
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./screenshot_dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="./screenshot_light.png">
-    <img alt="Simple Dash Dashboard" src="./screenshot_dark.png">
+    <source media="(prefers-color-scheme: dark)" srcset="./screenshot_dark.png?v=2">
+    <source media="(prefers-color-scheme: light)" srcset="./screenshot_light.png?v=2">
+    <img alt="Simple Dash Dashboard" src="./screenshot_dark.png?v=2">
   </picture>
 </div>
 
