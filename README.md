@@ -2,6 +2,14 @@
 
 A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go and delivered as an extremely lightweight distroless Docker container. 
 
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./screenshot_dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="./screenshot_light.png">
+    <img alt="Simple Dash Dashboard" src="./screenshot_dark.png">
+  </picture>
+</div>
+
 ## Features
 - **Ultra-Lightweight Backend**: Built on a statically compiled Go backend and packaged in a highly secure `distroless` image.
 - **Glassmorphism UI**: Beautiful, dynamic gradients and frosted glass elements natively powered by pure CSS.
