@@ -506,19 +506,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     const showPing = currentConfig && currentConfig.show_ping && isUp && latency !== null;
                     const showDot = isUp ? !(currentConfig && currentConfig.show_only_down) : true;
                     
-                    if (dot) dot.remove();
-                    dot = null;
-
-                    if (showDot || (layout === 'list' && showPing)) {
-                        dot = document.createElement('div');
-                        targetContainer.appendChild(dot);
+                    if (!showDot && !(layout === 'list' && showPing)) {
+                        if (dot) { dot.remove(); dot = null; }
+                    } else {
+                        if (!dot) {
+                            dot = document.createElement('div');
+                            targetContainer.appendChild(dot);
+                        }
                     }
 
                     let tbox = null;
                     if (layout !== 'list') {
                         tbox = card.querySelector('.tooltip-box');
-                        const desc = card.getAttribute('data-desc');
-                        if (tbox && !showPing) tbox.textContent = desc || '';
+                        const desc = card.getAttribute('data-desc') || '';
+                        if (tbox && !showPing) {
+                            if (tbox.textContent !== desc) tbox.textContent = desc;
+                        }
                     }
                     
                     if (showPing) {
@@ -533,22 +536,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (layout === 'list') {
                             if (dot) {
-                                dot.className = 'status-ping';
-                                dot.textContent = latency + ' ms';
-                                dot.style.color = pingColor;
+                                if (dot.className !== 'status-ping') dot.className = 'status-ping';
+                                const pingText = latency + ' ms';
+                                if (dot.textContent !== pingText) dot.textContent = pingText;
+                                if (dot.style.color !== pingColor) dot.style.color = pingColor;
                             }
                         } else {
                             const desc = card.getAttribute('data-desc') || '';
                             if (tbox) {
-                                tbox.innerHTML = '';
-                                if (desc) {
-                                    tbox.appendChild(document.createTextNode(desc + ' \u2022 '));
+                                let pingSpan = tbox.querySelector('.ping-span');
+                                if (!pingSpan) {
+                                    tbox.innerHTML = '';
+                                    if (desc) {
+                                        tbox.appendChild(document.createTextNode(desc + ' \u2022 '));
+                                    }
+                                    pingSpan = document.createElement('span');
+                                    pingSpan.className = 'ping-span';
+                                    tbox.appendChild(pingSpan);
                                 }
-                                const pingSpan = document.createElement('span');
-                                pingSpan.style.color = pingColor;
-                                pingSpan.style.webkitTextFillColor = pingColor;
-                                pingSpan.textContent = latency + ' ms';
-                                tbox.appendChild(pingSpan);
+                                const pingText = latency + ' ms';
+                                if (pingSpan.textContent !== pingText) pingSpan.textContent = pingText;
+                                if (pingSpan.style.color !== pingColor) {
+                                    pingSpan.style.color = pingColor;
+                                    pingSpan.style.webkitTextFillColor = pingColor;
+                                }
                             }
                             if (dot && showDot) {
                                 dot.className = 'status-dot up';
