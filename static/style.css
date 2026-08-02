@@ -509,7 +509,6 @@ html, body {
     flex-wrap: nowrap;
     gap: 1rem;
     padding: 0.5rem 0.75rem;
-    min-height: 2.85rem;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
@@ -519,6 +518,7 @@ html, body {
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
+    position: relative;
 }
 
 .widget-card::-webkit-scrollbar {
@@ -534,18 +534,6 @@ body.dark-mode .widget-card:hover {
     box-shadow: 0 8px 15px rgba(0,0,0,0.5);
 }
 
-.widget-title {
-    color: var(--accent-color);
-    margin-right: 0;
-    border-right: 1px solid var(--card-border);
-    padding-right: 1rem;
-    display: flex;
-    align-items: center;
-}
-
-.widget-title .service-icon {
-    margin-right: 0;
-}
 
 .widget-metrics {
     display: flex;
@@ -725,7 +713,9 @@ body.dark-mode .tooltip-box {
 [data-tooltip]:hover::after,
 [data-tooltip]:focus-visible::after,
 .service-card:hover .tooltip-box:not(:empty),
-.service-card:focus-visible .tooltip-box:not(:empty) {
+.widget-card:hover .tooltip-box:not(:empty),
+.service-card:focus-visible .tooltip-box:not(:empty),
+.widget-card:focus-visible .tooltip-box:not(:empty) {
     opacity: 1;
     visibility: visible;
     transform: translateX(var(--tooltip-x, -50%)) translateY(-8px);

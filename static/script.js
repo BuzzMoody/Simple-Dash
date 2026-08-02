@@ -357,6 +357,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return wc;
     };
 
+    const getMetricIcon = (key) => {
+        const k = key.toLowerCase();
+        if (k.includes('running') || k.includes('active')) return '▶️';
+        if (k.includes('stopped')) return '⏹️';
+        if (k.includes('quer') || k.includes('client')) return '👥';
+        if (k.includes('blocked')) return '🛑';
+        if (k.includes('percent')) return '📊';
+        if (k.includes('state')) return 'ℹ️';
+        if (k.includes('cpu')) return '⚙️';
+        if (k.includes('ram')) return '🧠';
+        if (k.includes('down')) return '⬇️';
+        if (k.includes('up')) return '⬆️';
+        if (k.includes('ping')) return '🏓';
+        if (k.includes('total')) return '∑';
+        return '🔹';
+    };
     const getWidgetMetricColors = (key, value) => {
         if (key === 'CPU' || key === 'RAM' || key === 'Percent') {
             let v = parseFloat(value);
@@ -477,12 +493,11 @@ document.addEventListener('DOMContentLoaded', () => {
             metricsEl = document.createElement('div');
             metricsEl.id = 'sys-metrics';
             metricsEl.className = 'widget-card stagger-in';
-            metricsEl.title = 'System';
             
-            const titleEl = document.createElement('div');
-            titleEl.className = 'widget-title';
-            titleEl.innerHTML = `<div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></div>`;
-            metricsEl.appendChild(titleEl);
+            const tooltipBox = document.createElement('div');
+            tooltipBox.className = 'tooltip-box';
+            tooltipBox.textContent = 'System';
+            metricsEl.appendChild(tooltipBox);
             
             const metricsWrapper = document.createElement('div');
             metricsWrapper.className = 'widget-metrics';
@@ -635,19 +650,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 wCard.className = 'widget-card stagger-in';
                                 
                                 const serviceName = card.querySelector('.service-name')?.textContent || 'Service';
-                                wCard.title = serviceName;
-
-                                const titleEl = document.createElement('div');
-                                titleEl.className = 'widget-title';
                                 
-                                const sIcon = card.querySelector('.service-icon');
-                                if (sIcon) {
-                                    const iconClone = sIcon.cloneNode(true);
-                                    titleEl.appendChild(iconClone);
-                                } else {
-                                    titleEl.textContent = serviceName.charAt(0);
-                                }
-                                wCard.appendChild(titleEl);
+                                const tooltipBox = document.createElement('div');
+                                tooltipBox.className = 'tooltip-box';
+                                tooltipBox.textContent = serviceName;
+                                wCard.appendChild(tooltipBox);
                                 
                                 const metricsWrapper = document.createElement('div');
                                 metricsWrapper.className = 'widget-metrics';
@@ -664,6 +671,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     item.className = 'metric-item';
                                     item.setAttribute('data-key', key);
                                     
+                                    const icon = document.createElement('span');
+                                    icon.className = 'metric-icon';
+                                    icon.textContent = getMetricIcon(key);
+                                    
                                     const label = document.createElement('span');
                                     label.className = 'metric-label';
                                     label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -671,6 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const val = document.createElement('span');
                                     val.className = 'metric-value';
                                     
+                                    item.appendChild(icon);
                                     item.appendChild(label);
                                     item.appendChild(val);
                                     mWrapper.appendChild(item);
