@@ -357,6 +357,118 @@ document.addEventListener('DOMContentLoaded', () => {
         return wc;
     };
 
+    const getWidgetMetricColors = (key, value) => {
+        if (key === 'CPU' || key === 'RAM' || key === 'Percent') {
+            let v = parseFloat(value);
+            if (v > 90) return { base: '#d64242', flash: '#eaa0a0' };
+            if (v > 75) return { base: '#f59e0b', flash: '#face85' };
+            if (v > 60) return { base: '#eab308', flash: '#f4d983' };
+            return { base: '#39c55c', flash: '#9ce2ad' };
+        }
+        
+        if (key === 'Ping') {
+            let v = parseFloat(value);
+            if (v > 300) return { base: '#d64242', flash: '#eaa0a0' };
+            if (v > 150) return { base: '#f59e0b', flash: '#face85' };
+            if (v > 50) return { base: '#eab308', flash: '#f4d983' };
+            return { base: '#39c55c', flash: '#9ce2ad' };
+        }
+
+        if (key === 'Stopped' || key === 'Missing' || key === 'Blocked') {
+            let v = parseFloat(value);
+            if (v > 0) return { base: '#d64242', flash: '#eaa0a0' };
+            return null;
+        }
+        
+        if (key === 'Running') {
+            return { base: '#39c55c', flash: '#9ce2ad' };
+        }
+        
+        return null;
+    };
+
+    const updateSlotGeneric = (el, id, formattedStr, isFirstLoad) => {
+        let slot = el.querySelector('.slot-machine');
+        if (slot && slot.getAttribute('data-len') !== formattedStr.length.toString()) {
+            slot.remove();
+            slot = null;
+        }
+        
+        if (!slot) {
+            el.innerHTML = '';
+            slot = document.createElement('div');
+            slot.className = 'slot-machine';
+            slot.setAttribute('data-len', formattedStr.length);
+            
+            for (let i = 0; i < formattedStr.length; i++) {
+                const char = formattedStr[i];
+                if ((char >= '0' && char <= '9') || char === ' ') {
+                    const d = document.createElement('div');
+                    d.className = 'slot-digit';
+                    d.id = `slot-${id}-${i}`;
+                    let chars = `<div class="slot-char">&nbsp;</div>`;
+                    for(let j=0; j<=9; j++) chars += `<div class="slot-char">${j}</div>`;
+                    d.innerHTML = chars;
+                    slot.appendChild(d);
+                } else {
+                    const suff = document.createElement('div');
+                    suff.className = 'slot-char';
+                    suff.innerHTML = char;
+                    slot.appendChild(suff);
+                }
+            }
+            el.appendChild(slot);
+        }
+        
+        for (let i = 0; i < formattedStr.length; i++) {
+            const char = formattedStr[i];
+            if ((char >= '0' && char <= '9') || char === ' ') {
+                const d = document.getElementById(`slot-${id}-${i}`);
+                if (!d) continue;
+                
+                const idx = char === ' ' ? 0 : parseInt(char, 10) + 1;
+                
+                if (isFirstLoad) {
+                    d.style.transition = 'none';
+                } else {
+                    d.style.transition = 'transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                }
+                d.style.transform = `translateY(calc(-100% / 11 * ${idx}))`;
+            }
+        }
+    };
+
+    const animateMetric = (el, id, targetStr, colors) => {
+        const currentStr = el.getAttribute('data-val');
+        if (currentStr === targetStr) return;
+        
+        const isFirstLoad = currentStr === null;
+        el.setAttribute('data-val', targetStr);
+        
+        if (colors !== null) {
+            el.style.transition = 'none';
+            if (!isFirstLoad) {
+                el.style.color = colors.flash;
+                el.style.textShadow = `0 0 10px ${colors.base}`;
+            }
+            
+            updateSlotGeneric(el, id, targetStr, isFirstLoad);
+            void el.offsetWidth;
+            
+            if (!isFirstLoad) {
+                el.style.transition = `color 1.5s ease-out, text-shadow 1.5s ease-out`;
+                el.style.color = colors.base;
+                el.style.textShadow = 'none';
+            } else {
+                el.style.color = colors.base;
+            }
+        } else {
+            updateSlotGeneric(el, id, targetStr, isFirstLoad);
+            el.style.color = '';
+            el.style.textShadow = 'none';
+        }
+    };
+
     const renderSysMetrics = (metrics) => {
         let metricsEl = document.getElementById('sys-metrics');
         if (!metricsEl) {
@@ -392,99 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             wc.appendChild(metricsEl);
         }
-        const getColor = (val) => {
-            if (val > 90) return { base: '#d64242', flash: '#eaa0a0' };
-            if (val > 75) return { base: '#f59e0b', flash: '#face85' };
-            if (val > 60) return { base: '#eab308', flash: '#f4d983' };
-            return { base: '#39c55c', flash: '#9ce2ad' };
-        };
-
-        const updateSlotGeneric = (el, id, formattedStr, isFirstLoad) => {
-            let slot = el.querySelector('.slot-machine');
-            if (slot && slot.getAttribute('data-len') !== formattedStr.length.toString()) {
-                slot.remove();
-                slot = null;
-            }
-            
-            if (!slot) {
-                el.innerHTML = '';
-                slot = document.createElement('div');
-                slot.className = 'slot-machine';
-                slot.setAttribute('data-len', formattedStr.length);
-                
-                for (let i = 0; i < formattedStr.length; i++) {
-                    const char = formattedStr[i];
-                    if ((char >= '0' && char <= '9') || char === ' ') {
-                        const d = document.createElement('div');
-                        d.className = 'slot-digit';
-                        d.id = `slot-${id}-${i}`;
-                        let chars = `<div class="slot-char">&nbsp;</div>`;
-                        for(let j=0; j<=9; j++) chars += `<div class="slot-char">${j}</div>`;
-                        d.innerHTML = chars;
-                        slot.appendChild(d);
-                    } else {
-                        const suff = document.createElement('div');
-                        suff.className = 'slot-char';
-                        suff.innerHTML = char;
-                        slot.appendChild(suff);
-                    }
-                }
-                el.appendChild(slot);
-            }
-            
-            for (let i = 0; i < formattedStr.length; i++) {
-                const char = formattedStr[i];
-                if ((char >= '0' && char <= '9') || char === ' ') {
-                    const d = document.getElementById(`slot-${id}-${i}`);
-                    if (!d) continue;
-                    
-                    const idx = char === ' ' ? 0 : parseInt(char, 10) + 1;
-                    
-                    if (isFirstLoad) {
-                        d.style.transition = 'none';
-                    } else {
-                        d.style.transition = 'transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                    }
-                    d.style.transform = `translateY(calc(-100% / 11 * ${idx}))`;
-                }
-            }
-        };
-
-        const animateMetric = (id, targetStr, colorEndVal) => {
-            const el = document.getElementById(`metric-val-${id}`);
-            const currentStr = el.getAttribute('data-val');
-            if (currentStr === targetStr) return;
-            
-            const isFirstLoad = currentStr === null;
-            el.setAttribute('data-val', targetStr);
-            
-            if (colorEndVal !== null) {
-                const colors = getColor(colorEndVal);
-                el.style.transition = 'none';
-                if (!isFirstLoad) {
-                    el.style.color = colors.flash;
-                    el.style.textShadow = `0 0 10px ${colors.base}`;
-                }
-                
-                updateSlotGeneric(el, id, targetStr, isFirstLoad);
-                void el.offsetWidth;
-                
-                if (!isFirstLoad) {
-                    el.style.transition = `color 1.5s ease-out, text-shadow 1.5s ease-out`;
-                    el.style.color = colors.base;
-                    el.style.textShadow = 'none';
-                } else {
-                    el.style.color = colors.base;
-                }
-            } else {
-                updateSlotGeneric(el, id, targetStr, isFirstLoad);
-            }
-        };
 
         const cpuStr = Math.round(Number(metrics.cpu)).toString().padStart(2, ' ') + '%';
         const ramStr = Math.round(Number(metrics.ram)).toString().padStart(2, ' ') + '%';
-        animateMetric('cpu', cpuStr, metrics.cpu);
-        animateMetric('ram', ramStr, metrics.ram);
+        animateMetric(document.getElementById('metric-val-cpu'), 'cpu', cpuStr, getWidgetMetricColors('CPU', metrics.cpu));
+        animateMetric(document.getElementById('metric-val-ram'), 'ram', ramStr, getWidgetMetricColors('RAM', metrics.ram));
         document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
@@ -643,17 +667,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 const valEl = item.querySelector('.metric-value');
                                 const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
-                                if (valEl.textContent !== String(displayValue)) {
-                                    valEl.textContent = displayValue;
-                                }
-                                
-                                if (key === 'Running') {
-                                    valEl.style.color = '#39c55c';
-                                } else if (key === 'Stopped' && value > 0) {
-                                    valEl.style.color = '#d64242';
-                                } else {
-                                    valEl.style.color = '';
-                                }
+                                const colors = getWidgetMetricColors(key, value);
+                                animateMetric(valEl, wId + '-' + key.replace(/[^a-z0-9]/gi, '-'), String(displayValue), colors);
                             }
                         }
                     }

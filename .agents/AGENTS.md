@@ -71,3 +71,6 @@ Before making any modifications to CSS, HTML, or JavaScript (especially when ref
 
 ## 16. Strict Git Staging & Data Privacy
 Never use wildcard staging commands like `git add .`, `git add -A`, or `git commit -a`. You MUST explicitly name the specific files you have modified or created when staging (e.g., `git add main.go static/style.css`). Before committing, you must run `git status` to verify exactly what is being staged. This strict policy ensures that generated reports, internal scratchpads, or sensitive data are never accidentally committed to the public repository.
+
+## 17. Widget Animations & Colours
+When implementing new API widgets, you MUST ensure that any numeric values returned by the backend (e.g. counts, speeds, percentages) are processed through the `getWidgetMetricColors` and `animateMetric` functions in `script.js` so they use the smooth slot-machine animation and flash effect. Furthermore, you must update `getWidgetMetricColors` to properly categorise the new metric's key based on a good-to-bad scale (Green, Yellow, Orange, Red) if applicable. For indifferent values or "0" values on bad metrics, leave the colour standard (return `null`).
