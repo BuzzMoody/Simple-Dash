@@ -13,7 +13,7 @@ RUN go mod download
 COPY . .
 
 # Build a statically linked binary (cross-compiled natively)
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o dash main.go
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o dash .
 
 # Stage 2: Create the minimal distroless image
 FROM gcr.io/distroless/static-debian12:latest
