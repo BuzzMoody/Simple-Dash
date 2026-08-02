@@ -506,7 +506,7 @@ html, body {
 .widget-card {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 1rem;
     padding: 0.5rem 0.75rem;
     min-height: 2.85rem;
@@ -516,6 +516,13 @@ html, body {
     box-shadow: var(--shadow);
     transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
     animation: stagger-fade-up 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+.widget-card::-webkit-scrollbar {
+    display: none;
 }
 
 .widget-card:hover {
@@ -528,21 +535,23 @@ body.dark-mode .widget-card:hover {
 }
 
 .widget-title {
-    font-weight: 600;
-    font-size: 0.85rem;
     color: var(--accent-color);
-    margin-right: -0.5rem;
+    margin-right: 0;
     border-right: 1px solid var(--card-border);
     padding-right: 1rem;
     display: flex;
     align-items: center;
 }
 
+.widget-title .service-icon {
+    margin-right: 0;
+}
+
 .widget-metrics {
     display: flex;
     gap: 1.5rem;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .metric-item {

@@ -477,10 +477,11 @@ document.addEventListener('DOMContentLoaded', () => {
             metricsEl = document.createElement('div');
             metricsEl.id = 'sys-metrics';
             metricsEl.className = 'widget-card stagger-in';
+            metricsEl.title = 'System';
             
             const titleEl = document.createElement('div');
             titleEl.className = 'widget-title';
-            titleEl.textContent = 'System';
+            titleEl.innerHTML = `<div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></div>`;
             metricsEl.appendChild(titleEl);
             
             const metricsWrapper = document.createElement('div');
@@ -634,9 +635,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                 wCard.className = 'widget-card stagger-in';
                                 
                                 const serviceName = card.querySelector('.service-name')?.textContent || 'Service';
+                                wCard.title = serviceName;
+
                                 const titleEl = document.createElement('div');
                                 titleEl.className = 'widget-title';
-                                titleEl.textContent = serviceName;
+                                
+                                const sIcon = card.querySelector('.service-icon');
+                                if (sIcon) {
+                                    const iconClone = sIcon.cloneNode(true);
+                                    titleEl.appendChild(iconClone);
+                                } else {
+                                    titleEl.textContent = serviceName.charAt(0);
+                                }
                                 wCard.appendChild(titleEl);
                                 
                                 const metricsWrapper = document.createElement('div');
