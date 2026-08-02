@@ -646,6 +646,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (valEl.textContent !== String(displayValue)) {
                                     valEl.textContent = displayValue;
                                 }
+                                
+                                if (key === 'Running') {
+                                    valEl.style.color = '#39c55c';
+                                } else if (key === 'Stopped' && value > 0) {
+                                    valEl.style.color = '#d64242';
+                                } else {
+                                    valEl.style.color = '';
+                                }
                             }
                         }
                     }
