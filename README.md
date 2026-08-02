@@ -150,6 +150,17 @@ buttons:
 Your primary application cards. The dashboard automatically monitors the `url` via HTTP GET requests every 60 seconds to display live health dots.
 ```yaml
 services:
+  - name: "Pi-Hole"
+    url: "http://192.168.1.10/admin"
+    category: "Infrastructure"
+    logo: "pi-hole.svg"
+    description: "Network-wide Ad Blocking"
+    widget:
+      type: "pihole"
+      url: "http://192.168.1.10/admin/api.php"
+      auth:
+        key: "your_secret_api_key_here"
+
   - name: "Plex"
     url: "http://10.0.0.5:32400"
     category: "Media"
@@ -167,6 +178,9 @@ services:
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 - `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
 - `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
+- `widget`: *(Object)* (Optional) Enables a dynamic data widget to display live API data directly on the card. Currently supports:
+  - `type: "pihole"`: Fetches live query stats from a Pi-Hole instance. Requires `url` (the Pi-Hole API endpoint) and `auth.key` (your Pi-Hole API token).
+
 ## Security Note
 
 **Simple Dash has no built-in authentication.** The entire configuration file—including internal IP addresses used for the `server` health-check field—is exposed via the unauthenticated `/api/config` endpoint. 
