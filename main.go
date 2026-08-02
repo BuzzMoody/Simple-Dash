@@ -94,7 +94,14 @@ type WidgetParser interface {
 }
 
 var widgetRegistry = map[string]WidgetParser{
-	"pihole": &PiholeWidget{},
+	"pihole":        &PiholeWidget{},
+	"proxmox":       &ProxmoxWidget{},
+	"portainer":     &PortainerWidget{},
+	"qbittorrent":   &QbittorrentWidget{},
+	"jellyfin":      &JellyfinWidget{},
+	"speedtest":     &SpeedtestWidget{},
+	"homeassistant": &HomeAssistantWidget{},
+	"blocky":        &BlockyWidget{},
 }
 
 type Service struct {
