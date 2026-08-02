@@ -24,6 +24,23 @@ buttons:
     icon: "🌐"
 
 services:
+  - name: "Pi-Hole"
+    url: "http://192.168.1.10/admin"
+    category: "Infrastructure"
+    logo: "pi-hole.svg"
+    description: "Network-wide Ad Blocking"
+    widget:
+      type: "pihole"
+      url: "http://192.168.1.10/admin/api.php"
+      auth:
+        key: "your_secret_api_key_here"
+
+  - name: "Example Service"
+    url: "http://192.168.1.100"
+    category: "Infrastructure"
+    logo: "example.svg"
+    description: "An example service description."
+
   - name: "Portainer"
     url: "https://docker.example.com"
     category: "Infrastructure"

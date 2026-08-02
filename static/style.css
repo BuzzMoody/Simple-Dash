@@ -493,23 +493,55 @@ html, body {
     display: none;
 }
 
-.sys-metrics-widget {
+.widgets-container {
     display: flex;
     justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.widget-card {
+    display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 1.5rem;
-    margin-bottom: 2rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1.25rem;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 0.5rem;
     box-shadow: var(--shadow);
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
     animation: stagger-fade-up 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+}
+
+.widget-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+body.dark-mode .widget-card:hover {
+    box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+}
+
+.widget-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    margin-right: -0.5rem;
+    border-right: 1px solid var(--card-border);
+    padding-right: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.widget-metrics {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .metric-item {

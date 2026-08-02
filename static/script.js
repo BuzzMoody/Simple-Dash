@@ -343,20 +343,43 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
+    const getWidgetsContainer = () => {
+        let wc = document.getElementById('widgets-container');
+        if (!wc) {
+            const sc = document.getElementById('services-container');
+            if (sc) {
+                wc = document.createElement('div');
+                wc.id = 'widgets-container';
+                wc.className = 'widgets-container';
+                sc.parentNode.insertBefore(wc, sc);
+            }
+        }
+        return wc;
+    };
+
     const renderSysMetrics = (metrics) => {
         let metricsEl = document.getElementById('sys-metrics');
         if (!metricsEl) {
-            const container = document.getElementById('services-container');
-            if (!container) return;
+            const wc = getWidgetsContainer();
+            if (!wc) return;
             metricsEl = document.createElement('div');
             metricsEl.id = 'sys-metrics';
-            metricsEl.className = 'sys-metrics-widget stagger-in';
+            metricsEl.className = 'widget-card stagger-in';
+            
+            const titleEl = document.createElement('div');
+            titleEl.className = 'widget-title';
+            titleEl.textContent = 'System';
+            metricsEl.appendChild(titleEl);
+            
+            const metricsWrapper = document.createElement('div');
+            metricsWrapper.className = 'widget-metrics';
+            metricsEl.appendChild(metricsWrapper);
             
             const createMetric = (id, iconSvg, label) => {
                 const item = document.createElement('div');
                 item.className = 'metric-item';
                 item.innerHTML = `<span class="metric-icon">${iconSvg}</span><span class="metric-label">${label}</span><span class="metric-value" id="metric-val-${id}"></span>`;
-                metricsEl.appendChild(item);
+                metricsWrapper.appendChild(item);
             };
             
             const cpuIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`;
@@ -367,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
             createMetric('ram', ramIcon, 'RAM');
             createMetric('uptime', timeIcon, 'Uptime');
             
-            container.parentNode.insertBefore(metricsEl, container);
+            wc.appendChild(metricsEl);
         }
         const getColor = (val) => {
             if (val > 90) return { base: '#d64242', flash: '#eaa0a0' };
@@ -571,6 +594,61 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
+                    let widgetData = null;
+                    if (statusObj && typeof statusObj === 'object') {
+                        widgetData = statusObj.widget_data;
+                    }
+                    
+                    if (widgetData) {
+                        let wContainer = getWidgetsContainer();
+                        if (wContainer) {
+                            let wId = 'widget-' + configUrl.replace(/[^a-z0-9]/gi, '-');
+                            let wCard = document.getElementById(wId);
+                            if (!wCard) {
+                                wCard = document.createElement('div');
+                                wCard.id = wId;
+                                wCard.className = 'widget-card stagger-in';
+                                
+                                const serviceName = card.querySelector('.service-name')?.textContent || 'Service';
+                                const titleEl = document.createElement('div');
+                                titleEl.className = 'widget-title';
+                                titleEl.textContent = serviceName;
+                                wCard.appendChild(titleEl);
+                                
+                                const metricsWrapper = document.createElement('div');
+                                metricsWrapper.className = 'widget-metrics';
+                                wCard.appendChild(metricsWrapper);
+                                
+                                wContainer.appendChild(wCard);
+                            }
+                            
+                            const mWrapper = wCard.querySelector('.widget-metrics');
+                            for (const [key, value] of Object.entries(widgetData)) {
+                                let item = mWrapper.querySelector(`.metric-item[data-key="${key}"]`);
+                                if (!item) {
+                                    item = document.createElement('div');
+                                    item.className = 'metric-item';
+                                    item.setAttribute('data-key', key);
+                                    
+                                    const label = document.createElement('span');
+                                    label.className = 'metric-label';
+                                    label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                    
+                                    const val = document.createElement('span');
+                                    val.className = 'metric-value';
+                                    
+                                    item.appendChild(label);
+                                    item.appendChild(val);
+                                    mWrapper.appendChild(item);
+                                }
+                                const valEl = item.querySelector('.metric-value');
+                                const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
+                                if (valEl.textContent !== String(displayValue)) {
+                                    valEl.textContent = displayValue;
+                                }
+                            }
+                        }
+                    }
 
                 }
             });

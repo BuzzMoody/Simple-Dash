@@ -80,22 +80,41 @@ type Button struct {
 	LogoLight string `yaml:"logo_light" json:"logo_light"`
 }
 
+type WidgetConfig struct {
+	Type     string            `yaml:"type" json:"type"`
+	URL      string            `yaml:"url" json:"url"`
+	Auth     map[string]string `yaml:"auth" json:"auth"`
+	Settings map[string]string `yaml:"settings" json:"settings"`
+}
+
+type WidgetData map[string]interface{}
+
+type WidgetParser interface {
+	Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error)
+}
+
+var widgetRegistry = map[string]WidgetParser{
+	"pihole": &PiholeWidget{},
+}
+
 type Service struct {
-	Name        string `yaml:"name" json:"name"`
-	URL         string `yaml:"url" json:"url"`
-	Category    string `yaml:"category" json:"category"`
-	Server      string `yaml:"server" json:"server"`
-	Logo        string `yaml:"logo" json:"logo"`
-	LogoDark    string `yaml:"logo_dark" json:"logo_dark"`
-	LogoLight   string `yaml:"logo_light" json:"logo_light"`
-	Icon        string `yaml:"icon" json:"icon"`
-	Description string `yaml:"description" json:"description"`
-	Pinned      bool   `yaml:"pinned" json:"pinned"`
+	Name        string        `yaml:"name" json:"name"`
+	URL         string        `yaml:"url" json:"url"`
+	Category    string        `yaml:"category" json:"category"`
+	Server      string        `yaml:"server" json:"server"`
+	Logo        string        `yaml:"logo" json:"logo"`
+	LogoDark    string        `yaml:"logo_dark" json:"logo_dark"`
+	LogoLight   string        `yaml:"logo_light" json:"logo_light"`
+	Icon        string        `yaml:"icon" json:"icon"`
+	Description string        `yaml:"description" json:"description"`
+	Pinned      bool          `yaml:"pinned" json:"pinned"`
+	Widget      *WidgetConfig `yaml:"widget,omitempty" json:"widget,omitempty"`
 }
 
 type ServiceStatus struct {
-	IsUp    bool `json:"is_up"`
-	Latency int  `json:"latency,omitempty"`
+	IsUp       bool       `json:"is_up"`
+	Latency    int        `json:"latency,omitempty"`
+	WidgetData WidgetData `json:"widget_data,omitempty"`
 }
 
 type SysMetrics struct {
@@ -320,6 +339,18 @@ func checkHealth() {
 			}
 
 			status := ServiceStatus{IsUp: isUp, Latency: latencyMs}
+
+			if srv.Widget != nil && srv.Widget.Type != "" {
+				if parser, exists := widgetRegistry[srv.Widget.Type]; exists {
+					wCtx, wCancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer wCancel()
+					if data, err := parser.Fetch(wCtx, globalClient, srv.Widget); err == nil {
+						status.WidgetData = data
+					} else {
+						log.Printf("Widget fetch error for %s: %v", srv.Name, err)
+					}
+				}
+			}
 
 			mu.Lock()
 			newStatus[srv.URL] = status
