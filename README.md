@@ -179,7 +179,14 @@ services:
 - `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
 - `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
 - `widget`: *(Object)* (Optional) Enables a dynamic data widget to display live API data directly on the card. Currently supports:
-  - `type: "pihole"`: Fetches live query stats from a Pi-Hole instance. Requires `url` (the Pi-Hole API endpoint) and `auth.key` (your Pi-Hole API token).
+  - `type: "pihole"`: Fetches live query stats. Requires `url` (the API endpoint) and `auth.key` (your API token).
+  - `type: "blocky"`: Fetches DNS stats. Requires `url` (the `/metrics` endpoint).
+  - `type: "proxmox"`: Fetches node CPU/RAM usage. Requires `url` (the node status endpoint) and `auth.key` (your PVEAPIToken).
+  - `type: "portainer"`: Fetches container statuses. Requires `url` (the containers JSON endpoint) and `auth.key` (your API token).
+  - `type: "qbittorrent"`: Fetches transfer speeds. Requires `url` (the `/api/v2/transfer/info` endpoint). Ensure local subnet auth is disabled.
+  - `type: "jellyfin"`: Fetches active streams. Requires `url` (the `/Sessions` endpoint) and `auth.key` (your API token).
+  - `type: "speedtest"`: Fetches latest speeds. Requires `url` (the `/api/v1/results/latest` endpoint) and `auth.key` (your API token).
+  - `type: "homeassistant"`: Fetches entity state. Requires `url` (the `/api/states/<entity>` endpoint) and `auth.key` (your Long-Lived Access Token).
 
 ## Security Note
 
