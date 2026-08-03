@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             const mWrapper = wCard.querySelector('.widget-metrics');
                             
-                            const metricOrder = ['state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'streams', 'active', 'clients', 'queries', 'blocked', 'percentage', 'download', 'upload'];
+                            const metricOrder = ['state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'download', 'down', 'upload', 'up', 'streams', 'active', 'clients', 'queries', 'blocked', 'percentage'];
                             const entries = Object.entries(widgetData).sort((a, b) => {
                                 let idxA = metricOrder.indexOf(a[0].toLowerCase());
                                 let idxB = metricOrder.indexOf(b[0].toLowerCase());
