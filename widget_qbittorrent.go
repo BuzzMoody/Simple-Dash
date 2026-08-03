@@ -30,10 +30,13 @@ func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg 
 	}
 
 	var data struct {
-		DlInfoSpeed int `json:"dl_info_speed"`
-		UpInfoSpeed int `json:"up_info_speed"`
+		ServerState struct {
+			DlInfoSpeed int `json:"dl_info_speed"`
+			UpInfoSpeed int `json:"up_info_speed"`
+		} `json:"server_state"`
+		Torrents map[string]interface{} `json:"torrents"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, err
 	}
@@ -48,7 +51,8 @@ func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg 
 	}
 
 	return WidgetData{
-		"Download": formatSpeed(data.DlInfoSpeed),
-		"Upload":   formatSpeed(data.UpInfoSpeed),
+		"Download": formatSpeed(data.ServerState.DlInfoSpeed),
+		"Upload":   formatSpeed(data.ServerState.UpInfoSpeed),
+		"Torrents": fmt.Sprintf("%d", len(data.Torrents)),
 	}, nil
 }

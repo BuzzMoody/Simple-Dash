@@ -209,7 +209,7 @@ Widgets are beautiful, API-driven cards that render live metrics fetched directl
 | `blocky` | Queries & Blocked % | `http://<ip>:4000/metrics` | ❌ None |
 | `proxmox` | CPU & RAM Usage | `https://<ip>:8006/api2/json/nodes/<node>/status` | ✅ `PVEAPIToken=User@pam!ID=Secret` |
 | `portainer` | Running/Stopped | `http://<ip>:9000/api/endpoints/1/docker/containers/json` | ✅ API Token |
-| `qbittorrent`| Up & Down Speeds | `http://<ip>:8080/api/v2/transfer/info` | ❌ (Bypass local subnet auth) |
+| `qbittorrent`| Up, Down & Torrents | `http://<ip>:8080/api/v2/sync/maindata` | ❌ (Bypass local subnet auth) |
 | `jellyfin` | Active Streams | `http://<ip>:8096/Sessions` | ✅ API Token |
 | `speedtest` | Speedtest results | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
 | `homeassistant`| Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |

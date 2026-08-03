@@ -374,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (k.includes('up')) return svgWrap(`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line>`);
         if (k.includes('ping')) return svgWrap(`<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>`);
         if (k.includes('total') || k.includes('node') || k.includes('vm') || k.includes('lxc')) return svgWrap(`<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>`);
+        if (k.includes('torrent')) return svgWrap(`<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>`);
         return svgWrap(`<circle cx="12" cy="12" r="4"></circle>`);
     };
     const getWidgetMetricColors = (key, value) => {
