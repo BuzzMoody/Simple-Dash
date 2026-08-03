@@ -16,6 +16,7 @@ A stunning, ultra-fast, frosted-glass inspired homelab dashboard. Written in Go 
 - **Native Light/Dark Mode**: Built-in theme toggle that perfectly adjusts gradients, backgrounds, text colours, and shadows.
 - **Theme-Aware Logos**: Support for dynamically switching custom SVG/PNG logos based on the active light/dark theme.
 - **Live Health Checks**: Automatically polls your internal services every 60 seconds and pushes instant updates to the UI via Server-Sent Events (SSE).
+- **Dynamic API Widgets**: Pin beautiful, real-time widgets to your dashboard that fetch live data from your favourite services (Pi-hole, Proxmox, Portainer, etc.).
 
 - **Dynamic Sorting & Grouping**: Instantly toggle between categorical grouping or alphabetical sorting.
 - **Real-Time Search**: Built-in, ultra-fast client-side search to quickly filter your services by name, description, or category.
@@ -178,15 +179,42 @@ services:
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 - `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
 - `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
-- `widget`: *(Object)* (Optional) Enables a dynamic data widget to display live API data directly on the card. Currently supports:
-  - `type: "pihole"`: Fetches live query stats. Requires `url` (the API endpoint) and `auth.key` (your API token).
-  - `type: "blocky"`: Fetches DNS stats. Requires `url` (the `/metrics` endpoint).
-  - `type: "proxmox"`: Fetches node CPU/RAM usage. Requires `url` (the node status endpoint) and `auth.key` (your PVEAPIToken).
-  - `type: "portainer"`: Fetches container statuses. Requires `url` (the containers JSON endpoint) and `auth.key` (your API token).
-  - `type: "qbittorrent"`: Fetches transfer speeds. Requires `url` (the `/api/v2/transfer/info` endpoint). Ensure local subnet auth is disabled.
-  - `type: "jellyfin"`: Fetches active streams. Requires `url` (the `/Sessions` endpoint) and `auth.key` (your API token).
-  - `type: "speedtest"`: Fetches latest speeds. Requires `url` (the `/api/v1/results/latest` endpoint) and `auth.key` (your API token).
-  - `type: "homeassistant"`: Fetches entity state. Requires `url` (the `/api/states/<entity>` endpoint) and `auth.key` (your Long-Lived Access Token).
+- `widget`: *(Object)* (Optional) Enables a dynamic data widget to display live API data directly on the card.
+
+<details>
+<summary><strong>📊 Click here for an in-depth guide on configuring Widgets</strong></summary>
+
+<br>
+
+Widgets are beautiful, API-driven cards that render live metrics fetched directly from your applications. To add a widget to a service, simply append the `widget` block to your service definition.
+
+### Example configuration
+
+```yaml
+  - name: "Portainer"
+    url: "http://192.168.1.5:9000"
+    category: "Infrastructure"
+    widget:
+      type: "portainer"
+      url: "http://192.168.1.5:9000/api/endpoints/1/docker/containers/json"
+      auth:
+        key: "ptr_yourSuperSecretApiKey123="
+```
+
+### Supported Widgets & Requirements
+
+| Type | Data Displayed | `url` Endpoint Required | `auth.key` Required |
+|------|---------------|-------------------------|----------------------|
+| `pihole` | Queries & Blocked % | `http://<ip>/admin/api.php` | ✅ Web Password Token |
+| `blocky` | Queries & Blocked % | `http://<ip>:4000/metrics` | ❌ None |
+| `proxmox` | CPU & RAM Usage | `https://<ip>:8006/api2/json/nodes/<node>/status` | ✅ `PVEAPIToken=User@pam!ID=Secret` |
+| `portainer` | Running/Stopped | `http://<ip>:9000/api/endpoints/1/docker/containers/json` | ✅ API Token |
+| `qbittorrent`| Up & Down Speeds | `http://<ip>:8080/api/v2/transfer/info` | ❌ (Bypass local subnet auth) |
+| `jellyfin` | Active Streams | `http://<ip>:8096/Sessions` | ✅ API Token |
+| `speedtest` | Speedtest results | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
+| `homeassistant`| Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |
+
+</details>
 
 ## Security Note
 
