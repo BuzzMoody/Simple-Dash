@@ -668,7 +668,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             
                             const mWrapper = wCard.querySelector('.widget-metrics');
-                            for (const [key, value] of Object.entries(widgetData)) {
+                            
+                            const metricOrder = ['state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'streams', 'active', 'clients', 'queries', 'blocked', 'percentage', 'download', 'upload'];
+                            const entries = Object.entries(widgetData).sort((a, b) => {
+                                let idxA = metricOrder.indexOf(a[0].toLowerCase());
+                                let idxB = metricOrder.indexOf(b[0].toLowerCase());
+                                if (idxA === -1) idxA = 999;
+                                if (idxB === -1) idxB = 999;
+                                if (idxA === 999 && idxB === 999) return a[0].localeCompare(b[0]);
+                                return idxA - idxB;
+                            });
+
+                            for (const [key, value] of entries) {
                                 let item = mWrapper.querySelector(`.metric-item[data-key="${key}"]`);
                                 if (!item) {
                                     item = document.createElement('div');
