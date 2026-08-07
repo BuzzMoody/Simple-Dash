@@ -758,7 +758,7 @@ body.dark-mode .tooltip-box {
 
 
 .service-card:hover,
-.service-card:focus {
+.service-card:focus-visible {
     --ty: -3px;
     --s: 1.02;
     box-shadow: 0 8px 15px var(--hover-shadow-color, var(--default-hover-shadow));
@@ -857,9 +857,9 @@ body.dark-mode .tooltip-box {
 }
 
 .service-card:hover .status-dot,
-.service-card:focus .status-dot,
+.service-card:focus-visible .status-dot,
 .service-card:hover .status-ping,
-.service-card:focus .status-ping {
+.service-card:focus-visible .status-ping {
     opacity: 1;
 }
 
