@@ -658,11 +658,23 @@ func startReleasesFetcher() {
 		if resp.StatusCode == 200 {
 			if body, err := io.ReadAll(resp.Body); err == nil {
 				releasesCache.Store(&body)
+				os.WriteFile("data/releases.json", body, 0644)
 			}
 		}
 	}
 	go func() {
-		fetch()
+		if info, err := os.Stat("data/releases.json"); err == nil {
+			if time.Since(info.ModTime()) < 1*time.Hour {
+				if body, err := os.ReadFile("data/releases.json"); err == nil {
+					releasesCache.Store(&body)
+				}
+			}
+		}
+
+		if releasesCache.Load() == nil {
+			fetch()
+		}
+
 		for range time.Tick(1 * time.Hour) {
 			fetch()
 		}
