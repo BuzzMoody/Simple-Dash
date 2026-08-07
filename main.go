@@ -5,6 +5,7 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -703,6 +704,17 @@ func (n noDirFS) Open(name string) (http.File, error) {
 }
 
 func main() {
+	healthcheck := flag.Bool("healthcheck", false, "Run a healthcheck")
+	flag.Parse()
+
+	if *healthcheck {
+		resp, err := http.Get("http://127.0.0.1:8888/")
+		if err != nil || resp.StatusCode != 200 {
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	if err := loadInitialConfig(); err != nil {
 		log.Fatalf("Fatal: Could not load initial config (ensure config.yaml is mounted in data/): %v", err)
 	}

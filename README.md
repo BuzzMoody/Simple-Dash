@@ -72,6 +72,29 @@ Start the stack by running:
 docker compose up -d
 ```
 
+#### Option C: Extended Docker Compose (Healthchecks)
+
+Simple Dash includes a built-in healthcheck for container orchestrators. You can explicitly define this in your `docker-compose.yml` to ensure your orchestrator knows exactly when the dashboard is healthy and ready:
+
+```yaml
+version: '3.8'
+
+services:
+  simple-dash:
+    image: ghcr.io/buzzmoody/simple-dash:latest
+    container_name: simple-dash
+    ports:
+      - "8888:8888"
+    volumes:
+      - /home/user/simple-dash:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/app/dash", "-healthcheck"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+```
+
 ## Keyboard Navigation & Search
 
 Simple Dash features powerful, performance-focused keyboard navigation out of the box:

@@ -28,4 +28,5 @@ COPY --from=builder /build/dash .
 EXPOSE 8888
 
 # Run the binary
+HEALTHCHECK --interval=30s --timeout=3s CMD ["/app/dash", "-healthcheck"]
 ENTRYPOINT ["./dash"]
