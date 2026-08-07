@@ -99,6 +99,7 @@ show_ping: true
 show_weather: false
 weather_animate: true
 # weather_coords: "-37.81826872134725, 144.96705907138596"
+# github_token: "ghp_xxxxxxxxxxxxxxxxxxxxxx"
 category_colors:
   enabled: false
   titles: false
@@ -115,6 +116,7 @@ category_colors:
 - `show_weather`: *(Boolean)* Default is `false`. Fetches and displays the current local temperature and a weather icon in the dashboard subheading. Does not require any API keys.
 - `weather_animate`: *(Boolean)* Default is `true`. Toggles the smooth, theme-aware colour animations on the weather icons.
 - `weather_coords`: *(String)* (Optional) Hardcode your latitude and longitude as a comma-separated string (e.g. `"-37.81826872134725, 144.96705907138596"`) for the weather module. If omitted, the dashboard will automatically fall back to an IP-based location API to approximate your location without needing browser permissions.
+- `github_token`: *(String)* (Optional) Add your GitHub Personal Access Token to prevent hitting rate limits when the dashboard checks for updates.
 - `category_colors`: *(Boolean or Object)* Default is `false`. If set to `true`, cards will have uniquely generated colours based on their category. Can also be defined as a nested object to enable additional colouring options:
   - `enabled`: *(Boolean)* Colourises service cards and category title borders.
   - `titles`: *(Boolean)* Colourises the category title text itself to match.

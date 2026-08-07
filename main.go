@@ -65,6 +65,7 @@ type Config struct {
 	WeatherAnimate *bool                `yaml:"weather_animate" json:"weather_animate"`
 	WeatherCoords  string               `yaml:"weather_coords" json:"weather_coords"`
 	ShowSysMetrics *bool                `yaml:"show_sys_metrics" json:"show_sys_metrics"`
+	GithubToken    string               `yaml:"github_token" json:"-"`
 	CategoryColors CategoryColorsConfig `yaml:"category_colors" json:"category_colors"`
 	Announcements  []Announcement       `yaml:"announcements" json:"announcements"`
 	Buttons        []Button             `yaml:"buttons" json:"buttons"`
@@ -640,6 +641,15 @@ func startReleasesFetcher() {
 		if err != nil {
 			return
 		}
+		
+		var token string
+		if cfg := configCache.Load(); cfg != nil {
+			token = cfg.GithubToken
+		}
+		if token != "" {
+			req.Header.Set("Authorization", "token "+token)
+		}
+
 		resp, err := globalClient.Do(req)
 		if err != nil {
 			return
