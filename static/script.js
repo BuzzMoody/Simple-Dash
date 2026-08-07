@@ -733,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.remove(), 5000);
     };
 
-
+    let weatherInterval = null;
 
     // Fetch config
     const fetchConfig = async () => {
@@ -744,6 +744,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentConfig = data;
             if (currentConfig.show_weather) {
                 fetchWeather();
+                if (!weatherInterval) {
+                    weatherInterval = setInterval(fetchWeather, 30 * 60 * 1000);
+                }
+            } else if (weatherInterval) {
+                clearInterval(weatherInterval);
+                weatherInterval = null;
             }
             renderDashboard(data);
             initStatusStream();
