@@ -35,8 +35,9 @@ The backend is written in Go, which strictly prohibits unused imports and variab
 *   Before committing any backend changes, you MUST always verify your modifications by running `go build` locally to catch any compilation errors.
 *   You must also run `go vet ./...` to catch behavioral bugs and `gofmt -w .` to ensure standard, idiomatic Go formatting.
 
-## 8. Strict JavaScript Syntax Checking
-Before committing any changes to JavaScript files (e.g. `static/script.js`), you MUST verify there are no syntax errors (such as duplicate variable declarations, missing brackets, or invalid scope references) by running `node --check <path/to/file.js>` locally.
+## 8. Strict JavaScript Syntax & Scope Checking
+Before committing any changes to JavaScript files (e.g. `static/script.js`), you MUST verify there are no syntax errors by running `node --check <path/to/file.js>` locally.
+*   **Crucial Constraint:** `node --check` ONLY catches syntax errors. It DOES NOT catch runtime `ReferenceError`s (e.g., using undefined variables). Before injecting or moving code, you MUST manually read the surrounding lines to verify that all referenced variables are explicitly defined and accessible within that exact scope.
 
 # Language & Convention
 
