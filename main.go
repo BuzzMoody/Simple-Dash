@@ -145,6 +145,7 @@ var (
 	statusClients sync.Map // map[chan string]bool
 
 	globalClient = &http.Client{Timeout: 3 * time.Second}
+	widgetClient = &http.Client{Timeout: 5 * time.Second}
 
 	//go:embed VERSION
 	versionData []byte
@@ -353,7 +354,7 @@ func checkHealth() {
 				if parser, exists := widgetRegistry[srv.Widget.Type]; exists {
 					wCtx, wCancel := context.WithTimeout(context.Background(), 5*time.Second)
 					defer wCancel()
-					if data, err := parser.Fetch(wCtx, globalClient, srv.Widget); err == nil {
+					if data, err := parser.Fetch(wCtx, widgetClient, srv.Widget); err == nil {
 						status.WidgetData = data
 					} else {
 						log.Printf("Widget fetch error for %s: %v", srv.Name, err)
@@ -374,9 +375,19 @@ var (
 	cpuMetricsMutex sync.Mutex
 	lastCPUTotal    float64
 	lastCPUIdle     float64
+	cachedMetrics   *SysMetrics
+	lastMetricsTime time.Time
 )
 
 func getSysMetrics() *SysMetrics {
+	cpuMetricsMutex.Lock()
+	if cachedMetrics != nil && time.Since(lastMetricsTime) < 30*time.Second {
+		metrics := cachedMetrics
+		cpuMetricsMutex.Unlock()
+		return metrics
+	}
+	cpuMetricsMutex.Unlock()
+
 	metrics := &SysMetrics{}
 
 	// CPU
@@ -446,6 +457,11 @@ func getSysMetrics() *SysMetrics {
 			}
 		}
 	}
+
+	cpuMetricsMutex.Lock()
+	cachedMetrics = metrics
+	lastMetricsTime = time.Now()
+	cpuMetricsMutex.Unlock()
 
 	return metrics
 }
@@ -735,6 +751,7 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/", "/index.html":
+			w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self';")
 			handleMemFile(indexHTML, "text/html; charset=utf-8")(w, r)
 		case "/style.css":
 			handleMemFile(styleCSS, "text/css; charset=utf-8")(w, r)
