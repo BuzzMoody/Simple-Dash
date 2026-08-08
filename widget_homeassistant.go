@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -10,29 +9,11 @@ import (
 type HomeAssistantWidget struct{}
 
 func (w *HomeAssistantWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
-	if cfg.URL == "" {
-		return nil, fmt.Errorf("homeassistant widget requires a url")
+	headers := map[string]string{
+		"Content-Type": "application/json",
 	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", cfg.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-	
-	req.Header.Set("Content-Type", "application/json")
-
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
-		req.Header.Set("Authorization", "Bearer "+key)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("homeassistant api returned status %d", resp.StatusCode)
+		headers["Authorization"] = "Bearer " + key
 	}
 
 	var state struct {
@@ -40,7 +21,7 @@ func (w *HomeAssistantWidget) Fetch(ctx context.Context, client *http.Client, cf
 		Attributes map[string]interface{} `json:"attributes"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&state); err != nil {
+	if err := widgetFetch(ctx, client, "GET", cfg.URL, headers, &state); err != nil {
 		return nil, err
 	}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -10,27 +9,9 @@ import (
 type ProxmoxWidget struct{}
 
 func (w *ProxmoxWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
-	if cfg.URL == "" {
-		return nil, fmt.Errorf("proxmox widget requires a url")
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", cfg.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-
+	headers := make(map[string]string)
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
-		req.Header.Set("Authorization", "PVEAPIToken="+key)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("proxmox api returned status %d", resp.StatusCode)
+		headers["Authorization"] = "PVEAPIToken=" + key
 	}
 
 	var result struct {
@@ -42,7 +23,7 @@ func (w *ProxmoxWidget) Fetch(ctx context.Context, client *http.Client, cfg *Wid
 		} `json:"data"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := widgetFetch(ctx, client, "GET", cfg.URL, headers, &result); err != nil {
 		return nil, err
 	}
 
@@ -50,7 +31,7 @@ func (w *ProxmoxWidget) Fetch(ctx context.Context, client *http.Client, cfg *Wid
 	if result.Data.MaxCPU > 0 {
 		cpuPercent = result.Data.CPU * 100
 	}
-	
+
 	ramPercent := 0.0
 	if result.Data.MaxMem > 0 {
 		ramPercent = (result.Data.Mem / result.Data.MaxMem) * 100

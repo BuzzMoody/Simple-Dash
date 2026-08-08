@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type piholeAPIResponse struct {
@@ -20,32 +20,22 @@ func (p *PiholeWidget) Fetch(ctx context.Context, client *http.Client, cfg *Widg
 		return nil, fmt.Errorf("pihole widget requires a url")
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", cfg.URL, nil)
+	u, err := url.Parse(cfg.URL)
 	if err != nil {
 		return nil, err
 	}
 
-	q := req.URL.Query()
+	q := u.Query()
 	if !q.Has("summaryRaw") && !q.Has("summary") {
 		q.Add("summaryRaw", "")
 	}
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
 		q.Add("auth", key)
 	}
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("pihole api returned status %d", resp.StatusCode)
-	}
+	u.RawQuery = q.Encode()
 
 	var data piholeAPIResponse
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+	if err := widgetFetch(ctx, client, "GET", u.String(), nil, &data); err != nil {
 		return nil, err
 	}
 

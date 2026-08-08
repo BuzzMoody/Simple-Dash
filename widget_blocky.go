@@ -12,26 +12,12 @@ import (
 type BlockyWidget struct{}
 
 func (w *BlockyWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
-	if cfg.URL == "" {
-		return nil, fmt.Errorf("blocky widget requires a url")
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", cfg.URL, nil)
-	if err != nil {
+	var body string
+	if err := widgetFetch(ctx, client, "GET", cfg.URL, nil, &body); err != nil {
 		return nil, err
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("blocky metrics returned status %d", resp.StatusCode)
-	}
-
-	scanner := bufio.NewScanner(resp.Body)
+	scanner := bufio.NewScanner(strings.NewReader(body))
 	totalQueries := 0.0
 	blockedQueries := 0.0
 

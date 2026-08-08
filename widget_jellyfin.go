@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -10,31 +9,20 @@ import (
 type JellyfinWidget struct{}
 
 func (w *JellyfinWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
-	if cfg.URL == "" {
-		return nil, fmt.Errorf("jellyfin widget requires a url")
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", cfg.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-
+	headers := make(map[string]string)
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
-		req.Header.Set("X-MediaBrowser-Token", key)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("jellyfin api returned status %d", resp.StatusCode)
+		headers["X-MediaBrowser-Token"] = key
 	}
 
 	var sessions []map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&sessions); err != nil {
+	err := widgetFetch(ctx, client, "GET", cfg.URL, headers, &sessions)
+	if err != nil {
+		if err.Error() == "widget requires a url" {
+			return nil, fmt.Errorf("jellyfin widget requires a url")
+		}
+		if err.Error() == "api returned status 400" || err.Error()[:19] == "api returned status" {
+			return nil, fmt.Errorf("jellyfin %v", err)
+		}
 		return nil, err
 	}
 

@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -14,32 +12,13 @@ type portainerContainer struct {
 }
 
 func (w *PortainerWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
-	if cfg.URL == "" {
-		return nil, fmt.Errorf("portainer widget requires a url")
-	}
-
-	url := cfg.URL
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
+	headers := make(map[string]string)
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
-		req.Header.Set("X-API-Key", key)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("portainer api returned status %d", resp.StatusCode)
+		headers["X-API-Key"] = key
 	}
 
 	var containers []portainerContainer
-	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
+	if err := widgetFetch(ctx, client, "GET", cfg.URL, headers, &containers); err != nil {
 		return nil, err
 	}
 

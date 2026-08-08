@@ -13,6 +13,44 @@ document.addEventListener('DOMContentLoaded', () => {
     let weatherHtml = '';
     let renderedWeatherHtml = '';
     let currentSearchTerm = '';
+    let serviceCardsMap = new Map();
+    let widgetCardsMap = new Map();
+    let widgetMetricElsMap = new Map();
+    let cachedWidgetsContainer = null;
+
+    const createThemedLogo = (lightSrc, darkSrc, altName = '', className = '', wrapperClass = null) => {
+        if (lightSrc && darkSrc && lightSrc !== darkSrc) {
+            const container = wrapperClass ? document.createElement('span') : document.createDocumentFragment();
+            if (wrapperClass) container.className = wrapperClass;
+            
+            const imgLight = document.createElement('img');
+            imgLight.src = `logos/${lightSrc}`;
+            if (altName) imgLight.alt = altName;
+            imgLight.loading = 'lazy';
+            imgLight.className = className ? `${className} light-theme-logo` : 'light-theme-logo';
+            imgLight.onerror = () => { imgLight.style.display = 'none'; };
+            
+            const imgDark = document.createElement('img');
+            imgDark.src = `logos/${darkSrc}`;
+            if (altName) imgDark.alt = altName;
+            imgDark.loading = 'lazy';
+            imgDark.className = className ? `${className} dark-theme-logo` : 'dark-theme-logo';
+            imgDark.onerror = () => { imgDark.style.display = 'none'; };
+            
+            container.appendChild(imgLight);
+            container.appendChild(imgDark);
+            return container;
+        } else if (lightSrc || darkSrc) {
+            const img = document.createElement('img');
+            img.src = `logos/${lightSrc || darkSrc}`;
+            if (altName) img.alt = altName;
+            img.loading = 'lazy';
+            if (className) img.className = className;
+            img.onerror = () => { img.style.display = 'none'; };
+            return img;
+        }
+        return null;
+    };
     let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
     let layout = localStorage.getItem('dashy-layout') || 'grid'; // 'grid' or 'list'
     const layoutToggle = document.getElementById('layout-toggle');
@@ -344,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getWidgetsContainer = () => {
+        if (cachedWidgetsContainer) return cachedWidgetsContainer;
         let wc = document.getElementById('widgets-container');
         if (!wc) {
             const sc = document.getElementById('services-container');
@@ -354,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sc.parentNode.insertBefore(wc, sc);
             }
         }
+        cachedWidgetsContainer = wc;
         return wc;
     };
 
@@ -528,6 +568,157 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
+    const updateCardStatus = (card, isUp, latency, dot) => {
+        const targetContainer = layout === 'list' && card.querySelector('.list-col.status') ? card.querySelector('.list-col.status') : card;
+        const showPing = currentConfig && currentConfig.show_ping && isUp && latency !== null;
+        const showDot = isUp ? !(currentConfig && currentConfig.show_only_down) : true;
+        
+        if (!showDot && !(layout === 'list' && showPing)) {
+            if (dot) { dot.remove(); dot = null; }
+        } else {
+            if (!dot) {
+                dot = document.createElement('div');
+                targetContainer.appendChild(dot);
+            }
+        }
+
+        let tbox = null;
+        if (layout !== 'list') {
+            tbox = card.querySelector('.tooltip-box');
+            const desc = card.getAttribute('data-desc') || '';
+            if (tbox && !showPing) {
+                if (tbox.textContent !== desc) tbox.textContent = desc;
+            }
+        }
+        
+        if (showPing) {
+            let pingColor = '#39c55c';
+            if (latency > 300) {
+                pingColor = '#d64242';
+            } else if (latency > 150) {
+                pingColor = '#f59e0b';
+            } else if (latency > 50) {
+                pingColor = '#eab308';
+            }
+
+            if (layout === 'list') {
+                if (dot) {
+                    if (dot.className !== 'status-ping') dot.className = 'status-ping';
+                    const pingText = latency + ' ms';
+                    if (dot.textContent !== pingText) dot.textContent = pingText;
+                    if (dot.style.color !== pingColor) dot.style.color = pingColor;
+                }
+            } else {
+                const desc = card.getAttribute('data-desc') || '';
+                if (tbox) {
+                    let pingSpan = tbox.querySelector('.ping-span');
+                    if (!pingSpan) {
+                        tbox.innerHTML = '';
+                        if (desc) {
+                            tbox.appendChild(document.createTextNode(desc + ' \u2022 '));
+                        }
+                        pingSpan = document.createElement('span');
+                        pingSpan.className = 'ping-span';
+                        tbox.appendChild(pingSpan);
+                    }
+                    const pingText = latency + ' ms';
+                    if (pingSpan.textContent !== pingText) pingSpan.textContent = pingText;
+                    if (pingSpan.style.color !== pingColor) {
+                        pingSpan.style.color = pingColor;
+                        pingSpan.style.webkitTextFillColor = pingColor;
+                    }
+                }
+                if (dot && showDot) {
+                    dot.className = 'status-dot up';
+                }
+            }
+        } else {
+            if (dot && showDot) {
+                dot.className = isUp ? 'status-dot up' : 'status-dot down';
+            }
+        }
+    };
+
+    const updateWidgetMetrics = (configUrl, card, widgetData) => {
+        let wContainer = getWidgetsContainer();
+        if (!wContainer) return;
+
+        let wCard = widgetCardsMap.get(configUrl);
+        let wId = 'widget-' + configUrl.replace(/[^a-z0-9]/gi, '-');
+
+        if (!wCard) {
+            wCard = document.getElementById(wId);
+            if (!wCard) {
+                wCard = document.createElement('div');
+                wCard.id = wId;
+                wCard.className = 'widget-card stagger-in';
+                
+                const serviceName = card.querySelector('.service-name')?.textContent || 'Service';
+                
+                const tooltipBox = document.createElement('div');
+                tooltipBox.className = 'tooltip-box';
+                tooltipBox.textContent = serviceName;
+                wCard.appendChild(tooltipBox);
+                
+                const metricsWrapper = document.createElement('div');
+                metricsWrapper.className = 'widget-metrics';
+                wCard.appendChild(metricsWrapper);
+                
+                wContainer.appendChild(wCard);
+            }
+            widgetCardsMap.set(configUrl, wCard);
+        }
+        
+        const mWrapper = wCard.querySelector('.widget-metrics');
+        
+        const metricOrder = ['state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'download', 'down', 'upload', 'up', 'streams', 'active', 'clients', 'queries', 'blocked', 'percentage'];
+        const entries = Object.entries(widgetData).sort((a, b) => {
+            let idxA = metricOrder.indexOf(a[0].toLowerCase());
+            let idxB = metricOrder.indexOf(b[0].toLowerCase());
+            if (idxA === -1) idxA = 999;
+            if (idxB === -1) idxB = 999;
+            if (idxA === 999 && idxB === 999) return a[0].localeCompare(b[0]);
+            return idxA - idxB;
+        });
+
+        for (const [key, value] of entries) {
+            const metricKey = wId + '-' + key.replace(/[^a-z0-9]/gi, '-');
+            let valEl = widgetMetricElsMap.get(metricKey);
+
+            if (!valEl) {
+                let item = mWrapper.querySelector(`.metric-item[data-key="${key}"]`);
+                if (!item) {
+                    item = document.createElement('div');
+                    item.className = 'metric-item';
+                    item.setAttribute('data-key', key);
+                    
+                    const icon = document.createElement('span');
+                    icon.className = 'metric-icon';
+                    icon.innerHTML = getMetricIcon(key);
+                    
+                    const label = document.createElement('span');
+                    label.className = 'metric-label';
+                    label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    valEl = document.createElement('span');
+                    valEl.className = 'metric-value';
+                    
+                    item.appendChild(icon);
+                    item.appendChild(label);
+                    item.appendChild(valEl);
+                    mWrapper.appendChild(item);
+                } else {
+                    valEl = item.querySelector('.metric-value');
+                }
+                widgetMetricElsMap.set(metricKey, valEl);
+            }
+
+            const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
+            const colors = getWidgetMetricColours(key, value);
+            animateMetric(valEl, metricKey, String(displayValue), colors);
+        }
+    };
+
     const updateStatusIndicators = (incomingStatus) => {
         let prev = previousStatus;
         if (incomingStatus) {
@@ -536,12 +727,8 @@ document.addEventListener('DOMContentLoaded', () => {
             previousStatus = incomingStatus;
         }
         setTimeout(() => {
-            const cards = document.querySelectorAll('[data-url]');
             const changedCards = [];
-            cards.forEach(card => {
-                const configUrl = card.getAttribute('data-url');
-                if (!configUrl) return;
-
+            serviceCardsMap.forEach((card, configUrl) => {
                 let dot = card.querySelector('.status-dot, .status-ping');
                 if (currentStatus.hasOwnProperty(configUrl)) {
                     let statusObj = currentStatus[configUrl];
@@ -565,74 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         changedCards.push({ card, isUp });
                     }
 
-                    const targetContainer = layout === 'list' && card.querySelector('.list-col.status') ? card.querySelector('.list-col.status') : card;
-                    const showPing = currentConfig && currentConfig.show_ping && isUp && latency !== null;
-                    const showDot = isUp ? !(currentConfig && currentConfig.show_only_down) : true;
-                    
-                    if (!showDot && !(layout === 'list' && showPing)) {
-                        if (dot) { dot.remove(); dot = null; }
-                    } else {
-                        if (!dot) {
-                            dot = document.createElement('div');
-                            targetContainer.appendChild(dot);
-                        }
-                    }
-
-                    let tbox = null;
-                    if (layout !== 'list') {
-                        tbox = card.querySelector('.tooltip-box');
-                        const desc = card.getAttribute('data-desc') || '';
-                        if (tbox && !showPing) {
-                            if (tbox.textContent !== desc) tbox.textContent = desc;
-                        }
-                    }
-                    
-                    if (showPing) {
-                        let pingColor = '#39c55c';
-                        if (latency > 300) {
-                            pingColor = '#d64242';
-                        } else if (latency > 150) {
-                            pingColor = '#f59e0b';
-                        } else if (latency > 50) {
-                            pingColor = '#eab308';
-                        }
-
-                        if (layout === 'list') {
-                            if (dot) {
-                                if (dot.className !== 'status-ping') dot.className = 'status-ping';
-                                const pingText = latency + ' ms';
-                                if (dot.textContent !== pingText) dot.textContent = pingText;
-                                if (dot.style.color !== pingColor) dot.style.color = pingColor;
-                            }
-                        } else {
-                            const desc = card.getAttribute('data-desc') || '';
-                            if (tbox) {
-                                let pingSpan = tbox.querySelector('.ping-span');
-                                if (!pingSpan) {
-                                    tbox.innerHTML = '';
-                                    if (desc) {
-                                        tbox.appendChild(document.createTextNode(desc + ' \u2022 '));
-                                    }
-                                    pingSpan = document.createElement('span');
-                                    pingSpan.className = 'ping-span';
-                                    tbox.appendChild(pingSpan);
-                                }
-                                const pingText = latency + ' ms';
-                                if (pingSpan.textContent !== pingText) pingSpan.textContent = pingText;
-                                if (pingSpan.style.color !== pingColor) {
-                                    pingSpan.style.color = pingColor;
-                                    pingSpan.style.webkitTextFillColor = pingColor;
-                                }
-                            }
-                            if (dot && showDot) {
-                                dot.className = 'status-dot up';
-                            }
-                        }
-                    } else {
-                        if (dot && showDot) {
-                            dot.className = isUp ? 'status-dot up' : 'status-dot down';
-                        }
-                    }
+                    updateCardStatus(card, isUp, latency, dot);
 
                     let widgetData = null;
                     if (statusObj && typeof statusObj === 'object') {
@@ -640,72 +760,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     if (widgetData) {
-                        let wContainer = getWidgetsContainer();
-                        if (wContainer) {
-                            let wId = 'widget-' + configUrl.replace(/[^a-z0-9]/gi, '-');
-                            let wCard = document.getElementById(wId);
-                            if (!wCard) {
-                                wCard = document.createElement('div');
-                                wCard.id = wId;
-                                wCard.className = 'widget-card stagger-in';
-                                
-                                const serviceName = card.querySelector('.service-name')?.textContent || 'Service';
-                                
-                                const tooltipBox = document.createElement('div');
-                                tooltipBox.className = 'tooltip-box';
-                                tooltipBox.textContent = serviceName;
-                                wCard.appendChild(tooltipBox);
-                                
-                                const metricsWrapper = document.createElement('div');
-                                metricsWrapper.className = 'widget-metrics';
-                                wCard.appendChild(metricsWrapper);
-                                
-                                wContainer.appendChild(wCard);
-                            }
-                            
-                            const mWrapper = wCard.querySelector('.widget-metrics');
-                            
-                            const metricOrder = ['state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'download', 'down', 'upload', 'up', 'streams', 'active', 'clients', 'queries', 'blocked', 'percentage'];
-                            const entries = Object.entries(widgetData).sort((a, b) => {
-                                let idxA = metricOrder.indexOf(a[0].toLowerCase());
-                                let idxB = metricOrder.indexOf(b[0].toLowerCase());
-                                if (idxA === -1) idxA = 999;
-                                if (idxB === -1) idxB = 999;
-                                if (idxA === 999 && idxB === 999) return a[0].localeCompare(b[0]);
-                                return idxA - idxB;
-                            });
-
-                            for (const [key, value] of entries) {
-                                let item = mWrapper.querySelector(`.metric-item[data-key="${key}"]`);
-                                if (!item) {
-                                    item = document.createElement('div');
-                                    item.className = 'metric-item';
-                                    item.setAttribute('data-key', key);
-                                    
-                                    const icon = document.createElement('span');
-                                    icon.className = 'metric-icon';
-                                    icon.innerHTML = getMetricIcon(key);
-                                    
-                                    const label = document.createElement('span');
-                                    label.className = 'metric-label';
-                                    label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                                    
-                                    const val = document.createElement('span');
-                                    val.className = 'metric-value';
-                                    
-                                    item.appendChild(icon);
-                                    item.appendChild(label);
-                                    item.appendChild(val);
-                                    mWrapper.appendChild(item);
-                                }
-                                const valEl = item.querySelector('.metric-value');
-                                const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
-                                const colors = getWidgetMetricColours(key, value);
-                                animateMetric(valEl, wId + '-' + key.replace(/[^a-z0-9]/gi, '-'), String(displayValue), colors);
-                            }
-                        }
+                        updateWidgetMetrics(configUrl, card, widgetData);
                     }
-
                 }
             });
             
@@ -720,7 +776,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 10);
     };
-
     const showErrorToast = (message) => {
         const toast = document.createElement('div');
         toast.className = 'announcement outage toast';
@@ -756,11 +811,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const renderDashboard = (config) => {
+
+    const renderHeader = (config) => {
         if (config.header) {
             headerTitle.textContent = config.header;
             document.title = config.header;
         }
+
+        if (config.header_colors && config.header_colors.length >= 2) {
+            document.documentElement.style.setProperty('--header-color-1', config.header_colors[0]);
+            document.documentElement.style.setProperty('--header-color-2', config.header_colors[1]);
+        } else {
+            document.documentElement.style.removeProperty('--header-color-1');
+            document.documentElement.style.removeProperty('--header-color-2');
+        }
+    };
+    
+    const renderAnnouncements = (config) => {
+        announcementsContainer.innerHTML = '';
+        if (config.announcements && config.announcements.length > 0) {
+            config.announcements.forEach(ann => {
+                const el = document.createElement('div');
+                el.className = `announcement ${ann.type || 'default'}`;
+                el.textContent = ann.text;
+                announcementsContainer.appendChild(el);
+            });
+        }
+    };
+
+    const renderDashboard = (config) => {
+        renderHeader(config);
         updateClock();
 
         if (config.favicon && config.favicon.endsWith('.svg')) {
@@ -942,25 +1022,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Header Colours
-        if (config.header_colors && config.header_colors.length >= 2) {
-            document.documentElement.style.setProperty('--header-color-1', config.header_colors[0]);
-            document.documentElement.style.setProperty('--header-color-2', config.header_colors[1]);
-        } else {
-            document.documentElement.style.removeProperty('--header-color-1');
-            document.documentElement.style.removeProperty('--header-color-2');
-        }
 
-        // Announcements
-        announcementsContainer.innerHTML = '';
-        if (config.announcements && config.announcements.length > 0) {
-            config.announcements.forEach(ann => {
-                const el = document.createElement('div');
-                el.className = `announcement ${ann.type || 'default'}`;
-                el.textContent = ann.text;
-                announcementsContainer.appendChild(el);
-            });
-        }
+
+        renderAnnouncements(config);
 
         // Buttons
         buttonsContainer.innerHTML = '';
@@ -982,32 +1046,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const btnLight = btn.logo_light || btn.logo;
                 const btnDark = btn.logo_dark || btn.logo;
 
-                if (btnLight && btnDark && btnLight !== btnDark) {
-                    const span = document.createElement('span');
-                    span.className = 'btn-logo-wrapper';
-                    
-                    const imgLight = document.createElement('img');
-                    imgLight.src = `logos/${btnLight}`;
-                    imgLight.alt = btn.name;
-                    imgLight.className = 'btn-logo light-theme-logo';
-                    imgLight.onerror = () => { imgLight.style.display = 'none'; };
-                    
-                    const imgDark = document.createElement('img');
-                    imgDark.src = `logos/${btnDark}`;
-                    imgDark.alt = btn.name;
-                    imgDark.className = 'btn-logo dark-theme-logo';
-                    imgDark.onerror = () => { imgDark.style.display = 'none'; };
-                    
-                    span.appendChild(imgLight);
-                    span.appendChild(imgDark);
-                    el.appendChild(span);
-                } else if (btnLight) {
-                    const img = document.createElement('img');
-                    img.src = `logos/${btnLight}`;
-                    img.alt = btn.name;
-                    img.className = 'btn-logo';
-                    img.onerror = () => { img.style.display = 'none'; };
-                    el.appendChild(img);
+                const logo = createThemedLogo(btnLight, btnDark, btn.name, 'btn-logo', 'btn-logo-wrapper');
+                if (logo) {
+                    el.appendChild(logo);
                 } else if (btn.icon) {
                     const iconSpan = document.createElement('span');
                     iconSpan.style.marginRight = '0.3rem';
@@ -1065,33 +1106,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const iconContainer = document.createElement('div');
         iconContainer.className = 'service-icon';
         
-        if (service.logo || service.logo_light || service.logo_dark) {
-            const sLight = service.logo_light || service.logo;
-            const sDark = service.logo_dark || service.logo;
-
-            if (sLight && sDark && sLight !== sDark) {
-                const imgL = document.createElement('img');
-                imgL.src = `logos/${sLight}`;
-                imgL.alt = service.name;
-                imgL.className = 'light-theme-logo';
-                imgL.onerror = () => { imgL.style.display = 'none'; };
-                
-                const imgD = document.createElement('img');
-                imgD.src = `logos/${sDark}`;
-                imgD.alt = service.name;
-                imgD.className = 'dark-theme-logo';
-                imgD.onerror = () => { imgD.style.display = 'none'; };
-                
-                
-                iconContainer.appendChild(imgL);
-                iconContainer.appendChild(imgD);
-            } else {
-                const img = document.createElement('img');
-                img.src = `logos/${sLight || sDark}`;
-                img.alt = service.name;
-                img.onerror = () => { iconContainer.textContent = service.icon || '🔗'; };
-                iconContainer.appendChild(img);
-            }
+        const sLight = service.logo_light || service.logo;
+        const sDark = service.logo_dark || service.logo;
+        const logo = createThemedLogo(sLight, sDark, service.name);
+        if (logo) {
+            iconContainer.appendChild(logo);
         } else {
             iconContainer.textContent = service.icon || '🔗';
         }
@@ -1102,6 +1121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.appendChild(iconContainer);
         card.appendChild(name);
+
+        serviceCardsMap.set(service.url, card);
 
         if (service.pinned) {
             card.classList.add('pinned-card');
@@ -1141,6 +1162,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderServices = (services) => {
+        serviceCardsMap.clear();
+        widgetCardsMap.clear();
+        widgetMetricElsMap.clear();
+        cachedWidgetsContainer = null;
         servicesContainer.innerHTML = '';
         
         let sortedServices = [...services].sort((a, b) => {
@@ -1213,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.style.setProperty('--row-index', item.rowIndex);
                 row.href = service.url;
                 row.setAttribute('data-url', service.url);
+                serviceCardsMap.set(service.url, row);
                 if (service.description) {
                     row.setAttribute('data-desc', service.description);
                 }
@@ -1231,31 +1257,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.side === 'left') {
                     nameCol.style.gridColumn = '1';
                 }
-                if (service.logo || service.logo_light || service.logo_dark) {
-                    const sLight = service.logo_light || service.logo;
-                    const sDark = service.logo_dark || service.logo;
-                    if (sLight && sDark && sLight !== sDark) {
-                        const imgLight = document.createElement('img');
-                        imgLight.src = `logos/${sLight}`;
-                        imgLight.className = 'light-theme-logo';
-                        imgLight.loading = 'lazy';
-                        imgLight.alt = '';
-                        
-                        const imgDark = document.createElement('img');
-                        imgDark.src = `logos/${sDark}`;
-                        imgDark.className = 'dark-theme-logo';
-                        imgDark.loading = 'lazy';
-                        imgDark.alt = '';
-                        
-                        nameCol.appendChild(imgLight);
-                        nameCol.appendChild(imgDark);
-                    } else if (sLight) {
-                        const img = document.createElement('img');
-                        img.src = `logos/${sLight}`;
-                        img.loading = 'lazy';
-                        img.alt = '';
-                        nameCol.appendChild(img);
-                    }
+                const sLight = service.logo_light || service.logo;
+                const sDark = service.logo_dark || service.logo;
+                const logo = createThemedLogo(sLight, sDark, '', '');
+                if (logo) {
+                    nameCol.appendChild(logo);
                 } else {
                     const iconSpan = document.createElement('span');
                     iconSpan.style.fontSize = '1.1em';
@@ -1270,7 +1276,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 nameSpan.textContent = service.name;
                 nameCol.appendChild(nameSpan);
 
-                if (service.pinned) {
+                serviceCardsMap.set(service.url, card);
+
+        if (service.pinned) {
                     const pinnedSpan = document.createElement('span');
                     pinnedSpan.className = 'list-pinned-star';
                     pinnedSpan.style.background = 'none';
@@ -1343,7 +1351,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedServices.forEach(service => {
             let groupKey;
-            if (service.pinned) {
+            serviceCardsMap.set(service.url, card);
+
+        if (service.pinned) {
                 groupKey = 'Pinned';
                 hasPinned = true;
             } else if (groupBy === 'category') {

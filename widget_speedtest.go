@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -10,28 +9,11 @@ import (
 type SpeedtestWidget struct{}
 
 func (w *SpeedtestWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
-	if cfg.URL == "" {
-		return nil, fmt.Errorf("speedtest widget requires a url")
+	headers := map[string]string{
+		"Accept": "application/json",
 	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", cfg.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", "application/json")
-
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
-		req.Header.Set("Authorization", "Bearer "+key)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("speedtest tracker api returned status %d", resp.StatusCode)
+		headers["Authorization"] = "Bearer " + key
 	}
 
 	var result struct {
@@ -42,7 +24,7 @@ func (w *SpeedtestWidget) Fetch(ctx context.Context, client *http.Client, cfg *W
 		} `json:"data"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := widgetFetch(ctx, client, "GET", cfg.URL, headers, &result); err != nil {
 		return nil, err
 	}
 
