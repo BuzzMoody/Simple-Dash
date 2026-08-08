@@ -747,7 +747,7 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/", "/index.html":
-			w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self'; frame-ancestors 'none';")
+			w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self' https://api.open-meteo.com https://get.geojs.io; frame-ancestors 'none';")
 			handleMemFile(indexHTML, "text/html; charset=utf-8")(w, r)
 		case "/style.css":
 			handleMemFile(styleCSS, "text/css; charset=utf-8")(w, r)
