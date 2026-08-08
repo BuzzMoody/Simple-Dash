@@ -805,6 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderDashboard(data);
             initStatusStream();
         } catch (error) {
+            console.error("fetchConfig error:", error);
             currentConfig = false;
             updateClock();
             showErrorToast('Could not fetch configuration from the server.');
@@ -1276,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nameSpan.textContent = service.name;
                 nameCol.appendChild(nameSpan);
 
-                serviceCardsMap.set(service.url, card);
+
 
         if (service.pinned) {
                     const pinnedSpan = document.createElement('span');
@@ -1351,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedServices.forEach(service => {
             let groupKey;
-            serviceCardsMap.set(service.url, card);
+
 
         if (service.pinned) {
                 groupKey = 'Pinned';
