@@ -243,7 +243,7 @@ Widgets are beautiful, API-driven cards that render live metrics fetched directl
 
 ## Security Note
 
-**Simple Dash has no built-in authentication.** The entire configuration file—including internal IP addresses used for the `server` health-check field—is exposed via the unauthenticated `/api/config` endpoint. 
+**Simple Dash has no built-in authentication.** The public-facing configuration—including service names, URLs, descriptions, and categories—is exposed via the unauthenticated `/api/config` endpoint. Widget credentials (`auth` keys, tokens, and passwords) and internal widget URLs are **never** sent to the browser.
 
 This dashboard is designed to be run safely within an internal homelab environment (LAN or VPN). If you intend to expose Simple Dash to the public internet, you **must** place it behind a reverse proxy with an authentication layer (such as Authelia, Authentik, Tailscale, or Cloudflare Access).
 

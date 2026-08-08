@@ -29,12 +29,12 @@ type Announcement struct {
 	Type string `yaml:"type" json:"type"`
 }
 
-type CategoryColorsConfig struct {
+type CategoryColoursConfig struct {
 	Enabled bool `yaml:"enabled" json:"enabled"`
 	Titles  bool `yaml:"titles" json:"titles"`
 }
 
-func (c *CategoryColorsConfig) UnmarshalYAML(value *yaml.Node) error {
+func (c *CategoryColoursConfig) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind == yaml.ScalarNode {
 		var b bool
 		if err := value.Decode(&b); err != nil {
@@ -44,33 +44,33 @@ func (c *CategoryColorsConfig) UnmarshalYAML(value *yaml.Node) error {
 		return nil
 	}
 
-	type alias CategoryColorsConfig
+	type alias CategoryColoursConfig
 	var a alias
 	if err := value.Decode(&a); err != nil {
 		return err
 	}
-	*c = CategoryColorsConfig(a)
+	*c = CategoryColoursConfig(a)
 	return nil
 }
 
 type Config struct {
-	Header         string               `yaml:"header" json:"header"`
-	Description    string               `yaml:"description" json:"description"`
-	HeaderColors   []string             `yaml:"header_colors" json:"header_colors"`
-	Footer         string               `yaml:"footer" json:"footer"`
-	Favicon        string               `yaml:"favicon" json:"favicon"`
-	NewTabs        *bool                `yaml:"new_tabs" json:"new_tabs"`
-	ShowOnlyDown   bool                 `yaml:"show_only_down" json:"show_only_down"`
-	ShowPing       bool                 `yaml:"show_ping" json:"show_ping"`
-	ShowWeather    bool                 `yaml:"show_weather" json:"show_weather"`
-	WeatherAnimate *bool                `yaml:"weather_animate" json:"weather_animate"`
-	WeatherCoords  string               `yaml:"weather_coords" json:"weather_coords"`
-	ShowSysMetrics *bool                `yaml:"show_sys_metrics" json:"show_sys_metrics"`
-	GithubToken    string               `yaml:"github_token" json:"-"`
-	CategoryColors CategoryColorsConfig `yaml:"category_colors" json:"category_colors"`
-	Announcements  []Announcement       `yaml:"announcements" json:"announcements"`
-	Buttons        []Button             `yaml:"buttons" json:"buttons"`
-	Services       []Service            `yaml:"services" json:"services"`
+	Header         string                `yaml:"header" json:"header"`
+	Description    string                `yaml:"description" json:"description"`
+	HeaderColors   []string              `yaml:"header_colors" json:"header_colors"`
+	Footer         string                `yaml:"footer" json:"footer"`
+	Favicon        string                `yaml:"favicon" json:"favicon"`
+	NewTabs        *bool                 `yaml:"new_tabs" json:"new_tabs"`
+	ShowOnlyDown   bool                  `yaml:"show_only_down" json:"show_only_down"`
+	ShowPing       bool                  `yaml:"show_ping" json:"show_ping"`
+	ShowWeather    bool                  `yaml:"show_weather" json:"show_weather"`
+	WeatherAnimate *bool                 `yaml:"weather_animate" json:"weather_animate"`
+	WeatherCoords  string                `yaml:"weather_coords" json:"weather_coords"`
+	ShowSysMetrics *bool                 `yaml:"show_sys_metrics" json:"show_sys_metrics"`
+	GithubToken    string                `yaml:"github_token" json:"-"`
+	CategoryColors CategoryColoursConfig `yaml:"category_colors" json:"category_colors"`
+	Announcements  []Announcement        `yaml:"announcements" json:"announcements"`
+	Buttons        []Button              `yaml:"buttons" json:"buttons"`
+	Services       []Service             `yaml:"services" json:"services"`
 }
 
 type Button struct {
@@ -84,8 +84,8 @@ type Button struct {
 
 type WidgetConfig struct {
 	Type     string            `yaml:"type" json:"type"`
-	URL      string            `yaml:"url" json:"url"`
-	Auth     map[string]string `yaml:"auth" json:"auth"`
+	URL      string            `yaml:"url" json:"-"`
+	Auth     map[string]string `yaml:"auth" json:"-"`
 	Settings map[string]string `yaml:"settings" json:"settings"`
 }
 
@@ -381,12 +381,11 @@ var (
 
 func getSysMetrics() *SysMetrics {
 	cpuMetricsMutex.Lock()
+	defer cpuMetricsMutex.Unlock()
+
 	if cachedMetrics != nil && time.Since(lastMetricsTime) < 30*time.Second {
-		metrics := cachedMetrics
-		cpuMetricsMutex.Unlock()
-		return metrics
+		return cachedMetrics
 	}
-	cpuMetricsMutex.Unlock()
 
 	metrics := &SysMetrics{}
 
@@ -404,7 +403,6 @@ func getSysMetrics() *SysMetrics {
 				}
 				idle, _ := strconv.ParseFloat(fields[4], 64)
 
-				cpuMetricsMutex.Lock()
 				if lastCPUTotal > 0 {
 					diffTotal := total - lastCPUTotal
 					diffIdle := idle - lastCPUIdle
@@ -414,7 +412,6 @@ func getSysMetrics() *SysMetrics {
 				}
 				lastCPUTotal = total
 				lastCPUIdle = idle
-				cpuMetricsMutex.Unlock()
 			}
 		}
 	}
@@ -458,10 +455,8 @@ func getSysMetrics() *SysMetrics {
 		}
 	}
 
-	cpuMetricsMutex.Lock()
 	cachedMetrics = metrics
 	lastMetricsTime = time.Now()
-	cpuMetricsMutex.Unlock()
 
 	return metrics
 }
@@ -514,7 +509,7 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msgChan := make(chan string, 1)
+	msgChan := make(chan string, 5)
 	statusClients.Store(msgChan, true)
 
 	defer func() {
@@ -531,7 +526,7 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 			payload.Metrics = getSysMetrics()
 		}
 		data, _ := json.Marshal(payload)
-		w.Write([]byte("data: " + string(data) + "\n\n"))
+		fmt.Fprintf(w, "data: %s\n\n", data)
 		flusher.Flush()
 	}
 
@@ -541,7 +536,7 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case msg := <-msgChan:
-			w.Write([]byte("data: " + msg + "\n\n"))
+			fmt.Fprintf(w, "data: %s\n\n", msg)
 			flusher.Flush()
 		case <-pingTicker.C:
 			w.Write([]byte(": ping\n\n"))
@@ -629,7 +624,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 		baseDir := filepath.Clean("data/logos")
 		cleanPath := filepath.Clean(filepath.Join(baseDir, cfg.Favicon))
 
-		if !strings.HasPrefix(cleanPath, baseDir) {
+		if !strings.HasPrefix(cleanPath, baseDir+string(filepath.Separator)) && cleanPath != baseDir {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
@@ -658,7 +653,7 @@ func startReleasesFetcher() {
 		if err != nil {
 			return
 		}
-		
+
 		var token string
 		if cfg := configCache.Load(); cfg != nil {
 			token = cfg.GithubToken
@@ -675,14 +670,15 @@ func startReleasesFetcher() {
 		if resp.StatusCode == 200 {
 			if body, err := io.ReadAll(resp.Body); err == nil {
 				releasesCache.Store(&body)
-				os.WriteFile("data/releases.json", body, 0644)
+				os.MkdirAll("data/.cache", 0755)
+				os.WriteFile("data/.cache/releases.json", body, 0644)
 			}
 		}
 	}
 	go func() {
-		if info, err := os.Stat("data/releases.json"); err == nil {
+		if info, err := os.Stat("data/.cache/releases.json"); err == nil {
 			if time.Since(info.ModTime()) < 1*time.Hour {
-				if body, err := os.ReadFile("data/releases.json"); err == nil {
+				if body, err := os.ReadFile("data/.cache/releases.json"); err == nil {
 					releasesCache.Store(&body)
 				}
 			}
@@ -751,7 +747,7 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/", "/index.html":
-			w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self';")
+			w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: http: https:; connect-src 'self'; frame-ancestors 'none';")
 			handleMemFile(indexHTML, "text/html; charset=utf-8")(w, r)
 		case "/style.css":
 			handleMemFile(styleCSS, "text/css; charset=utf-8")(w, r)

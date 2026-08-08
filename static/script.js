@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (k.includes('torrent')) return svgWrap(`<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>`);
         return svgWrap(`<circle cx="12" cy="12" r="4"></circle>`);
     };
-    const getWidgetMetricColors = (key, value) => {
+    const getWidgetMetricColours = (key, value) => {
         if (key === 'CPU' || key === 'RAM' || key === 'Percent') {
             let v = parseFloat(value);
             if (v > 90) return { base: '#d64242', flash: '#eaa0a0' };
@@ -468,24 +468,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (colors !== null) {
             el.style.transition = 'none';
             if (!isFirstLoad) {
-                el.style.color = colors.flash;
-                el.style.textShadow = `0 0 10px ${colors.base}`;
+                el.style.transform = 'scale(1.08)';
             }
+            el.style.color = colors.base;
             
             updateSlotGeneric(el, id, targetStr, isFirstLoad);
             void el.offsetWidth;
             
             if (!isFirstLoad) {
-                el.style.transition = `color 1.5s ease-out, text-shadow 1.5s ease-out`;
-                el.style.color = colors.base;
-                el.style.textShadow = 'none';
-            } else {
-                el.style.color = colors.base;
+                el.style.transition = 'transform 0.4s ease-out';
+                el.style.transform = 'scale(1)';
             }
         } else {
             updateSlotGeneric(el, id, targetStr, isFirstLoad);
             el.style.color = '';
-            el.style.textShadow = 'none';
         }
     };
 
@@ -527,8 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cpuStr = Math.round(Number(metrics.cpu)).toString().padStart(2, ' ') + '%';
         const ramStr = Math.round(Number(metrics.ram)).toString().padStart(2, ' ') + '%';
-        animateMetric(document.getElementById('metric-val-cpu'), 'cpu', cpuStr, getWidgetMetricColors('CPU', metrics.cpu));
-        animateMetric(document.getElementById('metric-val-ram'), 'ram', ramStr, getWidgetMetricColors('RAM', metrics.ram));
+        animateMetric(document.getElementById('metric-val-cpu'), 'cpu', cpuStr, getWidgetMetricColours('CPU', metrics.cpu));
+        animateMetric(document.getElementById('metric-val-ram'), 'ram', ramStr, getWidgetMetricColours('RAM', metrics.ram));
         document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
@@ -704,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                                 const valEl = item.querySelector('.metric-value');
                                 const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
-                                const colors = getWidgetMetricColors(key, value);
+                                const colors = getWidgetMetricColours(key, value);
                                 animateMetric(valEl, wId + '-' + key.replace(/[^a-z0-9]/gi, '-'), String(displayValue), colors);
                             }
                         }
@@ -946,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Header Colors
+        // Header Colours
         if (config.header_colors && config.header_colors.length >= 2) {
             document.documentElement.style.setProperty('--header-color-1', config.header_colors[0]);
             document.documentElement.style.setProperty('--header-color-2', config.header_colors[1]);

@@ -7,6 +7,7 @@ favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
 show_ping: true
+show_sys_metrics: true
 show_weather: false
 weather_animate: true
 # weather_coords: "-37.81826872134725, 144.96705907138596"
@@ -39,6 +40,7 @@ services:
   - name: "Example Service"
     url: "http://192.168.1.100"
     category: "Infrastructure"
+    # server: "http://10.0.0.100"  # Optional: internal IP used for health checks instead of url
     logo: "example.svg"
     description: "An example service description."
 
