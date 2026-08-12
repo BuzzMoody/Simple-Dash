@@ -40,7 +40,6 @@ services:
   - name: "Example Service"
     url: "http://192.168.1.100"
     category: "Infrastructure"
-    # server: "http://10.0.0.100"  # Optional: internal IP used for health checks instead of url
     logo: "example.svg"
     description: "An example service description."
 

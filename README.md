@@ -196,8 +196,7 @@ services:
 ```
 **Service Options:**
 - `name`: *(String)* The title of the application.
-- `url`: *(String)* The destination link when the card is clicked. This is also used for the backend health check if `server` is omitted.
-- `server`: *(String)* (Optional) A local IP or internal hostname for the backend to use strictly for health checks, bypassing the public `url`.
+- `url`: *(String)* The destination link when the card is clicked and used for backend health checks.
 - `category`: *(String)* The group this service belongs to. Used when grouping mode is enabled.
 - `pinned`: *(Boolean)* (Optional) Default is `false`. If set to `true`, the service will be pinned to a special 'Favourites' group at the very top of the dashboard.
 - `logo`: *(String)* The exact filename of an image stored inside your local `logos/` directory.

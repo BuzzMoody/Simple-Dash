@@ -110,7 +110,6 @@ type Service struct {
 	Name        string        `yaml:"name" json:"name"`
 	URL         string        `yaml:"url" json:"url"`
 	Category    string        `yaml:"category" json:"category"`
-	Server      string        `yaml:"server" json:"server"`
 	Logo        string        `yaml:"logo" json:"logo"`
 	LogoDark    string        `yaml:"logo_dark" json:"logo_dark"`
 	LogoLight   string        `yaml:"logo_light" json:"logo_light"`
@@ -323,9 +322,6 @@ func checkHealth() {
 			defer func() { <-sem }()
 
 			pingUrl := srv.URL
-			if srv.Server != "" {
-				pingUrl = srv.Server
-			}
 
 			start := time.Now()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
