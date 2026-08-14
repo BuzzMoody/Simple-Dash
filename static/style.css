@@ -580,6 +580,10 @@ body.dark-mode .widget-card:hover {
     font-weight: 500;
 }
 
+.metric-label:empty {
+    display: none;
+}
+
 .metric-value {
     font-variant-numeric: tabular-nums;
     display: inline-flex;

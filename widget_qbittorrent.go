@@ -31,8 +31,8 @@ func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg 
 	}
 
 	return WidgetData{
-		"Down":     formatSpeed(data.ServerState.DlInfoSpeed),
-		"Up":       formatSpeed(data.ServerState.UpInfoSpeed),
-		"Torrents": fmt.Sprintf("%d", len(data.Torrents)),
+		"Down":   formatSpeed(data.ServerState.DlInfoSpeed),
+		"Up":     formatSpeed(data.ServerState.UpInfoSpeed),
+		"Active": fmt.Sprintf("%d", len(data.Torrents)),
 	}, nil
 }

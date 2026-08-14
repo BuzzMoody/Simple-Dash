@@ -636,7 +636,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const label = document.createElement('span');
                         label.className = 'metric-label';
-                        label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const lowerKey = key.toLowerCase();
+                        if (lowerKey !== 'down' && lowerKey !== 'up') {
+                            label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        }
 
                         valEl = document.createElement('span');
                         valEl.className = 'metric-value';
@@ -788,7 +791,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const label = document.createElement('span');
                     label.className = 'metric-label';
-                    label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const lowerKey = key.toLowerCase();
+                    if (lowerKey !== 'down' && lowerKey !== 'up') {
+                        label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    }
                     
                     valEl = document.createElement('span');
                     valEl.className = 'metric-value';
