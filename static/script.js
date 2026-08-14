@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (k.includes('running')) return svgWrap(`<rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><polygon points="10 9 15 12 10 15 10 9"></polygon>`);
         if (k.includes('stopped')) return svgWrap(`<rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><rect x="10" y="10" width="4" height="4"></rect>`);
-        if (k.includes('active')) return svgWrap(`<polygon points="5 3 19 12 5 21 5 3"></polygon>`);
+        if (k.includes('active')) return svgWrap(`<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>`);
         if (k.includes('quer') || k.includes('client')) return svgWrap(`<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>`);
         if (k.includes('blocked')) return svgWrap(`<circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>`);
         if (k.includes('percent')) return svgWrap(`<line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line>`);
