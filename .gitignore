@@ -32,3 +32,6 @@ data/*
 # Ignore local test binaries and screenshots
 Screenshot*.png
 test_build
+
+# Ignore local plans and proposal scratchpads
+Plans/
