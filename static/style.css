@@ -530,6 +530,32 @@ body.dark-mode .widget-card:hover {
     box-shadow: 0 8px 15px rgba(0,0,0,0.5);
 }
 
+.standalone-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid var(--card-border);
+    white-space: nowrap;
+}
+
+.standalone-widget-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.standalone-widget-logo {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.standalone-widget-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
 
 .widget-metrics {
     display: flex;

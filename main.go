@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -53,24 +52,38 @@ func (c *CategoryColoursConfig) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+type StandaloneWidgetConfig struct {
+	ID        string            `yaml:"id" json:"id"`
+	Name      string            `yaml:"name" json:"name"`
+	Type      string            `yaml:"type" json:"type"`
+	URL       string            `yaml:"url" json:"-"`
+	Icon      string            `yaml:"icon" json:"icon"`
+	Logo      string            `yaml:"logo" json:"logo"`
+	LogoDark  string            `yaml:"logo_dark" json:"logo_dark"`
+	LogoLight string            `yaml:"logo_light" json:"logo_light"`
+	Auth      map[string]string `yaml:"auth" json:"-"`
+	Settings  map[string]string `yaml:"settings" json:"settings"`
+}
+
 type Config struct {
-	Header         string                `yaml:"header" json:"header"`
-	Description    string                `yaml:"description" json:"description"`
-	HeaderColors   []string              `yaml:"header_colors" json:"header_colors"`
-	Footer         string                `yaml:"footer" json:"footer"`
-	Favicon        string                `yaml:"favicon" json:"favicon"`
-	NewTabs        *bool                 `yaml:"new_tabs" json:"new_tabs"`
-	ShowOnlyDown   bool                  `yaml:"show_only_down" json:"show_only_down"`
-	ShowPing       bool                  `yaml:"show_ping" json:"show_ping"`
-	ShowWeather    bool                  `yaml:"show_weather" json:"show_weather"`
-	WeatherAnimate *bool                 `yaml:"weather_animate" json:"weather_animate"`
-	WeatherCoords  string                `yaml:"weather_coords" json:"weather_coords"`
-	ShowSysMetrics *bool                 `yaml:"show_sys_metrics" json:"show_sys_metrics"`
-	GithubToken    string                `yaml:"github_token" json:"-"`
-	CategoryColors CategoryColoursConfig `yaml:"category_colors" json:"category_colors"`
-	Announcements  []Announcement        `yaml:"announcements" json:"announcements"`
-	Buttons        []Button              `yaml:"buttons" json:"buttons"`
-	Services       []Service             `yaml:"services" json:"services"`
+	Header         string                   `yaml:"header" json:"header"`
+	Description    string                   `yaml:"description" json:"description"`
+	HeaderColors   []string                 `yaml:"header_colors" json:"header_colors"`
+	Footer         string                   `yaml:"footer" json:"footer"`
+	Favicon        string                   `yaml:"favicon" json:"favicon"`
+	NewTabs        *bool                    `yaml:"new_tabs" json:"new_tabs"`
+	ShowOnlyDown   bool                     `yaml:"show_only_down" json:"show_only_down"`
+	ShowPing       bool                     `yaml:"show_ping" json:"show_ping"`
+	ShowWeather    bool                     `yaml:"show_weather" json:"show_weather"`
+	WeatherAnimate *bool                    `yaml:"weather_animate" json:"weather_animate"`
+	WeatherCoords  string                   `yaml:"weather_coords" json:"weather_coords"`
+	ShowSysMetrics *bool                    `yaml:"show_sys_metrics" json:"show_sys_metrics"`
+	GithubToken    string                   `yaml:"github_token" json:"-"`
+	CategoryColors CategoryColoursConfig    `yaml:"category_colors" json:"category_colors"`
+	Announcements  []Announcement           `yaml:"announcements" json:"announcements"`
+	Buttons        []Button                 `yaml:"buttons" json:"buttons"`
+	Widgets        []StandaloneWidgetConfig `yaml:"widgets" json:"widgets"`
+	Services       []Service                `yaml:"services" json:"services"`
 }
 
 type Button struct {
@@ -133,12 +146,14 @@ type SysMetrics struct {
 
 type StreamPayload struct {
 	Services map[string]ServiceStatus `json:"services"`
+	Widgets  map[string]WidgetData    `json:"widgets,omitempty"`
 	Metrics  *SysMetrics              `json:"metrics,omitempty"`
 }
 
 var (
 	configCache   atomic.Pointer[Config]
 	statusCache   atomic.Pointer[map[string]ServiceStatus]
+	widgetsCache  atomic.Pointer[map[string]WidgetData]
 	lastModTime   atomic.Int64 // UnixNano
 	configPath    = "data/config.yaml"
 	statusClients sync.Map // map[chan string]bool
@@ -181,6 +196,23 @@ func handleMemFile(content []byte, contentType string) http.HandlerFunc {
 	}
 }
 
+func sanitizeID(s string) string {
+	s = strings.ToLower(s)
+	var sb strings.Builder
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			sb.WriteRune(r)
+		} else if sb.Len() > 0 && sb.String()[sb.Len()-1:] != "-" {
+			sb.WriteRune('-')
+		}
+	}
+	res := strings.Trim(sb.String(), "-")
+	if res == "" {
+		return "widget"
+	}
+	return res
+}
+
 func applyDefaults(cfg *Config) {
 	if cfg.Header == "" {
 		cfg.Header = "Simple Dash"
@@ -198,6 +230,15 @@ func applyDefaults(cfg *Config) {
 	if cfg.ShowSysMetrics == nil {
 		defaultMetrics := true
 		cfg.ShowSysMetrics = &defaultMetrics
+	}
+	for i := range cfg.Widgets {
+		if cfg.Widgets[i].ID == "" {
+			if cfg.Widgets[i].Name != "" {
+				cfg.Widgets[i].ID = "w-" + sanitizeID(cfg.Widgets[i].Name)
+			} else {
+				cfg.Widgets[i].ID = fmt.Sprintf("w-%d", i+1)
+			}
+		}
 	}
 }
 
@@ -365,6 +406,43 @@ func checkHealth() {
 	}
 	wg.Wait()
 	statusCache.Store(&newStatus)
+
+	newWidgetsStatus := make(map[string]WidgetData)
+	if len(cfg.Widgets) > 0 {
+		var wWg sync.WaitGroup
+		var wMu sync.Mutex
+		for _, w := range cfg.Widgets {
+			if w.Type == "" {
+				continue
+			}
+			if parser, exists := widgetRegistry[w.Type]; exists {
+				wWg.Add(1)
+				go func(widget StandaloneWidgetConfig) {
+					defer wWg.Done()
+					sem <- struct{}{}
+					defer func() { <-sem }()
+
+					wCfg := &WidgetConfig{
+						Type:     widget.Type,
+						URL:      widget.URL,
+						Auth:     widget.Auth,
+						Settings: widget.Settings,
+					}
+					wCtx, wCancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer wCancel()
+					if data, err := parser.Fetch(wCtx, widgetClient, wCfg); err == nil {
+						wMu.Lock()
+						newWidgetsStatus[widget.ID] = data
+						wMu.Unlock()
+					} else {
+						log.Printf("Standalone widget fetch error for %s (%s): %v", widget.Name, widget.ID, err)
+					}
+				}(w)
+			}
+		}
+		wWg.Wait()
+	}
+	widgetsCache.Store(&newWidgetsStatus)
 }
 
 var (
@@ -383,85 +461,150 @@ func getSysMetrics() *SysMetrics {
 		return cachedMetrics
 	}
 
-	metrics := &SysMetrics{}
+	cpuUsage := getCPUUsage()
+	ramUsage := getRAMUsage()
+	uptimeStr := getUptime()
 
-	// CPU
-	statBytes, err := os.ReadFile("/proc/stat")
-	if err == nil {
-		lines := strings.Split(string(statBytes), "\n")
-		if len(lines) > 0 {
-			fields := strings.Fields(lines[0])
-			if len(fields) > 4 && fields[0] == "cpu" {
-				var total float64
-				for _, f := range fields[1:] {
-					v, _ := strconv.ParseFloat(f, 64)
-					total += v
-				}
-				idle, _ := strconv.ParseFloat(fields[4], 64)
-
-				if lastCPUTotal > 0 {
-					diffTotal := total - lastCPUTotal
-					diffIdle := idle - lastCPUIdle
-					if diffTotal > 0 {
-						metrics.CPU = int((diffTotal - diffIdle) / diffTotal * 100)
-					}
-				}
-				lastCPUTotal = total
-				lastCPUIdle = idle
-			}
-		}
+	cachedMetrics = &SysMetrics{
+		CPU:    cpuUsage,
+		RAM:    ramUsage,
+		Uptime: uptimeStr,
 	}
-
-	// RAM
-	memBytes, err := os.ReadFile("/proc/meminfo")
-	if err == nil {
-		lines := strings.Split(string(memBytes), "\n")
-		var memTotal, memAvailable float64
-		for _, line := range lines {
-			if strings.HasPrefix(line, "MemTotal:") {
-				fields := strings.Fields(line)
-				if len(fields) > 1 {
-					memTotal, _ = strconv.ParseFloat(fields[1], 64)
-				}
-			} else if strings.HasPrefix(line, "MemAvailable:") {
-				fields := strings.Fields(line)
-				if len(fields) > 1 {
-					memAvailable, _ = strconv.ParseFloat(fields[1], 64)
-				}
-			}
-		}
-		if memTotal > 0 {
-			metrics.RAM = int(((memTotal - memAvailable) / memTotal) * 100)
-		}
-	}
-
-	// Uptime
-	uptimeBytes, err := os.ReadFile("/proc/uptime")
-	if err == nil {
-		fields := strings.Fields(string(uptimeBytes))
-		if len(fields) > 0 {
-			uptimeSecs, _ := strconv.ParseFloat(fields[0], 64)
-			days := int(uptimeSecs) / 86400
-			hours := (int(uptimeSecs) % 86400) / 3600
-			if days > 0 {
-				metrics.Uptime = fmt.Sprintf("%dd %02dh", days, hours)
-			} else {
-				metrics.Uptime = fmt.Sprintf("%dh", hours)
-			}
-		}
-	}
-
-	cachedMetrics = metrics
 	lastMetricsTime = time.Now()
+	return cachedMetrics
+}
 
-	return metrics
+func getCPUUsage() int {
+	data, err := os.ReadFile("/proc/stat")
+	if err != nil {
+		return 0
+	}
+
+	lines := strings.Split(string(data), "\n")
+	if len(lines) == 0 {
+		return 0
+	}
+
+	fields := strings.Fields(lines[0])
+	if len(fields) < 5 || fields[0] != "cpu" {
+		return 0
+	}
+
+	var user, nice, system, idle, iowait, irq, softirq, steal float64
+	fmt.Sscanf(fields[1], "%f", &user)
+	fmt.Sscanf(fields[2], "%f", &nice)
+	fmt.Sscanf(fields[3], "%f", &system)
+	fmt.Sscanf(fields[4], "%f", &idle)
+	if len(fields) > 5 {
+		fmt.Sscanf(fields[5], "%f", &iowait)
+	}
+	if len(fields) > 6 {
+		fmt.Sscanf(fields[6], "%f", &irq)
+	}
+	if len(fields) > 7 {
+		fmt.Sscanf(fields[7], "%f", &softirq)
+	}
+	if len(fields) > 8 {
+		fmt.Sscanf(fields[8], "%f", &steal)
+	}
+
+	total := user + nice + system + idle + iowait + irq + softirq + steal
+	idleTotal := idle + iowait
+
+	if lastCPUTotal == 0 {
+		lastCPUTotal = total
+		lastCPUIdle = idleTotal
+		return 0
+	}
+
+	totalDiff := total - lastCPUTotal
+	idleDiff := idleTotal - lastCPUIdle
+
+	lastCPUTotal = total
+	lastCPUIdle = idleTotal
+
+	if totalDiff <= 0 {
+		return 0
+	}
+
+	cpuPercent := int(((totalDiff - idleDiff) / totalDiff) * 100)
+	if cpuPercent < 0 {
+		cpuPercent = 0
+	}
+	if cpuPercent > 100 {
+		cpuPercent = 100
+	}
+
+	return cpuPercent
+}
+
+func getRAMUsage() int {
+	data, err := os.ReadFile("/proc/meminfo")
+	if err != nil {
+		return 0
+	}
+
+	var memTotal, memAvailable float64
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+		if fields[0] == "MemTotal:" {
+			fmt.Sscanf(fields[1], "%f", &memTotal)
+		} else if fields[0] == "MemAvailable:" {
+			fmt.Sscanf(fields[1], "%f", &memAvailable)
+		}
+	}
+
+	if memTotal == 0 {
+		return 0
+	}
+
+	memUsed := memTotal - memAvailable
+	ramPercent := int((memUsed / memTotal) * 100)
+	if ramPercent < 0 {
+		ramPercent = 0
+	}
+	if ramPercent > 100 {
+		ramPercent = 100
+	}
+
+	return ramPercent
+}
+
+func getUptime() string {
+	data, err := os.ReadFile("/proc/uptime")
+	if err != nil {
+		return "0m"
+	}
+
+	fields := strings.Fields(string(data))
+	if len(fields) == 0 {
+		return "0m"
+	}
+
+	var uptimeSec float64
+	fmt.Sscanf(fields[0], "%f", &uptimeSec)
+
+	days := int(uptimeSec) / (24 * 3600)
+	hours := (int(uptimeSec) % (24 * 3600)) / 3600
+	minutes := (int(uptimeSec) % 3600) / 60
+
+	if days > 0 {
+		return fmt.Sprintf("%dd %dh", days, hours)
+	}
+	if hours > 0 {
+		return fmt.Sprintf("%dh %dm", hours, minutes)
+	}
+	return fmt.Sprintf("%dm", minutes)
 }
 
 func startHealthChecker() {
+	checkHealth()
+	ticker := time.NewTicker(60 * time.Second)
 	go func() {
-		checkHealth()
-		broadcastStatus()
-		ticker := time.NewTicker(60 * time.Second)
 		for range ticker.C {
 			checkHealth()
 			broadcastStatus()
@@ -477,6 +620,9 @@ func broadcastStatus() {
 	cfg := configCache.Load()
 	payload := StreamPayload{
 		Services: *status,
+	}
+	if wStat := widgetsCache.Load(); wStat != nil && len(*wStat) > 0 {
+		payload.Widgets = *wStat
 	}
 	if cfg != nil && cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
 		payload.Metrics = getSysMetrics()
@@ -497,6 +643,7 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("X-Accel-Buffering", "no")
 
 	flusher, ok := w.(http.Flusher)
@@ -517,6 +664,9 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 		cfg := configCache.Load()
 		payload := StreamPayload{
 			Services: *status,
+		}
+		if wStat := widgetsCache.Load(); wStat != nil && len(*wStat) > 0 {
+			payload.Widgets = *wStat
 		}
 		if cfg != nil && cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
 			payload.Metrics = getSysMetrics()

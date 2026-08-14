@@ -357,6 +357,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = JSON.parse(event.data);
                 if (data.services !== undefined) {
                     updateStatusIndicators(data.services);
+                    if (data.widgets) {
+                        renderStandaloneWidgets(data.widgets);
+                    }
                     if (data.metrics && currentConfig && currentConfig.show_sys_metrics) {
                         renderSysMetrics(data.metrics);
                     } else {
@@ -566,6 +569,113 @@ document.addEventListener('DOMContentLoaded', () => {
         animateMetric(document.getElementById('metric-val-cpu'), 'cpu', cpuStr, getWidgetMetricColours('CPU', metrics.cpu));
         animateMetric(document.getElementById('metric-val-ram'), 'ram', ramStr, getWidgetMetricColours('RAM', metrics.ram));
         document.getElementById('metric-val-uptime').textContent = metrics.uptime;
+    };
+
+    const standaloneWidgetElsMap = new Map();
+
+    const renderStandaloneWidgets = (widgetsData) => {
+        const wContainer = getWidgetsContainer();
+        if (!wContainer || !currentConfig || !currentConfig.widgets) return;
+
+        currentConfig.widgets.forEach(wConfig => {
+            if (!wConfig.id) return;
+            const wId = wConfig.id;
+            const widgetData = widgetsData[wId];
+            if (!widgetData) return;
+
+            let wCard = standaloneWidgetElsMap.get(wId);
+            if (!wCard) {
+                wCard = document.getElementById(wId);
+                if (!wCard) {
+                    wCard = document.createElement('div');
+                    wCard.id = wId;
+                    wCard.className = 'widget-card stagger-in standalone-widget-card';
+
+                    const tooltipBox = document.createElement('div');
+                    tooltipBox.className = 'tooltip-box';
+                    tooltipBox.textContent = wConfig.name || 'Widget';
+                    wCard.appendChild(tooltipBox);
+
+                    const headerWrapper = document.createElement('div');
+                    headerWrapper.className = 'standalone-widget-header';
+
+                    if (wConfig.icon) {
+                        const iconSpan = document.createElement('span');
+                        iconSpan.className = 'standalone-widget-icon';
+                        iconSpan.textContent = wConfig.icon;
+                        headerWrapper.appendChild(iconSpan);
+                    } else if (wConfig.logo) {
+                        const img = document.createElement('img');
+                        img.className = 'standalone-widget-logo';
+                        img.src = '/logos/' + encodeURIComponent(wConfig.logo);
+                        img.alt = wConfig.name || '';
+                        headerWrapper.appendChild(img);
+                    }
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'standalone-widget-name';
+                    nameSpan.textContent = wConfig.name || '';
+                    headerWrapper.appendChild(nameSpan);
+
+                    wCard.appendChild(headerWrapper);
+
+                    const metricsWrapper = document.createElement('div');
+                    metricsWrapper.className = 'widget-metrics';
+                    wCard.appendChild(metricsWrapper);
+
+                    wContainer.appendChild(wCard);
+                }
+                standaloneWidgetElsMap.set(wId, wCard);
+            }
+
+            const mWrapper = wCard.querySelector('.widget-metrics');
+            const metricOrder = ['state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'download', 'down', 'upload', 'up', 'streams', 'active', 'clients', 'queries', 'blocked', 'percentage'];
+            const entries = Object.entries(widgetData).sort((a, b) => {
+                let idxA = metricOrder.indexOf(a[0].toLowerCase());
+                let idxB = metricOrder.indexOf(b[0].toLowerCase());
+                if (idxA === -1) idxA = 999;
+                if (idxB === -1) idxB = 999;
+                if (idxA === 999 && idxB === 999) return a[0].localeCompare(b[0]);
+                return idxA - idxB;
+            });
+
+            for (const [key, value] of entries) {
+                const metricKey = wId + '-' + key.replace(/[^a-z0-9]/gi, '-');
+                let valEl = widgetMetricElsMap.get(metricKey);
+
+                if (!valEl) {
+                    let item = mWrapper.querySelector(`.metric-item[data-key="${key}"]`);
+                    if (!item) {
+                        item = document.createElement('div');
+                        item.className = 'metric-item';
+                        item.setAttribute('data-key', key);
+
+                        const icon = document.createElement('span');
+                        icon.className = 'metric-icon';
+                        icon.innerHTML = getMetricIcon(key);
+
+                        const label = document.createElement('span');
+                        label.className = 'metric-label';
+                        label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+                        valEl = document.createElement('span');
+                        valEl.className = 'metric-value';
+
+                        item.appendChild(icon);
+                        item.appendChild(label);
+                        item.appendChild(valEl);
+                        mWrapper.appendChild(item);
+                    } else {
+                        valEl = item.querySelector('.metric-value');
+                    }
+                    widgetMetricElsMap.set(metricKey, valEl);
+                }
+
+                const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
+                const colors = getWidgetMetricColours(key, value);
+                animateMetric(valEl, metricKey, String(displayValue), colors);
+            }
+        });
     };
 
     const updateCardStatus = (card, isUp, latency, dot) => {

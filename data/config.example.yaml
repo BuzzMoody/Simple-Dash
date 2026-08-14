@@ -25,6 +25,14 @@ buttons:
     url: "http://192.168.1.1"
     icon: "🌐"
 
+widgets:
+  - name: "Pi-hole Stats"
+    type: "pihole"
+    logo: "pi-hole.svg"
+    url: "http://192.168.1.10/admin/api.php"
+    auth:
+      key: "your_secret_api_key_here"
+
 services:
   - name: "Pi-Hole"
     url: "http://192.168.1.10/admin"

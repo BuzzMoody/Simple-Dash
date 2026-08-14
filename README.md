@@ -172,6 +172,25 @@ buttons:
 - `logo`: *(String)* The filename of an image stored inside your `logos/` directory.
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 
+### Standalone Widgets
+Decoupled top-level widgets that monitor services, infrastructure, or host stats independently of service cards.
+```yaml
+widgets:
+  - name: "Pi-hole Statistics"
+    type: "pihole"
+    logo: "pi-hole.svg"
+    url: "http://192.168.1.10/admin/api.php"
+    auth:
+      key: "your_secret_api_key_here"
+```
+**Widget Options:**
+- `name`: *(String)* Custom title for the standalone widget card.
+- `type`: *(String)* Widget parser key (e.g. `pihole`, `proxmox`, `portainer`, `qbittorrent`, `jellyfin`, `speedtest`, `homeassistant`, `blocky`).
+- `url`: *(String)* Target API endpoint URL.
+- `logo` / `icon`: *(String)* Optional custom logo filename from `logos/` or emoji text.
+- `auth`: *(Map)* API keys or credentials (hidden from browser SSE streams).
+- `settings`: *(Map)* Additional widget-specific configuration parameters.
+
 ### Services
 Your primary application cards. The dashboard automatically monitors the `url` via HTTP GET requests every 60 seconds to display live health dots.
 ```yaml

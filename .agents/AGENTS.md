@@ -26,9 +26,10 @@ Users mount their own `config.yaml` and upgrade the container independently. Any
 
 # Stability & Testing
 
-## 6. Continuous Integration & Commits
-After successfully completing a task, making structural modifications, or implementing a bug fix, you MUST automatically commit your changes to the Git repository using `git add`, `git commit -m "..."`, and `git push`. Always write descriptive, conventional commit messages that clearly explain the specific change being made (e.g., `feat: Implement dynamic category-based hover colors` or `fix: Resolve CSS variable scoping issue`). This ensures a continuous and well-documented workflow across sessions.
-*   **Crucial Constraint:** You may only run `git commit` and `git push` **after** locally running and successfully passing `go build`, `go vet ./...`, and `node --check`.
+## 6. Plan-First Workflow & Explicit User Approval
+Before making any code changes, structural modifications, or committing files, you MUST create a detailed `.md` plan file outlining the feature or fix and present it to the user. You MUST NEVER automatically modify codebase files or execute `git commit` / `git push` without explicit user review and approval of the plan first.
+*   **Explicit Commits:** Only run `git add`, `git commit`, and `git push` when explicitly instructed to do so by the user after their review of the changes. Always write descriptive, conventional commit messages that clearly explain the specific change being made.
+*   **Crucial Constraint:** When authorized to commit changes, you may only run `git commit` and `git push` **after** locally running and successfully passing `go build`, `go vet ./...`, and `node --check`.
 
 ## 7. Strict Go Compilation & Quality
 The backend is written in Go, which strictly prohibits unused imports and variables. Whenever you refactor code or remove features from `main.go`, you MUST thoroughly check for any leftover imported packages that are no longer referenced and remove them. 
