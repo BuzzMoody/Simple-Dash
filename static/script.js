@@ -360,12 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.widgets) {
                         renderStandaloneWidgets(data.widgets);
                     }
-                    if (data.metrics && currentConfig && currentConfig.show_sys_metrics) {
-                        renderSysMetrics(data.metrics);
-                    } else {
-                        const m = document.getElementById('sys-metrics');
-                        if (m) m.remove();
-                    }
                 } else {
                     updateStatusIndicators(data);
                 }
@@ -526,49 +520,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateSlotGeneric(el, id, targetStr, isFirstLoad);
             el.style.color = '';
         }
-    };
-
-    const renderSysMetrics = (metrics) => {
-        let metricsEl = document.getElementById('sys-metrics');
-        if (!metricsEl) {
-            const wc = getWidgetsContainer();
-            if (!wc) return;
-            metricsEl = document.createElement('div');
-            metricsEl.id = 'sys-metrics';
-            metricsEl.className = 'widget-card stagger-in';
-            
-            const tooltipBox = document.createElement('div');
-            tooltipBox.className = 'tooltip-box';
-            tooltipBox.textContent = 'System';
-            metricsEl.appendChild(tooltipBox);
-            
-            const metricsWrapper = document.createElement('div');
-            metricsWrapper.className = 'widget-metrics';
-            metricsEl.appendChild(metricsWrapper);
-            
-            const createMetric = (id, iconSvg, label) => {
-                const item = document.createElement('div');
-                item.className = 'metric-item';
-                item.innerHTML = `<span class="metric-icon">${iconSvg}</span><span class="metric-label">${label}</span><span class="metric-value" id="metric-val-${id}"></span>`;
-                metricsWrapper.appendChild(item);
-            };
-            
-            const cpuIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`;
-            const ramIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line><path d="M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"></path></svg>`;
-            const timeIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-            
-            createMetric('cpu', cpuIcon, 'CPU');
-            createMetric('ram', ramIcon, 'RAM');
-            createMetric('uptime', timeIcon, 'Uptime');
-            
-            wc.appendChild(metricsEl);
-        }
-
-        const cpuStr = Math.round(Number(metrics.cpu)).toString().padStart(2, ' ') + '%';
-        const ramStr = Math.round(Number(metrics.ram)).toString().padStart(2, ' ') + '%';
-        animateMetric(document.getElementById('metric-val-cpu'), 'cpu', cpuStr, getWidgetMetricColours('CPU', metrics.cpu));
-        animateMetric(document.getElementById('metric-val-ram'), 'ram', ramStr, getWidgetMetricColours('RAM', metrics.ram));
-        document.getElementById('metric-val-uptime').textContent = metrics.uptime;
     };
 
     const standaloneWidgetElsMap = new Map();

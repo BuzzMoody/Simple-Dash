@@ -26,6 +26,10 @@ buttons:
     icon: "🌐"
 
 widgets:
+  - name: "Host System"
+    type: "sys_metrics"
+    icon: "💻"
+
   - name: "Pi-hole Stats"
     type: "pihole"
     logo: "pi-hole.svg"

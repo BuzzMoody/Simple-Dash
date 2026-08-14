@@ -185,7 +185,7 @@ widgets:
 ```
 **Widget Options:**
 - `name`: *(String)* Custom title for the standalone widget card.
-- `type`: *(String)* Widget parser key (e.g. `pihole`, `proxmox`, `portainer`, `qbittorrent`, `jellyfin`, `speedtest`, `homeassistant`, `blocky`).
+- `type`: *(String)* Widget parser key (e.g. `sys_metrics`, `pihole`, `proxmox`, `portainer`, `qbittorrent`, `jellyfin`, `speedtest`, `homeassistant`, `blocky`).
 - `url`: *(String)* Target API endpoint URL.
 - `logo` / `icon`: *(String)* Optional custom logo filename from `logos/` or emoji text.
 - `auth`: *(Map)* API keys or credentials (hidden from browser SSE streams).

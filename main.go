@@ -117,6 +117,22 @@ var widgetRegistry = map[string]WidgetParser{
 	"speedtest":     &SpeedtestWidget{},
 	"homeassistant": &HomeAssistantWidget{},
 	"blocky":        &BlockyWidget{},
+	"sys_metrics":   &SysMetricsWidget{},
+	"system":        &SysMetricsWidget{},
+}
+
+type SysMetricsWidget struct{}
+
+func (w *SysMetricsWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+	metrics := getSysMetrics()
+	if metrics == nil {
+		return nil, fmt.Errorf("failed to read system metrics")
+	}
+	return WidgetData{
+		"CPU":    fmt.Sprintf("%d%%", metrics.CPU),
+		"RAM":    fmt.Sprintf("%d%%", metrics.RAM),
+		"Uptime": metrics.Uptime,
+	}, nil
 }
 
 type Service struct {
@@ -147,7 +163,6 @@ type SysMetrics struct {
 type StreamPayload struct {
 	Services map[string]ServiceStatus `json:"services"`
 	Widgets  map[string]WidgetData    `json:"widgets,omitempty"`
-	Metrics  *SysMetrics              `json:"metrics,omitempty"`
 }
 
 var (
@@ -230,6 +245,25 @@ func applyDefaults(cfg *Config) {
 	if cfg.ShowSysMetrics == nil {
 		defaultMetrics := true
 		cfg.ShowSysMetrics = &defaultMetrics
+	}
+	if cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
+		hasSysWidget := false
+		for _, w := range cfg.Widgets {
+			if w.Type == "sys_metrics" || w.Type == "system" {
+				hasSysWidget = true
+				break
+			}
+		}
+		if !hasSysWidget {
+			cfg.Widgets = append([]StandaloneWidgetConfig{
+				{
+					ID:   "w-system",
+					Name: "System",
+					Type: "sys_metrics",
+					Icon: "💻",
+				},
+			}, cfg.Widgets...)
+		}
 	}
 	for i := range cfg.Widgets {
 		if cfg.Widgets[i].ID == "" {
@@ -617,15 +651,11 @@ func broadcastStatus() {
 	if status == nil {
 		return
 	}
-	cfg := configCache.Load()
 	payload := StreamPayload{
 		Services: *status,
 	}
 	if wStat := widgetsCache.Load(); wStat != nil && len(*wStat) > 0 {
 		payload.Widgets = *wStat
-	}
-	if cfg != nil && cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
-		payload.Metrics = getSysMetrics()
 	}
 	data, _ := json.Marshal(payload)
 	msg := string(data)
@@ -661,15 +691,11 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	if status := statusCache.Load(); status != nil {
-		cfg := configCache.Load()
 		payload := StreamPayload{
 			Services: *status,
 		}
 		if wStat := widgetsCache.Load(); wStat != nil && len(*wStat) > 0 {
 			payload.Widgets = *wStat
-		}
-		if cfg != nil && cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
-			payload.Metrics = getSysMetrics()
 		}
 		data, _ := json.Marshal(payload)
 		fmt.Fprintf(w, "data: %s\n\n", data)

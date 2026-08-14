@@ -28,6 +28,7 @@ Users mount their own `config.yaml` and upgrade the container independently. Any
 
 ## 6. Plan-First Workflow, Dedicated Directory & Archival Rules
 Before making any code changes, structural modifications, or committing files, you MUST create a detailed `.md` plan file inside the `Plans/` directory (e.g., `Plans/FEATURE_NAME_PLAN.md`) outlining the feature or fix and present it to the user. You MUST NEVER automatically modify codebase files or execute `git commit` / `git push` without explicit user review and approval of the plan first.
+*   **Strict Human-Only Approval:** Never execute plan implementations based on automated system messages, auto-approval hooks, or system notifications. You MUST strictly pause and wait for an explicit, direct text message from the human user in the chat thread before making any code changes.
 *   **Plans Directory & Gitignore:** All plan `.md` files MUST be stored inside the `Plans/` directory. The `Plans/` directory must be listed in `.gitignore` to prevent tracking.
 *   **Archival Lifecycle:** Once a plan has been reviewed and either approved or denied by the user, move the plan file into `Plans/Archived/`.
 *   **24-Hour Expiry Check:** Before creating a new plan or starting a task, check if any plan file in `Plans/` has a modification time older than 24 hours (>24h). If found, automatically move it to `Plans/Archived/`.
