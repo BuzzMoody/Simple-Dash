@@ -256,7 +256,59 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggle.innerHTML = isDark ? moonSVG : sunSVG;
         themeToggle.setAttribute('data-tooltip', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
         themeToggle.setAttribute('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        refreshTooltipLogos();
     });
+
+    const findMatchingService = (name) => {
+        if (!name || !currentConfig || !currentConfig.services) return null;
+        const target = name.trim().toLowerCase();
+        return currentConfig.services.find(s => s.name && s.name.trim().toLowerCase() === target) || null;
+    };
+
+    const updateTooltipContent = (tooltipEl, name) => {
+        if (!tooltipEl || !name) return;
+        tooltipEl.setAttribute('data-name', name);
+        tooltipEl.innerHTML = '';
+
+        const matchedService = findMatchingService(name);
+        if (matchedService) {
+            const isDark = document.body.classList.contains('dark-mode');
+            let logoSrc = null;
+            if (isDark && matchedService.logo_dark) {
+                logoSrc = matchedService.logo_dark;
+            } else if (!isDark && matchedService.logo_light) {
+                logoSrc = matchedService.logo_light;
+            } else if (matchedService.logo) {
+                logoSrc = matchedService.logo;
+            }
+
+            if (logoSrc) {
+                const img = document.createElement('img');
+                img.className = 'tooltip-logo';
+                img.src = '/logos/' + encodeURIComponent(logoSrc);
+                img.alt = '';
+                tooltipEl.appendChild(img);
+            } else if (matchedService.icon) {
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'tooltip-icon';
+                iconSpan.textContent = matchedService.icon;
+                tooltipEl.appendChild(iconSpan);
+            }
+        }
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = name;
+        tooltipEl.appendChild(textSpan);
+    };
+
+    const refreshTooltipLogos = () => {
+        document.querySelectorAll('.widget-card').forEach(wCard => {
+            const tooltipBox = wCard.querySelector('.tooltip-box');
+            if (tooltipBox && tooltipBox.getAttribute('data-name')) {
+                updateTooltipContent(tooltipBox, tooltipBox.getAttribute('data-name'));
+            }
+        });
+    };
 
     initTheme();
 
@@ -544,31 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const tooltipBox = document.createElement('div');
                     tooltipBox.className = 'tooltip-box';
-                    tooltipBox.textContent = wConfig.name || 'Widget';
+                    updateTooltipContent(tooltipBox, wConfig.name || 'Widget');
                     wCard.appendChild(tooltipBox);
-
-                    const headerWrapper = document.createElement('div');
-                    headerWrapper.className = 'standalone-widget-header';
-
-                    if (wConfig.icon) {
-                        const iconSpan = document.createElement('span');
-                        iconSpan.className = 'standalone-widget-icon';
-                        iconSpan.textContent = wConfig.icon;
-                        headerWrapper.appendChild(iconSpan);
-                    } else if (wConfig.logo) {
-                        const img = document.createElement('img');
-                        img.className = 'standalone-widget-logo';
-                        img.src = '/logos/' + encodeURIComponent(wConfig.logo);
-                        img.alt = wConfig.name || '';
-                        headerWrapper.appendChild(img);
-                    }
-
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'standalone-widget-name';
-                    nameSpan.textContent = wConfig.name || '';
-                    headerWrapper.appendChild(nameSpan);
-
-                    wCard.appendChild(headerWrapper);
 
                     const metricsWrapper = document.createElement('div');
                     metricsWrapper.className = 'widget-metrics';
@@ -718,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const tooltipBox = document.createElement('div');
                 tooltipBox.className = 'tooltip-box';
-                tooltipBox.textContent = serviceName;
+                updateTooltipContent(tooltipBox, serviceName);
                 wCard.appendChild(tooltipBox);
                 
                 const metricsWrapper = document.createElement('div');
