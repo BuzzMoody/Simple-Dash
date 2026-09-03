@@ -245,6 +245,8 @@ func applyDefaults(cfg *Config) {
 	if cfg.ShowSysMetrics == nil {
 		defaultMetrics := true
 		cfg.ShowSysMetrics = &defaultMetrics
+	} else {
+		log.Println("[DEPRECATION] 'show_sys_metrics' is deprecated and will be removed in a future release. Please configure a 'sys_metrics' widget under the 'widgets' block instead.")
 	}
 	if cfg.ShowSysMetrics != nil && *cfg.ShowSysMetrics {
 		hasSysWidget := false
@@ -263,6 +265,35 @@ func applyDefaults(cfg *Config) {
 					Icon: "💻",
 				},
 			}, cfg.Widgets...)
+		}
+	}
+	for i := range cfg.Services {
+		srv := &cfg.Services[i]
+		if srv.Widget != nil && srv.Widget.Type != "" {
+			log.Printf("[DEPRECATION] Nested widget under service '%s' is deprecated and will be removed in a future release. Synthesising top-level widget automatically.", srv.Name)
+			synthesisedID := "w-" + sanitizeID(srv.Name)
+			exists := false
+			for _, w := range cfg.Widgets {
+				if w.ID == synthesisedID || (w.Type == srv.Widget.Type && w.URL == srv.Widget.URL && srv.Widget.URL != "") {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				cfg.Widgets = append(cfg.Widgets, StandaloneWidgetConfig{
+					ID:        synthesisedID,
+					Name:      srv.Name,
+					Type:      srv.Widget.Type,
+					URL:       srv.Widget.URL,
+					Icon:      srv.Icon,
+					Logo:      srv.Logo,
+					LogoDark:  srv.LogoDark,
+					LogoLight: srv.LogoLight,
+					Auth:      srv.Widget.Auth,
+					Settings:  srv.Widget.Settings,
+				})
+			}
+			srv.Widget = nil
 		}
 	}
 	for i := range cfg.Widgets {
@@ -420,18 +451,6 @@ func checkHealth() {
 			}
 
 			status := ServiceStatus{IsUp: isUp, Latency: latencyMs}
-
-			if srv.Widget != nil && srv.Widget.Type != "" {
-				if parser, exists := widgetRegistry[srv.Widget.Type]; exists {
-					wCtx, wCancel := context.WithTimeout(context.Background(), 5*time.Second)
-					defer wCancel()
-					if data, err := parser.Fetch(wCtx, widgetClient, srv.Widget); err == nil {
-						status.WidgetData = data
-					} else {
-						log.Printf("Widget fetch error for %s: %v", srv.Name, err)
-					}
-				}
-			}
 
 			mu.Lock()
 			newStatus[srv.URL] = status

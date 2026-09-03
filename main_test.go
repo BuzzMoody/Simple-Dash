@@ -35,4 +35,53 @@ func TestApplyDefaults(t *testing.T) {
 	if cfg.ShowSysMetrics == nil || *cfg.ShowSysMetrics != true {
 		t.Errorf("Expected ShowSysMetrics to be true")
 	}
+	if len(cfg.Widgets) != 1 || cfg.Widgets[0].ID != "w-system" {
+		t.Errorf("Expected default w-system widget to be synthesised, got %+v", cfg.Widgets)
+	}
+}
+
+func TestLegacyNestedWidgetNormalisation(t *testing.T) {
+	showSys := false
+	cfg := &Config{
+		ShowSysMetrics: &showSys,
+		Services: []Service{
+			{
+				Name: "Pi-Hole",
+				URL:  "http://192.168.1.10/admin",
+				Logo: "pi-hole.svg",
+				Widget: &WidgetConfig{
+					Type: "pihole",
+					URL:  "http://192.168.1.10/admin/api.php",
+					Auth: map[string]string{"key": "secret123"},
+				},
+			},
+		},
+	}
+
+	applyDefaults(cfg)
+
+	if cfg.Services[0].Widget != nil {
+		t.Errorf("Expected service.Widget to be cleared after normalisation, got %+v", cfg.Services[0].Widget)
+	}
+
+	if len(cfg.Widgets) != 1 {
+		t.Fatalf("Expected 1 synthesised widget, got %d", len(cfg.Widgets))
+	}
+
+	w := cfg.Widgets[0]
+	if w.ID != "w-pi-hole" {
+		t.Errorf("Expected widget ID 'w-pi-hole', got '%s'", w.ID)
+	}
+	if w.Type != "pihole" {
+		t.Errorf("Expected widget type 'pihole', got '%s'", w.Type)
+	}
+	if w.URL != "http://192.168.1.10/admin/api.php" {
+		t.Errorf("Expected widget URL 'http://192.168.1.10/admin/api.php', got '%s'", w.URL)
+	}
+	if w.Logo != "pi-hole.svg" {
+		t.Errorf("Expected widget Logo 'pi-hole.svg', got '%s'", w.Logo)
+	}
+	if w.Auth["key"] != "secret123" {
+		t.Errorf("Expected widget Auth key 'secret123', got '%s'", w.Auth["key"])
+	}
 }

@@ -133,7 +133,7 @@ category_colors:
 - `footer`: *(String)* Custom text to be displayed at the very bottom of the page. Supports standard Markdown links `[text](url)`. Note: HTML entities (like `&copy;`) are not fully supported; use literal Unicode characters (like `©`) instead.
 - `favicon`: *(String)* The exact filename of an SVG stored inside your `logos/` directory to be used as the browser tab icon.
 - `new_tabs`: *(Boolean)* Default is `true`. Sets whether clicking a service or button opens in a new browser tab or the current one.
-- `show_sys_metrics`: *(Boolean)* Default is `true`. If set to `true`, a live hardware metrics pill (CPU, RAM, Uptime) is elegantly displayed at the top of the dashboard, updating every 60 seconds with zero backend overhead.
+- `show_sys_metrics`: *(Boolean)* *(Deprecated)* Default is `true`. When omitted or set to `true`, automatically injects a default host system metrics widget into the widgets bar. To customise icon, naming, or widget ordering, define a `sys_metrics` widget directly under the `widgets:` configuration block instead.
 - `show_only_down`: *(Boolean)* Default is `false`. Only display the status dot on services that are offline. Online services will have no dot, keeping the UI cleaner.
 - `show_ping`: *(Boolean)* Default is `false`. If set to `true`, the UI will dynamically display the ping latency in milliseconds for healthy online services (appended to tooltips in Grid view, and displayed in the status column in List view), colour-coded based on response time. This option operates entirely independently of `show_only_down`.
 - `show_weather`: *(Boolean)* Default is `false`. Fetches and displays the current local temperature and a weather icon in the dashboard subheading. Does not require any API keys.
@@ -172,10 +172,15 @@ buttons:
 - `logo`: *(String)* The filename of an image stored inside your `logos/` directory.
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 
-### Standalone Widgets
-Decoupled top-level widgets that monitor services, infrastructure, or host stats independently of service cards.
+### Widgets
+Decoupled top-level widgets that monitor services, infrastructure, or host stats independently of service cards. Widgets are rendered in a sleek horizontal row above your services.
+
 ```yaml
 widgets:
+  - name: "Host System"
+    type: "sys_metrics"
+    icon: "💻"
+
   - name: "Pi-hole Statistics"
     type: "pihole"
     logo: "pi-hole.svg"
@@ -183,71 +188,21 @@ widgets:
     auth:
       key: "your_secret_api_key_here"
 ```
+
 **Widget Options:**
-- `name`: *(String)* Custom title for the standalone widget card.
+- `name`: *(String)* Custom title for the widget card (displayed in the hover tooltip). If the name matches an existing service card, it automatically inherits the theme-aware logo or icon from that service.
 - `type`: *(String)* Widget parser key (e.g. `sys_metrics`, `pihole`, `proxmox`, `portainer`, `qbittorrent`, `jellyfin`, `speedtest`, `homeassistant`, `blocky`).
-- `url`: *(String)* Target API endpoint URL.
+- `url`: *(String)* Target API endpoint URL (not required for `sys_metrics`).
 - `logo` / `icon`: *(String)* Optional custom logo filename from `logos/` or emoji text.
+- `logo_light` / `logo_dark`: *(String)* Optional theme-specific logos.
 - `auth`: *(Map)* API keys or credentials (hidden from browser SSE streams).
 - `settings`: *(Map)* Additional widget-specific configuration parameters.
 
-### Services
-Your primary application cards. The dashboard automatically monitors the `url` via HTTP GET requests every 60 seconds to display live health dots.
-```yaml
-services:
-  - name: "Pi-Hole"
-    url: "http://192.168.1.10/admin"
-    category: "Infrastructure"
-    logo: "pi-hole.svg"
-    description: "Network-wide Ad Blocking"
-    widget:
-      type: "pihole"
-      url: "http://192.168.1.10/admin/api.php"
-      auth:
-        key: "your_secret_api_key_here"
-
-  - name: "Plex"
-    url: "http://10.0.0.5:32400"
-    category: "Media"
-    logo: "plex.svg"
-    icon: "🍿"
-    description: "Main media streaming server"
-```
-**Service Options:**
-- `name`: *(String)* The title of the application.
-- `url`: *(String)* The destination link when the card is clicked and used for backend health checks.
-- `category`: *(String)* The group this service belongs to. Used when grouping mode is enabled.
-- `pinned`: *(Boolean)* (Optional) Default is `false`. If set to `true`, the service will be pinned to a special 'Favourites' group at the very top of the dashboard.
-- `logo`: *(String)* The exact filename of an image stored inside your local `logos/` directory.
-- `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
-- `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
-- `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
-- `widget`: *(Object)* (Optional) Enables a dynamic data widget to display live API data directly on the card.
-
-<details>
-<summary><strong>📊 Click here for an in-depth guide on configuring Widgets</strong></summary>
-
-<br>
-
-Widgets are beautiful, API-driven cards that render live metrics fetched directly from your applications. To add a widget to a service, simply append the `widget` block to your service definition.
-
-### Example configuration
-
-```yaml
-  - name: "Portainer"
-    url: "http://192.168.1.5:9000"
-    category: "Infrastructure"
-    widget:
-      type: "portainer"
-      url: "http://192.168.1.5:9000/api/endpoints/1/docker/containers/json"
-      auth:
-        key: "ptr_yourSuperSecretApiKey123="
-```
-
-### Supported Widgets & Requirements
+#### Supported Widgets & Requirements
 
 | Type | Data Displayed | `url` Endpoint Required | `auth.key` Required |
 |------|---------------|-------------------------|----------------------|
+| `sys_metrics` | CPU, RAM, Uptime | ❌ None (Local Host) | ❌ None |
 | `pihole` | Queries & Blocked % | `http://<ip>/admin/api.php` | ✅ Web Password Token |
 | `blocky` | Queries & Blocked % | `http://<ip>:4000/metrics` | ❌ None |
 | `proxmox` | CPU & RAM Usage | `https://<ip>:8006/api2/json/nodes/<node>/status` | ✅ `PVEAPIToken=User@pam!ID=Secret` |
@@ -257,7 +212,89 @@ Widgets are beautiful, API-driven cards that render live metrics fetched directl
 | `speedtest` | Speedtest results | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
 | `homeassistant`| Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |
 
-</details>
+### Services
+Your primary application cards. The dashboard automatically monitors the `url` via HTTP GET requests every 60 seconds to display live health dots.
+
+```yaml
+services:
+  - name: "Pi-Hole"
+    url: "http://192.168.1.10/admin"
+    category: "Infrastructure"
+    logo: "pi-hole.svg"
+    description: "Network-wide Ad Blocking"
+
+  - name: "Plex"
+    url: "http://10.0.0.5:32400"
+    category: "Media"
+    logo: "plex.svg"
+    icon: "🍿"
+    description: "Main media streaming server"
+```
+
+**Service Options:**
+- `name`: *(String)* The title of the application.
+- `url`: *(String)* The destination link when the card is clicked and used for backend health checks.
+- `category`: *(String)* The group this service belongs to. Used when grouping mode is enabled.
+- `pinned`: *(Boolean)* (Optional) Default is `false`. If set to `true`, the service will be pinned to a special 'Favourites' group at the very top of the dashboard.
+- `logo`: *(String)* The exact filename of an image stored inside your local `logos/` directory.
+- `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
+- `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
+- `description`: *(String)* (Optional) A brief description that elegantly floats in a frosted tooltip whenever a user hovers over the card.
+
+---
+
+### Migration Guide (v0.1.x to Current)
+
+Simple Dash has unified all widget configuration into a top-level `widgets:` block. Legacy nested `widget:` configurations under `services:` and the legacy `show_sys_metrics` global toggle are now deprecated.
+
+#### Backward Compatibility Notice
+Existing configurations with nested service widgets or `show_sys_metrics` continue to work automatically without crashing. Simple Dash normalises them at boot time into top-level widgets while logging deprecation notices to help you migrate.
+
+#### 1. Migrating Nested Service Widgets
+**Before (Legacy Nested Syntax):**
+```yaml
+services:
+  - name: "Pi-Hole"
+    url: "http://192.168.1.10/admin"
+    category: "Infrastructure"
+    logo: "pi-hole.svg"
+    widget:
+      type: "pihole"
+      url: "http://192.168.1.10/admin/api.php"
+      auth:
+        key: "your_api_key"
+```
+
+**After (Unified Top-Level Syntax):**
+```yaml
+widgets:
+  - name: "Pi-Hole"
+    type: "pihole"
+    logo: "pi-hole.svg"
+    url: "http://192.168.1.10/admin/api.php"
+    auth:
+      key: "your_api_key"
+
+services:
+  - name: "Pi-Hole"
+    url: "http://192.168.1.10/admin"
+    category: "Infrastructure"
+    logo: "pi-hole.svg"
+```
+
+#### 2. Migrating System Metrics
+**Before:**
+```yaml
+show_sys_metrics: true
+```
+
+**After:**
+```yaml
+widgets:
+  - name: "System"
+    type: "sys_metrics"
+    icon: "💻"
+```
 
 ## Security Note
 

@@ -271,15 +271,19 @@ document.addEventListener('DOMContentLoaded', () => {
         tooltipEl.innerHTML = '';
 
         const matchedService = findMatchingService(name);
-        if (matchedService) {
+        const matchedWidget = (!matchedService && currentConfig && currentConfig.widgets)
+            ? currentConfig.widgets.find(w => w.name && w.name.trim().toLowerCase() === name.trim().toLowerCase())
+            : null;
+        const source = matchedService || matchedWidget;
+        if (source) {
             const isDark = document.body.classList.contains('dark-mode');
             let logoSrc = null;
-            if (isDark && matchedService.logo_dark) {
-                logoSrc = matchedService.logo_dark;
-            } else if (!isDark && matchedService.logo_light) {
-                logoSrc = matchedService.logo_light;
-            } else if (matchedService.logo) {
-                logoSrc = matchedService.logo;
+            if (isDark && source.logo_dark) {
+                logoSrc = source.logo_dark;
+            } else if (!isDark && source.logo_light) {
+                logoSrc = source.logo_light;
+            } else if (source.logo) {
+                logoSrc = source.logo;
             }
 
             if (logoSrc) {
@@ -288,10 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.src = '/logos/' + encodeURIComponent(logoSrc);
                 img.alt = '';
                 tooltipEl.appendChild(img);
-            } else if (matchedService.icon) {
+            } else if (source.icon) {
                 const iconSpan = document.createElement('span');
                 iconSpan.className = 'tooltip-icon';
-                iconSpan.textContent = matchedService.icon;
+                iconSpan.textContent = source.icon;
                 tooltipEl.appendChild(iconSpan);
             }
         }
@@ -410,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.services !== undefined) {
                     updateStatusIndicators(data.services);
                     if (data.widgets) {
-                        renderStandaloneWidgets(data.widgets);
+                        renderWidgets(data.widgets);
                     }
                 } else {
                     updateStatusIndicators(data);
@@ -575,9 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const standaloneWidgetElsMap = new Map();
-
-    const renderStandaloneWidgets = (widgetsData) => {
+    const renderWidgets = (widgetsData) => {
         const wContainer = getWidgetsContainer();
         if (!wContainer || !currentConfig || !currentConfig.widgets) return;
 
@@ -587,13 +589,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const widgetData = widgetsData[wId];
             if (!widgetData) return;
 
-            let wCard = standaloneWidgetElsMap.get(wId);
+            let wCard = widgetCardsMap.get(wId);
             if (!wCard) {
                 wCard = document.getElementById(wId);
                 if (!wCard) {
                     wCard = document.createElement('div');
                     wCard.id = wId;
-                    wCard.className = 'widget-card stagger-in standalone-widget-card';
+                    wCard.className = 'widget-card stagger-in';
 
                     const tooltipBox = document.createElement('div');
                     tooltipBox.className = 'tooltip-box';
@@ -606,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     wContainer.appendChild(wCard);
                 }
-                standaloneWidgetElsMap.set(wId, wCard);
+                widgetCardsMap.set(wId, wCard);
             }
 
             const mWrapper = wCard.querySelector('.widget-metrics');
@@ -733,89 +735,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const updateWidgetMetrics = (configUrl, card, widgetData) => {
-        let wContainer = getWidgetsContainer();
-        if (!wContainer) return;
-
-        let wCard = widgetCardsMap.get(configUrl);
-        let wId = 'widget-' + configUrl.replace(/[^a-z0-9]/gi, '-');
-
-        if (!wCard) {
-            wCard = document.getElementById(wId);
-            if (!wCard) {
-                wCard = document.createElement('div');
-                wCard.id = wId;
-                wCard.className = 'widget-card stagger-in';
-                
-                const serviceName = card.querySelector('.service-name')?.textContent || 'Service';
-                
-                const tooltipBox = document.createElement('div');
-                tooltipBox.className = 'tooltip-box';
-                updateTooltipContent(tooltipBox, serviceName);
-                wCard.appendChild(tooltipBox);
-                
-                const metricsWrapper = document.createElement('div');
-                metricsWrapper.className = 'widget-metrics';
-                wCard.appendChild(metricsWrapper);
-                
-                wContainer.appendChild(wCard);
-            }
-            widgetCardsMap.set(configUrl, wCard);
-        }
-        
-        const mWrapper = wCard.querySelector('.widget-metrics');
-        
-        const metricOrder = ['active', 'state', 'cpu', 'ram', 'ping', 'total', 'running', 'stopped', 'missing', 'torrents', 'download', 'down', 'upload', 'up', 'streams', 'clients', 'queries', 'blocked', 'percentage'];
-        const entries = Object.entries(widgetData).sort((a, b) => {
-            let idxA = metricOrder.indexOf(a[0].toLowerCase());
-            let idxB = metricOrder.indexOf(b[0].toLowerCase());
-            if (idxA === -1) idxA = 999;
-            if (idxB === -1) idxB = 999;
-            if (idxA === 999 && idxB === 999) return a[0].localeCompare(b[0]);
-            return idxA - idxB;
-        });
-
-        for (const [key, value] of entries) {
-            const metricKey = wId + '-' + key.replace(/[^a-z0-9]/gi, '-');
-            let valEl = widgetMetricElsMap.get(metricKey);
-
-            if (!valEl) {
-                let item = mWrapper.querySelector(`.metric-item[data-key="${key}"]`);
-                if (!item) {
-                    item = document.createElement('div');
-                    item.className = 'metric-item';
-                    item.setAttribute('data-key', key);
-                    
-                    const icon = document.createElement('span');
-                    icon.className = 'metric-icon';
-                    icon.innerHTML = getMetricIcon(key);
-                    
-                    const label = document.createElement('span');
-                    label.className = 'metric-label';
-                    const lowerKey = key.toLowerCase();
-                    if (lowerKey !== 'down' && lowerKey !== 'up') {
-                        label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    }
-                    
-                    valEl = document.createElement('span');
-                    valEl.className = 'metric-value';
-                    
-                    item.appendChild(icon);
-                    item.appendChild(label);
-                    item.appendChild(valEl);
-                    mWrapper.appendChild(item);
-                } else {
-                    valEl = item.querySelector('.metric-value');
-                }
-                widgetMetricElsMap.set(metricKey, valEl);
-            }
-
-            const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
-            const colors = getWidgetMetricColours(key, value);
-            animateMetric(valEl, metricKey, String(displayValue), colors);
-        }
-    };
-
     const updateStatusIndicators = (incomingStatus) => {
         let prev = previousStatus;
         if (incomingStatus) {
@@ -850,15 +769,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     updateCardStatus(card, isUp, latency, dot);
-
-                    let widgetData = null;
-                    if (statusObj && typeof statusObj === 'object') {
-                        widgetData = statusObj.widget_data;
-                    }
-                    
-                    if (widgetData) {
-                        updateWidgetMetrics(configUrl, card, widgetData);
-                    }
                 }
             });
             
