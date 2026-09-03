@@ -695,6 +695,7 @@ body.dark-mode .widget-card:hover {
 }
 
 .search-hidden {
+    display: none !important;
     pointer-events: none;
 }
 

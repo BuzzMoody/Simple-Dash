@@ -35,3 +35,10 @@ test_build
 
 # Ignore local plans and proposal scratchpads
 Plans/
+
+# Local testing and scratch files
+node_modules/
+package.json
+package-lock.json
+test.js
+test2.js

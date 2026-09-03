@@ -51,8 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     };
-    let groupBy = localStorage.getItem('dashy-groupby') || 'category'; // 'category' or 'none'
-    let layout = localStorage.getItem('dashy-layout') || 'grid'; // 'grid' or 'list'
+    const getStorageItem = (key, legacyKey, fallback) => {
+        return localStorage.getItem(key) || localStorage.getItem(legacyKey) || fallback;
+    };
+    let groupBy = getStorageItem('simpledash-groupby', 'dashy-groupby', 'category'); // 'category' or 'none'
+    let layout = getStorageItem('simpledash-layout', 'dashy-layout', 'grid'); // 'grid' or 'list'
     const layoutToggle = document.getElementById('layout-toggle');
 
     const checkUrlVisibility = () => {
@@ -132,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchWeather = async () => {
-        const cached = localStorage.getItem('dashy-weather');
+        const cached = getStorageItem('simpledash-weather', 'dashy-weather', null);
         if (cached) {
             try {
                 const data = JSON.parse(cached);
@@ -153,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const code = data.current_weather.weathercode;
                 const isDay = data.current_weather.is_day;
                 
-                localStorage.setItem('dashy-weather', JSON.stringify({ temp, code, isDay, timestamp: Date.now() }));
+                localStorage.setItem('simpledash-weather', JSON.stringify({ temp, code, isDay, timestamp: Date.now() }));
                 weatherHtml = ` <span id="clock-sep">&bull;</span> <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-top:-2px;">${temp}&deg; ${getWeatherSVG(code, isDay)}</span>`;
                 updateClock();
             } catch (error) {
@@ -235,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sunSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
 
     const initTheme = () => {
-        const savedTheme = localStorage.getItem('dashy-theme');
+        const savedTheme = getStorageItem('simpledash-theme', 'dashy-theme', null);
         if (savedTheme === 'light') {
             document.body.classList.remove('dark-mode');
             themeToggle.innerHTML = sunSVG;
@@ -252,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     themeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('dashy-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('simpledash-theme', isDark ? 'dark' : 'light');
         themeToggle.innerHTML = isDark ? moonSVG : sunSVG;
         themeToggle.setAttribute('data-tooltip', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
         themeToggle.setAttribute('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
@@ -331,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     groupToggle.addEventListener('click', () => {
         groupBy = groupBy === 'category' ? 'none' : 'category';
-        localStorage.setItem('dashy-groupby', groupBy);
+        localStorage.setItem('simpledash-groupby', groupBy);
         updateGroupToggleButton();
         if (currentConfig) {
             renderServices(currentConfig.services || []);
@@ -361,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLayoutToggleButton();
         layoutToggle.addEventListener('click', () => {
             layout = layout === 'grid' ? 'list' : 'grid';
-            localStorage.setItem('dashy-layout', layout);
+            localStorage.setItem('simpledash-layout', layout);
             updateLayoutToggleButton();
             if (currentConfig) {
                 renderServices(currentConfig.services || []);
@@ -411,6 +414,10 @@ document.addEventListener('DOMContentLoaded', () => {
         statusSource.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
+                if (data.event === 'config_reload') {
+                    fetchConfig();
+                    return;
+                }
                 if (data.services !== undefined) {
                     updateStatusIndicators(data.services);
                     if (data.widgets) {
@@ -1597,7 +1604,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    window.applySearchFilter = () => {
+    let listLayoutTimeout = null;
+
+    const applySearchFilter = () => {
         const term = currentSearchTerm;
         let visibleCount = 0;
         
@@ -1614,38 +1623,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (!term || text.includes(term) || category.includes(term)) {
-                if (card.classList.contains('search-hidden') || card.style.display === 'none') {
-                    card.style.display = '';
+                if (card.classList.contains('search-hidden')) {
                     card.classList.remove('search-hidden');
-                    
-                    if (card.classList.contains('list-row')) {
-                        Array.from(card.children).forEach(child => {
-                            child.style.animation = 'none';
-                            void child.offsetWidth;
-                            child.style.animation = 'simple-fade-in 0.3s forwards';
-                        });
-                    } else {
-                        card.style.animation = 'none';
-                        void card.offsetWidth;
-                        card.style.animation = 'simple-fade-in 0.3s forwards';
-                    }
+                    card.style.display = '';
                 }
                 visibleCount++;
             } else {
                 if (!card.classList.contains('search-hidden')) {
-                    if (card.classList.contains('list-row')) {
-                        Array.from(card.children).forEach(child => {
-                            child.style.animation = 'fade-out-shrink 0.3s forwards';
-                        });
-                    } else {
-                        card.style.animation = 'fade-out-shrink 0.3s forwards';
-                    }
                     card.classList.add('search-hidden');
-                    setTimeout(() => {
-                        if (card.classList.contains('search-hidden')) {
-                            card.style.display = 'none';
-                        }
-                    }, 300);
+                    card.style.display = 'none';
                 }
             }
         });
@@ -1692,11 +1678,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         
                         interleaved.forEach(row => {
-                            Array.from(row.children).forEach(child => {
-                                if (child.style.animation.includes('simple-fade-in')) {
-                                    child.style.animation = 'none';
-                                }
-                            });
                             table.appendChild(row);
                         });
                     }
@@ -1704,32 +1685,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof checkUrlVisibility === 'function') checkUrlVisibility();
             };
             evaluateLayout(false);
-            clearTimeout(window.listLayoutTimeout);
-            window.listLayoutTimeout = setTimeout(() => evaluateLayout(true), 320);
+            clearTimeout(listLayoutTimeout);
+            listLayoutTimeout = setTimeout(() => evaluateLayout(true), 320);
         }
         
         document.querySelectorAll('.group').forEach(group => {
             const visibleCards = Array.from(group.querySelectorAll('.service-card')).filter(c => !c.classList.contains('search-hidden'));
             if (visibleCards.length > 0 || !term) {
-                if (group.classList.contains('search-hidden') || group.style.display === 'none') {
-                    group.style.display = '';
+                if (group.classList.contains('search-hidden')) {
                     group.classList.remove('search-hidden');
-                    group.style.animation = 'none';
-                    void group.offsetWidth;
-                    group.style.animation = 'simple-fade-in 0.3s forwards';
+                    group.style.display = '';
                 }
             } else {
                 if (!group.classList.contains('search-hidden')) {
-                    group.style.animation = 'fade-out-shrink 0.3s forwards';
                     group.classList.add('search-hidden');
-                    setTimeout(() => {
-                        if (group.classList.contains('search-hidden')) {
-                            group.style.display = 'none';
-                        }
-                    }, 300);
+                    group.style.display = 'none';
                 }
             }
         });
+
+        window.applySearchFilter = applySearchFilter;
 
         let noRes = document.getElementById('no-results-msg');
         if (visibleCount === 0 && term) {

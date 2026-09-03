@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -165,13 +166,47 @@ type StreamPayload struct {
 	Widgets  map[string]WidgetData    `json:"widgets,omitempty"`
 }
 
+type ClientHub struct {
+	mu      sync.RWMutex
+	clients map[chan string]struct{}
+}
+
+func newClientHub() *ClientHub {
+	return &ClientHub{
+		clients: make(map[chan string]struct{}),
+	}
+}
+
+func (h *ClientHub) Register(ch chan string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.clients[ch] = struct{}{}
+}
+
+func (h *ClientHub) Unregister(ch chan string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	delete(h.clients, ch)
+}
+
+func (h *ClientHub) Broadcast(msg string) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for ch := range h.clients {
+		select {
+		case ch <- msg:
+		default:
+		}
+	}
+}
+
 var (
-	configCache   atomic.Pointer[Config]
-	statusCache   atomic.Pointer[map[string]ServiceStatus]
-	widgetsCache  atomic.Pointer[map[string]WidgetData]
-	lastModTime   atomic.Int64 // UnixNano
-	configPath    = "data/config.yaml"
-	statusClients sync.Map // map[chan string]bool
+	configCache  atomic.Pointer[Config]
+	statusCache  atomic.Pointer[map[string]ServiceStatus]
+	widgetsCache atomic.Pointer[map[string]WidgetData]
+	lastModTime  atomic.Int64 // UnixNano
+	configPath   = "data/config.yaml"
+	clientHub    = newClientHub()
 
 	globalClient = &http.Client{Timeout: 3 * time.Second}
 	widgetClient = &http.Client{Timeout: 5 * time.Second}
@@ -195,12 +230,11 @@ var (
 
 func initStaticFiles() {
 	versionStr := strings.TrimSpace(string(versionData))
-	if versionStr != "" {
-		indexStr := strings.ReplaceAll(string(rawIndexHTML), "{{VERSION}}", versionStr)
-		indexHTML = []byte(indexStr)
-	} else {
-		indexHTML = rawIndexHTML
+	if versionStr == "" {
+		versionStr = "dev"
 	}
+	indexStr := strings.ReplaceAll(string(rawIndexHTML), "{{VERSION}}", versionStr)
+	indexHTML = []byte(indexStr)
 }
 
 func handleMemFile(content []byte, contentType string) http.HandlerFunc {
@@ -333,6 +367,11 @@ func reloadConfigIfModified() {
 		configCache.Store(&newConfig)
 		lastModTime.Store(modTime)
 		log.Println("Config reloaded")
+		clientHub.Broadcast(`{"event":"config_reload"}`)
+		go func() {
+			checkHealth()
+			broadcastStatus()
+		}()
 	}
 }
 
@@ -440,6 +479,7 @@ func checkHealth() {
 					if resp.StatusCode < 500 {
 						isUp = true
 					}
+					io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
 					resp.Body.Close()
 					if cfg.ShowPing {
 						latencyMs = int(time.Since(start).Milliseconds())
@@ -543,26 +583,13 @@ func getCPUUsage() int {
 		return 0
 	}
 
-	var user, nice, system, idle, iowait, irq, softirq, steal float64
-	fmt.Sscanf(fields[1], "%f", &user)
-	fmt.Sscanf(fields[2], "%f", &nice)
-	fmt.Sscanf(fields[3], "%f", &system)
-	fmt.Sscanf(fields[4], "%f", &idle)
-	if len(fields) > 5 {
-		fmt.Sscanf(fields[5], "%f", &iowait)
-	}
-	if len(fields) > 6 {
-		fmt.Sscanf(fields[6], "%f", &irq)
-	}
-	if len(fields) > 7 {
-		fmt.Sscanf(fields[7], "%f", &softirq)
-	}
-	if len(fields) > 8 {
-		fmt.Sscanf(fields[8], "%f", &steal)
+	var vals [8]float64
+	for i := 0; i < 8 && i+1 < len(fields); i++ {
+		vals[i], _ = strconv.ParseFloat(fields[i+1], 64)
 	}
 
-	total := user + nice + system + idle + iowait + irq + softirq + steal
-	idleTotal := idle + iowait
+	total := vals[0] + vals[1] + vals[2] + vals[3] + vals[4] + vals[5] + vals[6] + vals[7]
+	idleTotal := vals[3] + vals[4]
 
 	if lastCPUTotal == 0 {
 		lastCPUTotal = total
@@ -655,9 +682,10 @@ func getUptime() string {
 }
 
 func startHealthChecker() {
-	checkHealth()
 	ticker := time.NewTicker(60 * time.Second)
 	go func() {
+		checkHealth()
+		broadcastStatus()
 		for range ticker.C {
 			checkHealth()
 			broadcastStatus()
@@ -677,15 +705,7 @@ func broadcastStatus() {
 		payload.Widgets = *wStat
 	}
 	data, _ := json.Marshal(payload)
-	msg := string(data)
-	statusClients.Range(func(key, value interface{}) bool {
-		ch := key.(chan string)
-		select {
-		case ch <- msg:
-		default:
-		}
-		return true
-	})
+	clientHub.Broadcast(string(data))
 }
 
 func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
@@ -702,10 +722,10 @@ func statusStreamHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msgChan := make(chan string, 5)
-	statusClients.Store(msgChan, true)
+	clientHub.Register(msgChan)
 
 	defer func() {
-		statusClients.Delete(msgChan)
+		clientHub.Unregister(msgChan)
 		close(msgChan)
 	}()
 

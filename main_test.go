@@ -85,3 +85,31 @@ func TestLegacyNestedWidgetNormalisation(t *testing.T) {
 		t.Errorf("Expected widget Auth key 'secret123', got '%s'", w.Auth["key"])
 	}
 }
+
+func TestClientHubConcurrency(t *testing.T) {
+	hub := newClientHub()
+	var wg sync.WaitGroup
+
+	// Concurrently register, broadcast, and unregister
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			ch := make(chan string, 5)
+			hub.Register(ch)
+			hub.Broadcast("ping")
+			hub.Unregister(ch)
+			close(ch)
+		}()
+	}
+
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			hub.Broadcast("status-update")
+		}()
+	}
+
+	wg.Wait()
+}
