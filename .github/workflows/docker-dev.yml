@@ -58,18 +58,20 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: tailscale/github-action@v2
         with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
 
       - name: Redeploy Portainer Stack (Native cURL)
         if: github.event_name != 'pull_request'
         run: |
           echo "Fetching current stack state..."
           # 1. Fetch env vars from stack info
-          STACK_INFO=$(curl -s -k -H "X-API-Key: ${{ secrets.PORTAINER_TOKEN }}" "${{ secrets.PORTAINER_URL }}/api/stacks/33")
+          STACK_INFO=$(curl -sS -k --connect-timeout 10 --max-time 60 --retry 3 --retry-delay 5 -H "X-API-Key: ${{ secrets.PORTAINER_TOKEN }}" "${{ secrets.PORTAINER_URL }}/api/stacks/33")
           ENV_VARS=$(echo "$STACK_INFO" | jq -c '.Env // []')
 
           # 2. Fetch the current stack file content
-          STACK_FILE=$(curl -s -k -H "X-API-Key: ${{ secrets.PORTAINER_TOKEN }}" "${{ secrets.PORTAINER_URL }}/api/stacks/33/file")
+          STACK_FILE=$(curl -sS -k --connect-timeout 10 --max-time 60 --retry 3 --retry-delay 5 -H "X-API-Key: ${{ secrets.PORTAINER_TOKEN }}" "${{ secrets.PORTAINER_URL }}/api/stacks/33/file")
           STACK_FILE_CONTENT=$(echo "$STACK_FILE" | jq -r '.StackFileContent')
 
           echo "Triggering redeploy..."
@@ -79,7 +81,7 @@ jobs:
             --argjson env "$ENV_VARS" \
             '{stackFileContent: $content, env: $env, prune: true, pullImage: true}')
 
-          RESPONSE=$(curl -s -k -w "\nHTTP_STATUS:%{http_code}" -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/33?endpointId=3" \
+          RESPONSE=$(curl -sS -k --connect-timeout 10 --max-time 120 --retry 3 --retry-delay 5 -w "\nHTTP_STATUS:%{http_code}" -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/33?endpointId=3" \
             -H "X-API-Key: ${{ secrets.PORTAINER_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
