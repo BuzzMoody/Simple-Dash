@@ -49,6 +49,8 @@ docker run -d \
   ghcr.io/buzzmoody/simple-dash:latest
 ```
 
+> **Tip:** Use `ghcr.io/buzzmoody/simple-dash:dev` to run the cutting-edge development build featuring native ES modules, self-describing widgets, and decoupled SSE streaming.
+
 #### Option B: Docker Compose
 
 Create a `docker-compose.yml` file:
@@ -243,9 +245,9 @@ services:
 
 ---
 
-### Migration Guide (v0.1.x to Current)
+### Migration Guide & Deprecations
 
-Simple Dash has unified all widget configuration into a top-level `widgets:` block. Legacy nested `widget:` configurations under `services:` and the legacy `show_sys_metrics` global toggle are now deprecated.
+Simple Dash has unified all widget configuration into a top-level `widgets:` block. Legacy nested `widget:` configurations under `services:` and the legacy `show_sys_metrics` global toggle are deprecated and tracked in [`DEPRECATED.md`](DEPRECATED.md).
 
 #### Backward Compatibility Notice
 Existing configurations with nested service widgets or `show_sys_metrics` continue to work automatically without crashing. Simple Dash normalises them at boot time into top-level widgets while logging deprecation notices to help you migrate.

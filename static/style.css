@@ -1,3 +1,6 @@
+@layer theme, reset, base, components, layouts, utilities;
+
+@layer theme {
 :root {
     --bg-color: #f4f4f5;
     --text-color: #27272a;
@@ -60,7 +63,9 @@ body:not(.dark-mode) .dark-theme-logo {
     opacity: 0;
     pointer-events: none;
 }
+} /* end @layer theme */
 
+@layer reset {
 * {
     box-sizing: border-box;
     user-select: none;
@@ -78,7 +83,9 @@ input, textarea {
 button, input, select, textarea {
     font-family: inherit;
 }
+} /* end @layer reset */
 
+@layer base {
 body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
@@ -133,7 +140,9 @@ body::before {
     min-height: 100dvh;
     padding-bottom: 6rem;
 }
+} /* end @layer base */
 
+@layer components {
 header {
     margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
@@ -1632,4 +1641,4 @@ body.dark-mode .changelog-popup {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 1; }
 }
-
+} /* end @layer components */

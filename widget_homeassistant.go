@@ -8,7 +8,7 @@ import (
 
 type HomeAssistantWidget struct{}
 
-func (w *HomeAssistantWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *HomeAssistantWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
@@ -32,7 +32,13 @@ func (w *HomeAssistantWidget) Fetch(ctx context.Context, client *http.Client, cf
 		}
 	}
 
-	return WidgetData{
-		"State": fmt.Sprintf("%s%s", state.State, unit),
+	return []WidgetMetric{
+		{
+			Key:       "state",
+			Label:     "State",
+			Value:     state.State,
+			Formatted: fmt.Sprintf("%s%s", state.State, unit),
+			Icon:      "layers",
+		},
 	}, nil
 }

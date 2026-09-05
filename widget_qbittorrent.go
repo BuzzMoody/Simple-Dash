@@ -8,7 +8,7 @@ import (
 
 type QbittorrentWidget struct{}
 
-func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	var data struct {
 		ServerState struct {
 			DlInfoSpeed int `json:"dl_info_speed"`
@@ -30,9 +30,30 @@ func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg 
 		return fmt.Sprintf("%.1f KB/s", kb)
 	}
 
-	return WidgetData{
-		"Down":   formatSpeed(data.ServerState.DlInfoSpeed),
-		"Up":     formatSpeed(data.ServerState.UpInfoSpeed),
-		"Active": fmt.Sprintf("%d", len(data.Torrents)),
+	dlMB := float64(data.ServerState.DlInfoSpeed) / 1024 / 1024
+	upMB := float64(data.ServerState.UpInfoSpeed) / 1024 / 1024
+
+	return []WidgetMetric{
+		{
+			Key:       "download",
+			Label:     "Down",
+			Value:     dlMB,
+			Formatted: formatSpeed(data.ServerState.DlInfoSpeed),
+			Icon:      "download",
+		},
+		{
+			Key:       "upload",
+			Label:     "Up",
+			Value:     upMB,
+			Formatted: formatSpeed(data.ServerState.UpInfoSpeed),
+			Icon:      "upload",
+		},
+		{
+			Key:       "torrents",
+			Label:     "Torrents",
+			Value:     len(data.Torrents),
+			Formatted: fmt.Sprintf("%d", len(data.Torrents)),
+			Icon:      "file-text",
+		},
 	}, nil
 }

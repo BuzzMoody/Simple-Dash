@@ -7,8 +7,6 @@ favicon: "favicon.svg"
 new_tabs: true
 show_only_down: false
 show_ping: true
-# Note: 'show_sys_metrics' is deprecated; configure a 'sys_metrics' widget under the 'widgets' block below.
-# show_sys_metrics: true
 show_weather: false
 weather_animate: true
 # weather_coords: "-37.81826872134725, 144.96705907138596"

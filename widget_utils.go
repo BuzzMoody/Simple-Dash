@@ -8,6 +8,47 @@ import (
 	"net/http"
 )
 
+// MetricThreshold defines thresholds for colour transitions.
+type MetricThreshold struct {
+	Warning  float64 `json:"warning,omitempty"`
+	Danger   float64 `json:"danger,omitempty"`
+	Inverted bool    `json:"inverted,omitempty"` // true if lower numbers are worse (e.g. download speed)
+}
+
+// WidgetMetric represents a self-describing metric returned by a widget parser.
+type WidgetMetric struct {
+	Key       string           `json:"key"`
+	Label     string           `json:"label"`
+	Value     interface{}      `json:"value"`
+	Formatted string           `json:"formatted"`
+	Unit      string           `json:"unit,omitempty"`
+	Icon      string           `json:"icon,omitempty"`
+	Threshold *MetricThreshold `json:"threshold,omitempty"`
+}
+
+// WidgetResult contains the ordered metrics for a widget.
+type WidgetResult struct {
+	Metrics []WidgetMetric `json:"metrics"`
+}
+
+// WidgetParser is the interface implemented by all service widgets.
+type WidgetParser interface {
+	Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error)
+}
+
+var widgetRegistry = map[string]WidgetParser{
+	"pihole":        &PiholeWidget{},
+	"proxmox":       &ProxmoxWidget{},
+	"portainer":     &PortainerWidget{},
+	"qbittorrent":   &QbittorrentWidget{},
+	"jellyfin":      &JellyfinWidget{},
+	"speedtest":     &SpeedtestWidget{},
+	"homeassistant": &HomeAssistantWidget{},
+	"blocky":        &BlockyWidget{},
+	"sys_metrics":   &SysMetricsWidget{},
+	"system":        &SysMetricsWidget{},
+}
+
 func widgetFetch(ctx context.Context, client *http.Client, method, url string, headers map[string]string, out interface{}) error {
 	if url == "" {
 		return fmt.Errorf("widget requires a url")

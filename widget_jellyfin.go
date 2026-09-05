@@ -8,7 +8,7 @@ import (
 
 type JellyfinWidget struct{}
 
-func (w *JellyfinWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *JellyfinWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	headers := make(map[string]string)
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
 		headers["X-MediaBrowser-Token"] = key
@@ -20,7 +20,7 @@ func (w *JellyfinWidget) Fetch(ctx context.Context, client *http.Client, cfg *Wi
 		if err.Error() == "widget requires a url" {
 			return nil, fmt.Errorf("jellyfin widget requires a url")
 		}
-		if err.Error() == "api returned status 400" || err.Error()[:19] == "api returned status" {
+		if len(err.Error()) >= 19 && (err.Error() == "api returned status 400" || err.Error()[:19] == "api returned status") {
 			return nil, fmt.Errorf("jellyfin %v", err)
 		}
 		return nil, err
@@ -33,7 +33,13 @@ func (w *JellyfinWidget) Fetch(ctx context.Context, client *http.Client, cfg *Wi
 		}
 	}
 
-	return WidgetData{
-		"Active Streams": activeStreams,
+	return []WidgetMetric{
+		{
+			Key:       "streams",
+			Label:     "Active Streams",
+			Value:     activeStreams,
+			Formatted: fmt.Sprintf("%d", activeStreams),
+			Icon:      "play",
+		},
 	}, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"sync"
 	"testing"
 )
@@ -20,7 +21,17 @@ func TestGetSysMetricsRace(t *testing.T) {
 }
 
 func TestApplyDefaults(t *testing.T) {
-	cfg := &Config{}
+	cfg := &Config{
+		Widgets: []StandaloneWidgetConfig{
+			{
+				Name: "Test Widget",
+				Type: "sys_metrics",
+			},
+			{
+				Type: "pihole",
+			},
+		},
+	}
 	applyDefaults(cfg)
 
 	if cfg.Header != "Simple Dash" {
@@ -32,57 +43,44 @@ func TestApplyDefaults(t *testing.T) {
 	if cfg.NewTabs == nil || *cfg.NewTabs != true {
 		t.Errorf("Expected NewTabs to be true")
 	}
-	if cfg.ShowSysMetrics == nil || *cfg.ShowSysMetrics != true {
-		t.Errorf("Expected ShowSysMetrics to be true")
+	if len(cfg.Widgets) != 2 {
+		t.Fatalf("Expected 2 widgets, got %d", len(cfg.Widgets))
 	}
-	if len(cfg.Widgets) != 1 || cfg.Widgets[0].ID != "w-system" {
-		t.Errorf("Expected default w-system widget to be synthesised, got %+v", cfg.Widgets)
+	if cfg.Widgets[0].ID != "w-test-widget" {
+		t.Errorf("Expected widget ID 'w-test-widget', got '%s'", cfg.Widgets[0].ID)
+	}
+	if cfg.Widgets[1].ID != "w-pihole" {
+		t.Errorf("Expected widget ID 'w-pihole', got '%s'", cfg.Widgets[1].ID)
 	}
 }
 
-func TestLegacyNestedWidgetNormalisation(t *testing.T) {
-	showSys := false
-	cfg := &Config{
-		ShowSysMetrics: &showSys,
-		Services: []Service{
-			{
-				Name: "Pi-Hole",
-				URL:  "http://192.168.1.10/admin",
-				Logo: "pi-hole.svg",
-				Widget: &WidgetConfig{
-					Type: "pihole",
-					URL:  "http://192.168.1.10/admin/api.php",
-					Auth: map[string]string{"key": "secret123"},
-				},
-			},
-		},
+func TestSysMetricsWidgetSelfDescribing(t *testing.T) {
+	w := &SysMetricsWidget{}
+	metrics, err := w.Fetch(context.Background(), globalClient, &StandaloneWidgetConfig{Type: "sys_metrics"})
+	if err != nil {
+		t.Fatalf("SysMetricsWidget.Fetch failed: %v", err)
 	}
 
-	applyDefaults(cfg)
-
-	if cfg.Services[0].Widget != nil {
-		t.Errorf("Expected service.Widget to be cleared after normalisation, got %+v", cfg.Services[0].Widget)
+	if len(metrics) != 3 {
+		t.Fatalf("Expected 3 metrics, got %d", len(metrics))
 	}
 
-	if len(cfg.Widgets) != 1 {
-		t.Fatalf("Expected 1 synthesised widget, got %d", len(cfg.Widgets))
+	keys := map[string]bool{}
+	for _, m := range metrics {
+		keys[m.Key] = true
+		if m.Label == "" {
+			t.Errorf("Metric %s has empty label", m.Key)
+		}
+		if m.Formatted == "" {
+			t.Errorf("Metric %s has empty formatted value", m.Key)
+		}
+		if m.Icon == "" {
+			t.Errorf("Metric %s has empty icon", m.Key)
+		}
 	}
 
-	w := cfg.Widgets[0]
-	if w.ID != "w-pi-hole" {
-		t.Errorf("Expected widget ID 'w-pi-hole', got '%s'", w.ID)
-	}
-	if w.Type != "pihole" {
-		t.Errorf("Expected widget type 'pihole', got '%s'", w.Type)
-	}
-	if w.URL != "http://192.168.1.10/admin/api.php" {
-		t.Errorf("Expected widget URL 'http://192.168.1.10/admin/api.php', got '%s'", w.URL)
-	}
-	if w.Logo != "pi-hole.svg" {
-		t.Errorf("Expected widget Logo 'pi-hole.svg', got '%s'", w.Logo)
-	}
-	if w.Auth["key"] != "secret123" {
-		t.Errorf("Expected widget Auth key 'secret123', got '%s'", w.Auth["key"])
+	if !keys["cpu"] || !keys["ram"] || !keys["uptime"] {
+		t.Errorf("Missing expected metric keys in SysMetrics: %+v", keys)
 	}
 }
 
@@ -90,14 +88,13 @@ func TestClientHubConcurrency(t *testing.T) {
 	hub := newClientHub()
 	var wg sync.WaitGroup
 
-	// Concurrently register, broadcast, and unregister
 	for i := 0; i < 20; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			ch := make(chan string, 5)
+			ch := make(chan SSEMessage, 5)
 			hub.Register(ch)
-			hub.Broadcast("ping")
+			hub.BroadcastEvent("ping", "hello")
 			hub.Unregister(ch)
 			close(ch)
 		}()
@@ -107,7 +104,7 @@ func TestClientHubConcurrency(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			hub.Broadcast("status-update")
+			hub.BroadcastEvent("services", `{"test": true}`)
 		}()
 	}
 

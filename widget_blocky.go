@@ -11,7 +11,7 @@ import (
 
 type BlockyWidget struct{}
 
-func (w *BlockyWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *BlockyWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	var body string
 	if err := widgetFetch(ctx, client, "GET", cfg.URL, nil, &body); err != nil {
 		return nil, err
@@ -45,9 +45,28 @@ func (w *BlockyWidget) Fetch(ctx context.Context, client *http.Client, cfg *Widg
 		percentage = (blockedQueries / totalQueries) * 100
 	}
 
-	return WidgetData{
-		"Queries": int(totalQueries),
-		"Blocked": int(blockedQueries),
-		"Percent": fmt.Sprintf("%.1f%%", percentage),
+	return []WidgetMetric{
+		{
+			Key:       "queries",
+			Label:     "Queries",
+			Value:     int(totalQueries),
+			Formatted: fmt.Sprintf("%d", int(totalQueries)),
+			Icon:      "help-circle",
+		},
+		{
+			Key:       "blocked",
+			Label:     "Blocked",
+			Value:     int(blockedQueries),
+			Formatted: fmt.Sprintf("%d", int(blockedQueries)),
+			Icon:      "shield",
+		},
+		{
+			Key:       "percent",
+			Label:     "Rate",
+			Value:     percentage,
+			Formatted: fmt.Sprintf("%.1f%%", percentage),
+			Unit:      "%",
+			Icon:      "percent",
+		},
 	}, nil
 }

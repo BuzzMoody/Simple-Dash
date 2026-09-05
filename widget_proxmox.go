@@ -8,7 +8,7 @@ import (
 
 type ProxmoxWidget struct{}
 
-func (w *ProxmoxWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *ProxmoxWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	headers := make(map[string]string)
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
 		headers["Authorization"] = "PVEAPIToken=" + key
@@ -37,8 +37,24 @@ func (w *ProxmoxWidget) Fetch(ctx context.Context, client *http.Client, cfg *Wid
 		ramPercent = (result.Data.Mem / result.Data.MaxMem) * 100
 	}
 
-	return WidgetData{
-		"CPU": fmt.Sprintf("%.1f%%", cpuPercent),
-		"RAM": fmt.Sprintf("%.1f%%", ramPercent),
+	return []WidgetMetric{
+		{
+			Key:       "cpu",
+			Label:     "CPU",
+			Value:     cpuPercent,
+			Formatted: fmt.Sprintf("%.1f%%", cpuPercent),
+			Unit:      "%",
+			Icon:      "cpu",
+			Threshold: &MetricThreshold{Warning: 75, Danger: 90},
+		},
+		{
+			Key:       "ram",
+			Label:     "RAM",
+			Value:     ramPercent,
+			Formatted: fmt.Sprintf("%.1f%%", ramPercent),
+			Unit:      "%",
+			Icon:      "ram",
+			Threshold: &MetricThreshold{Warning: 80, Danger: 95},
+		},
 	}, nil
 }

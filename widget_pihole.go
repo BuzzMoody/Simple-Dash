@@ -15,7 +15,7 @@ type piholeAPIResponse struct {
 
 type PiholeWidget struct{}
 
-func (p *PiholeWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (p *PiholeWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	if cfg.URL == "" {
 		return nil, fmt.Errorf("pihole widget requires a url")
 	}
@@ -39,9 +39,28 @@ func (p *PiholeWidget) Fetch(ctx context.Context, client *http.Client, cfg *Widg
 		return nil, err
 	}
 
-	return WidgetData{
-		"blocked":    data.AdsBlockedToday,
-		"percentage": data.AdsPercentage,
-		"clients":    data.UniqueClients,
+	return []WidgetMetric{
+		{
+			Key:       "blocked",
+			Label:     "Blocked",
+			Value:     data.AdsBlockedToday,
+			Formatted: fmt.Sprintf("%d", data.AdsBlockedToday),
+			Icon:      "shield",
+		},
+		{
+			Key:       "percentage",
+			Label:     "Percentage",
+			Value:     data.AdsPercentage,
+			Formatted: fmt.Sprintf("%.1f%%", data.AdsPercentage),
+			Unit:      "%",
+			Icon:      "percent",
+		},
+		{
+			Key:       "clients",
+			Label:     "Clients",
+			Value:     data.UniqueClients,
+			Formatted: fmt.Sprintf("%d", data.UniqueClients),
+			Icon:      "users",
+		},
 	}, nil
 }

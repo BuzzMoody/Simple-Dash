@@ -8,7 +8,7 @@ import (
 
 type SpeedtestWidget struct{}
 
-func (w *SpeedtestWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *SpeedtestWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	headers := map[string]string{
 		"Accept": "application/json",
 	}
@@ -28,9 +28,31 @@ func (w *SpeedtestWidget) Fetch(ctx context.Context, client *http.Client, cfg *W
 		return nil, err
 	}
 
-	return WidgetData{
-		"Ping":     fmt.Sprintf("%.0f ms", result.Data.Ping),
-		"Download": fmt.Sprintf("%.0f Mbps", result.Data.Download),
-		"Upload":   fmt.Sprintf("%.0f Mbps", result.Data.Upload),
+	return []WidgetMetric{
+		{
+			Key:       "ping",
+			Label:     "Ping",
+			Value:     result.Data.Ping,
+			Formatted: fmt.Sprintf("%.0f ms", result.Data.Ping),
+			Unit:      "ms",
+			Icon:      "activity",
+			Threshold: &MetricThreshold{Warning: 50, Danger: 100},
+		},
+		{
+			Key:       "download",
+			Label:     "Down",
+			Value:     result.Data.Download,
+			Formatted: fmt.Sprintf("%.0f Mbps", result.Data.Download),
+			Unit:      "Mbps",
+			Icon:      "download",
+		},
+		{
+			Key:       "upload",
+			Label:     "Up",
+			Value:     result.Data.Upload,
+			Formatted: fmt.Sprintf("%.0f Mbps", result.Data.Upload),
+			Unit:      "Mbps",
+			Icon:      "upload",
+		},
 	}, nil
 }

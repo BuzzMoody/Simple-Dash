@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
@@ -11,7 +12,7 @@ type portainerContainer struct {
 	State string `json:"State"`
 }
 
-func (w *PortainerWidget) Fetch(ctx context.Context, client *http.Client, cfg *WidgetConfig) (WidgetData, error) {
+func (w *PortainerWidget) Fetch(ctx context.Context, client *http.Client, cfg *StandaloneWidgetConfig) ([]WidgetMetric, error) {
 	headers := make(map[string]string)
 	if key, ok := cfg.Auth["key"]; ok && key != "" {
 		headers["X-API-Key"] = key
@@ -33,8 +34,21 @@ func (w *PortainerWidget) Fetch(ctx context.Context, client *http.Client, cfg *W
 		}
 	}
 
-	return WidgetData{
-		"Running": running,
-		"Stopped": stopped,
+	return []WidgetMetric{
+		{
+			Key:       "running",
+			Label:     "Running",
+			Value:     running,
+			Formatted: fmt.Sprintf("%d", running),
+			Icon:      "activity",
+		},
+		{
+			Key:       "stopped",
+			Label:     "Stopped",
+			Value:     stopped,
+			Formatted: fmt.Sprintf("%d", stopped),
+			Icon:      "pause-circle",
+			Threshold: &MetricThreshold{Warning: 1, Danger: 5},
+		},
 	}, nil
 }

@@ -21,8 +21,11 @@ Whenever a feature is added or removed, ensure that all code relating to that fe
 ## 4. Keep Docs in Sync
 Every time you push a change to the repository, you MUST check that `README.md` and `data/config.example.yaml` are fully up-to-date with any new features added, or any features removed. Ensure all configuration options are beautifully documented with their defaults.
 
-## 5. Config Backward-Compatibility
-Users mount their own `config.yaml` and upgrade the container independently. Any new configuration field must have a safe default when absent. Renaming or removing a field must degrade gracefully with a logged warning; it must never cause a crash.
+## 5. Deprecations & DEPRECATED.md Tracking
+This branch maintains a cutting-edge schema without legacy baggage. Whenever any configuration key, widget property, or feature functionality is deprecated or superseded:
+* It MUST be documented in `DEPRECATED.md`.
+* The entry must explicitly record its identifier/name, the version in which it was deprecated, and a clear explanation of how the replacement functionality works (including YAML/JSON migration examples).
+* Legacy backward-compatibility shims are not preserved on the `dev` branch once superseded by modern architectures.
 
 # Stability & Testing
 
