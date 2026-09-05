@@ -7,15 +7,15 @@ export const initTheme = () => {
     const themeToggle = document.getElementById('theme-toggle');
     const isDark = state.theme !== 'light';
 
+    document.documentElement.classList.toggle('dark-mode', isDark);
+    document.body.classList.toggle('dark-mode', isDark);
     if (isDark) {
-        document.body.classList.add('dark-mode');
         if (themeToggle) {
             themeToggle.innerHTML = moonSVG;
             themeToggle.setAttribute('data-tooltip', 'Switch to Light Mode');
             themeToggle.setAttribute('aria-label', 'Switch to Light Mode');
         }
     } else {
-        document.body.classList.remove('dark-mode');
         if (themeToggle) {
             themeToggle.innerHTML = sunSVG;
             themeToggle.setAttribute('data-tooltip', 'Switch to Dark Mode');
@@ -31,6 +31,7 @@ export const initTheme = () => {
 
 export const toggleTheme = () => {
     const isDark = document.body.classList.toggle('dark-mode');
+    document.documentElement.classList.toggle('dark-mode', isDark);
     const newTheme = isDark ? 'dark' : 'light';
     localStorage.setItem('simpledash-theme', newTheme);
     setState({ theme: newTheme });
