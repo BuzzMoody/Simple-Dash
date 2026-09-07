@@ -79,6 +79,17 @@ export const updateTooltipContent = (tooltipEl, name) => {
             img.className = 'tooltip-logo';
             img.src = '/logos/' + encodeURIComponent(logoSrc);
             img.alt = '';
+            img.onerror = () => {
+                if (!tooltipEl.contains(img)) return;
+                img.remove();
+                const fallbackIcon = source.icon || (matchedService ? '🔗' : '');
+                if (fallbackIcon && !tooltipEl.querySelector('.tooltip-icon')) {
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'tooltip-icon';
+                    iconSpan.textContent = fallbackIcon;
+                    tooltipEl.insertBefore(iconSpan, textSpan);
+                }
+            };
             tooltipEl.appendChild(img);
         } else if (source.icon) {
             const iconSpan = document.createElement('span');

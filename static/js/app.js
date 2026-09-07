@@ -96,7 +96,7 @@ const renderButtons = (config) => {
 
             const btnLight = btn.logo_light || btn.logo;
             const btnDark = btn.logo_dark || btn.logo;
-            const logo = createThemedLogo(btnLight, btnDark, btn.name, 'btn-logo', 'btn-logo-wrapper');
+            const logo = createThemedLogo(btnLight, btnDark, btn.name, 'btn-logo', 'btn-logo-wrapper', btn.icon, 'margin-right: 0.3rem;');
             if (logo) {
                 el.appendChild(logo);
             } else if (btn.icon) {

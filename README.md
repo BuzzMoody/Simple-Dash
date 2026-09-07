@@ -170,7 +170,7 @@ buttons:
 **Button Options:**
 - `name`: *(String)* The title of the button.
 - `url`: *(String)* The destination link.
-- `icon`: *(String)* A fallback text emoji.
+- `icon`: *(String)* A fallback text emoji if the logo cannot be loaded or is omitted.
 - `logo`: *(String)* The filename of an image stored inside your `logos/` directory.
 - `logo_light` / `logo_dark`: *(String)* Optional alternative logos that dynamically swap depending on the user's active theme.
 

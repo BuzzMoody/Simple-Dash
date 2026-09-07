@@ -3,7 +3,16 @@ import { applySearchFilter } from './search.js';
 
 export const serviceCardsMap = new Map();
 
-export const createThemedLogo = (lightSrc, darkSrc, altName = '', className = '', wrapperClass = null) => {
+export const createThemedLogo = (lightSrc, darkSrc, altName = '', className = '', wrapperClass = null, fallbackEmoji = '', iconStyle = '') => {
+    const createFallbackSpan = (themeClass = '') => {
+        if (!fallbackEmoji) return null;
+        const span = document.createElement('span');
+        if (themeClass) span.className = themeClass;
+        if (iconStyle && (!wrapperClass || !themeClass)) span.style.cssText = iconStyle;
+        span.textContent = fallbackEmoji;
+        return span;
+    };
+
     if (lightSrc && darkSrc && lightSrc !== darkSrc) {
         const container = wrapperClass ? document.createElement('span') : document.createDocumentFragment();
         if (wrapperClass) container.className = wrapperClass;
@@ -13,14 +22,36 @@ export const createThemedLogo = (lightSrc, darkSrc, altName = '', className = ''
         if (altName) imgLight.alt = altName;
         imgLight.loading = 'lazy';
         imgLight.className = className ? `${className} light-theme-logo` : 'light-theme-logo';
-        imgLight.onerror = () => { imgLight.style.display = 'none'; };
+        imgLight.onerror = () => {
+            const span = createFallbackSpan('light-theme-logo');
+            if (span && imgLight.parentElement) {
+                imgLight.replaceWith(span);
+            } else {
+                const parent = imgLight.parentElement;
+                imgLight.remove();
+                if (wrapperClass && parent && parent.children.length === 0) {
+                    parent.remove();
+                }
+            }
+        };
 
         const imgDark = document.createElement('img');
         imgDark.src = `logos/${darkSrc}`;
         if (altName) imgDark.alt = altName;
         imgDark.loading = 'lazy';
         imgDark.className = className ? `${className} dark-theme-logo` : 'dark-theme-logo';
-        imgDark.onerror = () => { imgDark.style.display = 'none'; };
+        imgDark.onerror = () => {
+            const span = createFallbackSpan('dark-theme-logo');
+            if (span && imgDark.parentElement) {
+                imgDark.replaceWith(span);
+            } else {
+                const parent = imgDark.parentElement;
+                imgDark.remove();
+                if (wrapperClass && parent && parent.children.length === 0) {
+                    parent.remove();
+                }
+            }
+        };
 
         container.appendChild(imgLight);
         container.appendChild(imgDark);
@@ -31,7 +62,14 @@ export const createThemedLogo = (lightSrc, darkSrc, altName = '', className = ''
         if (altName) img.alt = altName;
         img.loading = 'lazy';
         if (className) img.className = className;
-        img.onerror = () => { img.style.display = 'none'; };
+        img.onerror = () => {
+            const span = createFallbackSpan();
+            if (span && img.parentElement) {
+                img.replaceWith(span);
+            } else {
+                img.remove();
+            }
+        };
         return img;
     }
     return null;
@@ -102,11 +140,12 @@ export const createServiceCard = (service, groupKey) => {
 
     const sLight = service.logo_light || service.logo;
     const sDark = service.logo_dark || service.logo;
-    const logo = createThemedLogo(sLight, sDark, service.name);
+    const fallback = service.icon || '🔗';
+    const logo = createThemedLogo(sLight, sDark, service.name, '', null, fallback);
     if (logo) {
         iconContainer.appendChild(logo);
     } else {
-        iconContainer.textContent = service.icon || '🔗';
+        iconContainer.textContent = fallback;
     }
 
     const name = document.createElement('div');
@@ -380,13 +419,14 @@ export const renderServices = (services) => {
                 }
                 const sLight = service.logo_light || service.logo;
                 const sDark = service.logo_dark || service.logo;
-                const logo = createThemedLogo(sLight, sDark, '', '');
+                const fallback = service.icon || '🌍';
+                const logo = createThemedLogo(sLight, sDark, '', '', null, fallback, 'font-size: 1.1em;');
                 if (logo) {
                     nameCol.appendChild(logo);
                 } else {
                     const iconSpan = document.createElement('span');
                     iconSpan.style.fontSize = '1.1em';
-                    iconSpan.textContent = service.icon || '🌍';
+                    iconSpan.textContent = fallback;
                     nameCol.appendChild(iconSpan);
                 }
 
