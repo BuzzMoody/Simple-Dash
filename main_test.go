@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"sync"
 	"testing"
 )
@@ -109,4 +110,33 @@ func TestClientHubConcurrency(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestCheckRedirectResilience(t *testing.T) {
+	// 1. Simulate an HTTPS request redirecting to an HTTP destination (scheme downgrade)
+	reqHTTPS, _ := http.NewRequest("GET", "https://example.com/app", nil)
+	reqHTTPTarget, _ := http.NewRequest("GET", "http://example.com/login", nil)
+	viaHTTPS := []*http.Request{reqHTTPS}
+
+	err := globalClient.CheckRedirect(reqHTTPTarget, viaHTTPS)
+	if err != http.ErrUseLastResponse {
+		t.Fatalf("Expected http.ErrUseLastResponse on HTTPS to HTTP scheme downgrade, got %v", err)
+	}
+
+	// 2. Simulate standard safe redirect (e.g. HTTPS to HTTPS)
+	reqHTTPSSafe, _ := http.NewRequest("GET", "https://example.com/login", nil)
+	err = globalClient.CheckRedirect(reqHTTPSSafe, viaHTTPS)
+	if err != nil {
+		t.Fatalf("Expected nil error on safe HTTPS to HTTPS redirect, got %v", err)
+	}
+
+	// 3. Simulate excessive redirect protection (>= 10 hops)
+	via10 := make([]*http.Request, 10)
+	for i := range via10 {
+		via10[i] = reqHTTPSSafe
+	}
+	err = globalClient.CheckRedirect(reqHTTPSSafe, via10)
+	if err != http.ErrUseLastResponse {
+		t.Fatalf("Expected http.ErrUseLastResponse on >=10 hops, got %v", err)
+	}
 }

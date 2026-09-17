@@ -12,7 +12,19 @@ import (
 )
 
 var (
-	globalClient = &http.Client{Timeout: 3 * time.Second}
+	globalClient = &http.Client{
+		Timeout: 3 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// Prevent HTTPS to HTTP scheme downgrades from following into closed or dead ports
+			if len(via) > 0 && via[0].URL.Scheme == "https" && req.URL.Scheme == "http" {
+				return http.ErrUseLastResponse
+			}
+			if len(via) >= 10 {
+				return http.ErrUseLastResponse
+			}
+			return nil
+		},
+	}
 	widgetClient = &http.Client{Timeout: 5 * time.Second}
 
 	statusCache  atomic.Pointer[map[string]ServiceStatus]
