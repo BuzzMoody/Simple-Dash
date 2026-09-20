@@ -46,7 +46,7 @@ func (w *PortainerWidget) Fetch(ctx context.Context, client *http.Client, cfg *S
 			Label:     "Stopped",
 			Value:     stopped,
 			Formatted: formatNumber(stopped),
-			Icon:      "pause-circle",
+			Icon:      "stop-circle",
 			Threshold: &MetricThreshold{Warning: 1, Danger: 5},
 		},
 	}, nil
