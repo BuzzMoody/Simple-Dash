@@ -199,20 +199,25 @@ widgets:
 - `logo_light` / `logo_dark`: *(String)* Optional theme-specific logos.
 - `auth`: *(Map)* API keys or credentials (hidden from browser SSE streams).
 - `settings`: *(Map)* Additional widget-specific configuration parameters.
+- `labels`: *(Map)* Optional customisation for individual metric labels, titles, and colours (also accepts `metrics:`).
+  - **Title Overrides**: Provide a custom string to override a label (e.g. `download: "Download"`), or specify `null` for **icon-only** mode (e.g. `uptime: null` or `torrents: { title: null }`).
+  - **Single Value Colours**: Set `colour: "primary"`, `"secondary"`, `"green"`, `"red"`, or `"yellow"`. Values smoothly roll with the slot-machine animation and a 50% white-tint flash. Omitted or invalid colours revert to the default text colour.
+  - **Stepped Threshold Colours**: Define `warning` and `danger` thresholds with an optional `default` colour (e.g. `warning: 10`, `danger: 25`, `default: "primary"`).
+  - **Custom Stepped Values**: Map numeric thresholds directly to colours (e.g. `50: "yellow"`, `150: "secondary"`, `300: "red"`) or provide an explicit `steps:` sequence.
 
-#### Supported Widgets & Requirements
+#### Supported Widgets & Metric Keys
 
-| Type | Data Displayed | `url` Endpoint Required | `auth.key` Required |
-|------|---------------|-------------------------|----------------------|
-| `sys_metrics` | CPU, RAM, Uptime | ❌ None (Local Host) | ❌ None |
-| `pihole` | Queries & Blocked % | `http://<ip>/admin/api.php` | ✅ Web Password Token |
-| `blocky` | Queries & Blocked % | `http://<ip>:4000/metrics` | ❌ None |
-| `proxmox` | CPU & RAM Usage | `https://<ip>:8006/api2/json/nodes/<node>/status` | ✅ `PVEAPIToken=User@pam!ID=Secret` |
-| `portainer` | Running/Stopped | `http://<ip>:9000/api/endpoints/1/docker/containers/json` | ✅ API Token |
-| `qbittorrent`| Up, Down & Torrents | `http://<ip>:8080/api/v2/sync/maindata` | ❌ (Bypass local subnet auth) |
-| `jellyfin` | Active Streams | `http://<ip>:8096/Sessions` | ✅ API Token |
-| `speedtest` | Speedtest results | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
-| `homeassistant`| Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |
+| Type | Available Metric Keys | Default Labels | Data Displayed | `url` Required | `auth.key` Required |
+|------|------------------------|----------------|---------------|----------------|----------------------|
+| `sys_metrics` | `cpu`, `ram`, `uptime` | `CPU`, `RAM`, `Uptime` | System Telemetry | ❌ None (Local Host) | ❌ None |
+| `pihole` | `queries`, `blocked` | `Queries`, `Blocked` | DNS Queries & Blocked % | `http://<ip>/admin/api.php` | ✅ Web Password Token |
+| `blocky` | `queries`, `blocked` | `Queries`, `Blocked` | DNS Queries & Blocked % | `http://<ip>:4000/metrics` | ❌ None |
+| `proxmox` | `cpu`, `ram` | `CPU`, `RAM` | Node CPU & RAM Usage | `https://<ip>:8006/api2/json/nodes/<node>/status` | ✅ `PVEAPIToken=User@pam!ID=Secret` |
+| `portainer` | `running`, `stopped` | `Running`, `Stopped` | Container Counts | `http://<ip>:9000/api/endpoints/1/docker/containers/json` | ✅ API Token |
+| `qbittorrent`| `download`, `upload`, `torrents` | `Down`, `Up`, `Torrents` | Speeds & Active Torrents | `http://<ip>:8080/api/v2/sync/maindata` | ❌ (Bypass local subnet auth) |
+| `jellyfin` | `streams` | `Streams` | Active Streaming Sessions | `http://<ip>:8096/Sessions` | ✅ API Token |
+| `speedtest` | `ping`, `download`, `upload` | `Ping`, `Down`, `Up` | Latency & Network Speeds | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
+| `homeassistant`| `state` | `State` | Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |
 
 ### Services
 Your primary application cards. The dashboard automatically monitors the `url` via HTTP GET requests every 60 seconds to display live health dots.

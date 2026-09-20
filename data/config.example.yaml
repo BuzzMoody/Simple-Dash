@@ -28,6 +28,12 @@ widgets:
   - name: "Host System"
     type: "sys_metrics"
     icon: "💻"
+    labels:
+      cpu:
+        colour: "primary"
+      ram:
+        colour: "secondary"
+      uptime: null # Icon only
 
   - name: "Pi-hole Stats"
     type: "pihole"
@@ -35,6 +41,13 @@ widgets:
     url: "http://192.168.1.10/admin/api.php"
     auth:
       key: "your_secret_api_key_here"
+    labels:
+      queries: "DNS Queries" # Custom title override
+      blocked:
+        colour:
+          default: "green"
+          warning: 25
+          danger: 50
 
 services:
   - name: "Pi-Hole"

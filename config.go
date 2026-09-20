@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -38,17 +39,179 @@ func (c *CategoryColoursConfig) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+// MetricStep defines a threshold value and colour transition for widget metrics.
+type MetricStep struct {
+	Value  float64 `yaml:"value" json:"value"`
+	Colour string  `yaml:"colour" json:"colour"`
+}
+
+func (s *MetricStep) UnmarshalYAML(value *yaml.Node) error {
+	type alias MetricStep
+	var a struct {
+		alias `yaml:",inline"`
+		Color string `yaml:"color"`
+	}
+	if err := value.Decode(&a); err != nil {
+		return err
+	}
+	*s = MetricStep(a.alias)
+	if s.Colour == "" && a.Color != "" {
+		s.Colour = a.Color
+	}
+	s.Colour = strings.ToLower(strings.TrimSpace(s.Colour))
+	return nil
+}
+
+// WidgetLabelConfig defines custom title and colour settings for a widget metric.
+type WidgetLabelConfig struct {
+	Title   *string      `yaml:"title" json:"title,omitempty"`
+	Colour  string       `yaml:"colour" json:"colour,omitempty"`
+	Default string       `yaml:"default" json:"default,omitempty"`
+	Warning *float64     `yaml:"warning" json:"warning,omitempty"`
+	Danger  *float64     `yaml:"danger" json:"danger,omitempty"`
+	Steps   []MetricStep `yaml:"steps" json:"steps,omitempty"`
+}
+
+func (w *WidgetLabelConfig) UnmarshalYAML(value *yaml.Node) error {
+	// Case 1: Scalar node (null or shorthand string title override)
+	if value.Kind == yaml.ScalarNode {
+		if value.Tag == "!!null" || value.Value == "" || value.Value == "null" || value.Value == "~" {
+			empty := ""
+			w.Title = &empty
+			return nil
+		}
+		val := value.Value
+		w.Title = &val
+		return nil
+	}
+
+	// Case 2: Mapping node
+	if value.Kind == yaml.MappingNode {
+		for i := 0; i < len(value.Content); i += 2 {
+			k := strings.ToLower(strings.TrimSpace(value.Content[i].Value))
+			v := value.Content[i+1]
+
+			switch k {
+			case "title", "label", "name":
+				if v.Kind == yaml.ScalarNode && (v.Tag == "!!null" || v.Value == "" || v.Value == "null" || v.Value == "~") {
+					empty := ""
+					w.Title = &empty
+				} else {
+					val := v.Value
+					w.Title = &val
+				}
+			case "warning":
+				var f float64
+				if err := v.Decode(&f); err == nil {
+					w.Warning = &f
+				}
+			case "danger":
+				var f float64
+				if err := v.Decode(&f); err == nil {
+					w.Danger = &f
+				}
+			case "default":
+				w.Default = strings.ToLower(strings.TrimSpace(v.Value))
+			case "steps":
+				var steps []MetricStep
+				if err := v.Decode(&steps); err == nil {
+					w.Steps = steps
+				}
+			case "colour", "color":
+				if v.Kind == yaml.ScalarNode {
+					w.Colour = strings.ToLower(strings.TrimSpace(v.Value))
+				} else if v.Kind == yaml.SequenceNode {
+					var steps []MetricStep
+					if err := v.Decode(&steps); err == nil {
+						w.Steps = steps
+					}
+				} else if v.Kind == yaml.MappingNode {
+					for j := 0; j < len(v.Content); j += 2 {
+						ck := strings.ToLower(strings.TrimSpace(v.Content[j].Value))
+						cv := v.Content[j+1]
+						switch ck {
+						case "warning":
+							var f float64
+							if err := cv.Decode(&f); err == nil {
+								w.Warning = &f
+							}
+						case "danger":
+							var f float64
+							if err := cv.Decode(&f); err == nil {
+								w.Danger = &f
+							}
+						case "default":
+							w.Default = strings.ToLower(strings.TrimSpace(cv.Value))
+						case "steps":
+							var steps []MetricStep
+							if err := cv.Decode(&steps); err == nil {
+								w.Steps = steps
+							}
+						default:
+							if f, err := strconv.ParseFloat(ck, 64); err == nil {
+								w.Steps = append(w.Steps, MetricStep{
+									Value:  f,
+									Colour: strings.ToLower(strings.TrimSpace(cv.Value)),
+								})
+							}
+						}
+					}
+				}
+			}
+		}
+		return nil
+	}
+
+	return nil
+}
+
 type StandaloneWidgetConfig struct {
-	ID        string            `yaml:"id" json:"id"`
-	Name      string            `yaml:"name" json:"name"`
-	Type      string            `yaml:"type" json:"type"`
-	URL       string            `yaml:"url" json:"-"`
-	Icon      string            `yaml:"icon" json:"icon"`
-	Logo      string            `yaml:"logo" json:"logo"`
-	LogoDark  string            `yaml:"logo_dark" json:"logo_dark"`
-	LogoLight string            `yaml:"logo_light" json:"logo_light"`
-	Auth      map[string]string `yaml:"auth" json:"-"`
-	Settings  map[string]string `yaml:"settings" json:"settings"`
+	ID        string                       `yaml:"id" json:"id"`
+	Name      string                       `yaml:"name" json:"name"`
+	Type      string                       `yaml:"type" json:"type"`
+	URL       string                       `yaml:"url" json:"-"`
+	Icon      string                       `yaml:"icon" json:"icon"`
+	Logo      string                       `yaml:"logo" json:"logo"`
+	LogoDark  string                       `yaml:"logo_dark" json:"logo_dark"`
+	LogoLight string                       `yaml:"logo_light" json:"logo_light"`
+	Auth      map[string]string            `yaml:"auth" json:"-"`
+	Settings  map[string]string            `yaml:"settings" json:"settings"`
+	Labels    map[string]WidgetLabelConfig `yaml:"labels" json:"labels,omitempty"`
+}
+
+func (w *StandaloneWidgetConfig) UnmarshalYAML(value *yaml.Node) error {
+	type alias StandaloneWidgetConfig
+	var a alias
+	if err := value.Decode(&a); err != nil {
+		return err
+	}
+	*w = StandaloneWidgetConfig(a)
+
+	// Process labels or metrics block with explicit null handling
+	for i := 0; i < len(value.Content); i += 2 {
+		k := strings.ToLower(strings.TrimSpace(value.Content[i].Value))
+		v := value.Content[i+1]
+		if (k == "labels" || k == "metrics") && v.Kind == yaml.MappingNode {
+			if w.Labels == nil {
+				w.Labels = make(map[string]WidgetLabelConfig)
+			}
+			for j := 0; j < len(v.Content); j += 2 {
+				lk := strings.ToLower(strings.TrimSpace(v.Content[j].Value))
+				lv := v.Content[j+1]
+				var item WidgetLabelConfig
+				if lv.Kind == yaml.ScalarNode && (lv.Tag == "!!null" || lv.Value == "null" || lv.Value == "~" || lv.Value == "") {
+					empty := ""
+					item.Title = &empty
+				} else {
+					if err := lv.Decode(&item); err != nil {
+						return err
+					}
+				}
+				w.Labels[lk] = item
+			}
+		}
+	}
+	return nil
 }
 
 type Button struct {

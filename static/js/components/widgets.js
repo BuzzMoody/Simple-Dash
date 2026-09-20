@@ -43,22 +43,118 @@ export const getMetricSVG = (iconName) => {
     return svgWrap(`<circle cx="12" cy="12" r="4"></circle>`);
 };
 
-export const getMetricColors = (metric) => {
-    if (!metric || !metric.threshold) return null;
-    const { warning, danger, inverted } = metric.threshold;
-    const val = typeof metric.value === 'number' ? metric.value : parseFloat(metric.value);
-    if (isNaN(val)) return null;
-
-    if (!inverted) {
-        if (danger !== undefined && val >= danger) return { base: '#d64242', flash: '#eaa0a0' };
-        if (warning !== undefined && val >= warning) return { base: '#f59e0b', flash: '#face85' };
-        if (val > 0) return { base: '#39c55c', flash: '#9ce2ad' };
-    } else {
-        if (danger !== undefined && val <= danger) return { base: '#d64242', flash: '#eaa0a0' };
-        if (warning !== undefined && val <= warning) return { base: '#f59e0b', flash: '#face85' };
+export const resolveColorPair = (colorName) => {
+    const c = (colorName || '').toLowerCase().trim();
+    if (c === 'primary') {
+        return {
+            base: 'var(--header-color-1)',
+            flash: 'color-mix(in srgb, var(--header-color-1) 50%, #ffffff)'
+        };
+    }
+    if (c === 'secondary') {
+        return {
+            base: 'var(--header-color-2)',
+            flash: 'color-mix(in srgb, var(--header-color-2) 50%, #ffffff)'
+        };
+    }
+    if (c === 'green') {
         return { base: '#39c55c', flash: '#9ce2ad' };
     }
-    return null;
+    if (c === 'red' || c === 'danger') {
+        return { base: '#d64242', flash: '#eaa0a0' };
+    }
+    if (c === 'yellow' || c === 'warning' || c === 'amber') {
+        return { base: '#f59e0b', flash: '#face85' };
+    }
+    return {
+        base: 'var(--text-color)',
+        flash: 'color-mix(in srgb, var(--text-color) 50%, #ffffff)'
+    };
+};
+
+export const getMetricColors = (metric, labelCfg) => {
+    const val = typeof metric?.value === 'number' ? metric.value : parseFloat(metric?.value);
+    const hasVal = !isNaN(val);
+
+    // 1. Check custom stepped or threshold values configured in labelCfg
+    if (labelCfg && hasVal) {
+        // Custom multi-step thresholds
+        if (Array.isArray(labelCfg.steps) && labelCfg.steps.length > 0) {
+            const sortedSteps = [...labelCfg.steps].sort((a, b) => a.value - b.value);
+            const inverted = metric?.threshold?.inverted || false;
+            let matchedColour = null;
+
+            if (inverted) {
+                for (const step of sortedSteps) {
+                    if (val <= step.value) {
+                        matchedColour = step.colour;
+                        break;
+                    }
+                }
+            } else {
+                for (let i = sortedSteps.length - 1; i >= 0; i--) {
+                    if (val >= sortedSteps[i].value) {
+                        matchedColour = sortedSteps[i].colour;
+                        break;
+                    }
+                }
+            }
+
+            if (matchedColour) {
+                return resolveColorPair(matchedColour);
+            }
+            return resolveColorPair(labelCfg.default || labelCfg.colour || 'default');
+        }
+
+        // Custom warning / danger thresholds
+        if (labelCfg.warning !== undefined || labelCfg.danger !== undefined) {
+            const inverted = metric?.threshold?.inverted || false;
+            const danger = labelCfg.danger;
+            const warning = labelCfg.warning;
+
+            if (!inverted) {
+                if (danger !== undefined && val >= danger) return resolveColorPair('red');
+                if (warning !== undefined && val >= warning) return resolveColorPair('yellow');
+            } else {
+                if (danger !== undefined && val <= danger) return resolveColorPair('red');
+                if (warning !== undefined && val <= warning) return resolveColorPair('yellow');
+            }
+            return resolveColorPair(labelCfg.default || labelCfg.colour || 'default');
+        }
+
+        // Single custom colour specified
+        if (labelCfg.colour || labelCfg.default) {
+            const chosen = labelCfg.colour || labelCfg.default;
+            // If metric has built-in warning/danger, alerts take precedence
+            if (metric?.threshold) {
+                const { warning, danger, inverted } = metric.threshold;
+                if (!inverted) {
+                    if (danger !== undefined && val >= danger) return { base: '#d64242', flash: '#eaa0a0' };
+                    if (warning !== undefined && val >= warning) return { base: '#f59e0b', flash: '#face85' };
+                } else {
+                    if (danger !== undefined && val <= danger) return { base: '#d64242', flash: '#eaa0a0' };
+                    if (warning !== undefined && val <= warning) return { base: '#f59e0b', flash: '#face85' };
+                }
+            }
+            return resolveColorPair(chosen);
+        }
+    }
+
+    // 2. Default built-in threshold behaviour
+    if (metric && metric.threshold && hasVal) {
+        const { warning, danger, inverted } = metric.threshold;
+        if (!inverted) {
+            if (danger !== undefined && val >= danger) return { base: '#d64242', flash: '#eaa0a0' };
+            if (warning !== undefined && val >= warning) return { base: '#f59e0b', flash: '#face85' };
+            if (val > 0) return { base: '#39c55c', flash: '#9ce2ad' };
+        } else {
+            if (danger !== undefined && val <= danger) return { base: '#d64242', flash: '#eaa0a0' };
+            if (warning !== undefined && val <= warning) return { base: '#f59e0b', flash: '#face85' };
+            return { base: '#39c55c', flash: '#9ce2ad' };
+        }
+    }
+
+    return resolveColorPair('default');
 };
 
 export const updateSlotGeneric = (el, id, formattedStr, isFirstLoad) => {
@@ -114,28 +210,32 @@ export const updateSlotGeneric = (el, id, formattedStr, isFirstLoad) => {
 
 export const animateMetric = (el, id, targetStr, colors) => {
     const currentStr = el.getAttribute('data-val');
-    if (currentStr === targetStr) return;
-
     const isFirstLoad = currentStr === null;
-    el.setAttribute('data-val', targetStr);
 
     if (colors !== null) {
-        el.style.transition = 'none';
-        if (!isFirstLoad) {
+        if (isFirstLoad) {
+            el.style.color = colors.base;
+        } else if (currentStr !== targetStr) {
+            el.style.transition = 'none';
+            el.style.color = colors.flash;
             el.style.transform = 'scale(1.08)';
-        }
-        el.style.color = colors.base;
-
-        updateSlotGeneric(el, id, targetStr, isFirstLoad);
-        void el.offsetWidth;
-
-        if (!isFirstLoad) {
-            el.style.transition = 'transform 0.4s ease-out';
-            el.style.transform = 'scale(1)';
+        } else {
+            el.style.color = colors.base;
         }
     } else {
-        updateSlotGeneric(el, id, targetStr, isFirstLoad);
         el.style.color = '';
+    }
+
+    if (currentStr === targetStr) return;
+    el.setAttribute('data-val', targetStr);
+
+    updateSlotGeneric(el, id, targetStr, isFirstLoad);
+    void el.offsetWidth;
+
+    if (!isFirstLoad && colors !== null) {
+        el.style.transition = 'transform 0.4s ease-out, color 0.4s ease-out';
+        el.style.transform = 'scale(1)';
+        el.style.color = colors.base;
     }
 };
 
@@ -176,6 +276,11 @@ export const renderWidgets = (widgetsData) => {
         widgetResult.metrics.forEach(metric => {
             const metricKey = `${wId}-${metric.key}`;
             let valEl = widgetMetricElsMap.get(metricKey);
+            const labelCfg = (wConfig.labels && wConfig.labels[metric.key]) || null;
+            let labelText = metric.label;
+            if (labelCfg && labelCfg.title !== undefined) {
+                labelText = labelCfg.title || '';
+            }
 
             if (!valEl) {
                 let item = mWrapper.querySelector(`.metric-item[data-key="${metric.key}"]`);
@@ -190,7 +295,7 @@ export const renderWidgets = (widgetsData) => {
 
                     const label = document.createElement('span');
                     label.className = 'metric-label';
-                    label.textContent = metric.label;
+                    label.textContent = labelText;
 
                     valEl = document.createElement('span');
                     valEl.className = 'metric-value';
@@ -201,11 +306,23 @@ export const renderWidgets = (widgetsData) => {
                     mWrapper.appendChild(item);
                 } else {
                     valEl = item.querySelector('.metric-value');
+                    const labelEl = item.querySelector('.metric-label');
+                    if (labelEl && labelEl.textContent !== labelText) {
+                        labelEl.textContent = labelText;
+                    }
                 }
                 widgetMetricElsMap.set(metricKey, valEl);
+            } else {
+                const item = valEl.closest('.metric-item');
+                if (item) {
+                    const labelEl = item.querySelector('.metric-label');
+                    if (labelEl && labelEl.textContent !== labelText) {
+                        labelEl.textContent = labelText;
+                    }
+                }
             }
 
-            const colors = getMetricColors(metric);
+            const colors = getMetricColors(metric, labelCfg);
             animateMetric(valEl, metricKey, metric.formatted, colors);
         });
     });

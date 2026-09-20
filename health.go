@@ -115,6 +115,11 @@ func pollWidgets() {
 				defer wCancel()
 
 				if metrics, err := parser.Fetch(wCtx, widgetClient, &widget); err == nil {
+					for i := range metrics {
+						if lblCfg, ok := widget.Labels[metrics[i].Key]; ok && lblCfg.Title != nil {
+							metrics[i].Label = *lblCfg.Title
+						}
+					}
 					wMu.Lock()
 					newWidgetsStatus[widget.ID] = WidgetResult{Metrics: metrics}
 					wMu.Unlock()
