@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 
@@ -325,6 +326,55 @@ func TestPollWidgetsLabelOverride(t *testing.T) {
 		}
 		if m.Key == "uptime" && m.Label != "Uptime" {
 			t.Errorf("Expected uptime label to be default 'Uptime', got '%s'", m.Label)
+		}
+	}
+}
+
+func TestBlockyWidget(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/stats" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{
+			"summary": {
+				"queries": 1000,
+				"blocked": 250
+			}
+		}`))
+	}))
+	defer ts.Close()
+
+	w := &BlockyWidget{}
+	// Test with base URL (auto-appends /api/stats)
+	metrics, err := w.Fetch(context.Background(), ts.Client(), &StandaloneWidgetConfig{
+		Type: "blocky",
+		URL:  ts.URL,
+	})
+	if err != nil {
+		t.Fatalf("BlockyWidget.Fetch failed: %v", err)
+	}
+
+	if len(metrics) != 3 {
+		t.Fatalf("Expected 3 metrics, got %d", len(metrics))
+	}
+
+	for _, m := range metrics {
+		if m.Key == "queries" {
+			if m.Value != 1000 || m.Formatted != "1000" {
+				t.Errorf("Unexpected queries metric: %+v", m)
+			}
+		}
+		if m.Key == "blocked" {
+			if m.Value != 250 || m.Formatted != "250" {
+				t.Errorf("Unexpected blocked metric: %+v", m)
+			}
+		}
+		if m.Key == "percent" {
+			if m.Value != 25.0 || m.Formatted != "25.0%" {
+				t.Errorf("Unexpected percent metric: %+v", m)
+			}
 		}
 	}
 }

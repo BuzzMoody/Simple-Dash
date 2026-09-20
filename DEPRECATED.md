@@ -87,3 +87,30 @@ services:
 * **Original Behaviour:** Reading `dashy-theme`, `dashy-layout`, `dashy-groupby`, and `dashy-weather` from `localStorage`.
 * **Deprecation Rationale:** Migration from legacy naming to standard `simpledash-*` prefix.
 * **Replacement:** Use `simpledash-theme`, `simpledash-layout`, `simpledash-groupby`, and `simpledash-weather`.
+
+---
+
+## 4. Blocky `/metrics` Prometheus Scraping
+
+* **Status:** Deprecated (v0.1.7) / Removed (dev branch).
+* **Original Behaviour:** The Blocky widget fetched raw Prometheus text from `http://<ip>:4000/metrics` and parsed regex lines.
+* **Deprecation Rationale:** Blocky's `/metrics` endpoint exports per-client counters and does not represent global query totals accurately. Modern Blocky provides a dedicated `/api/stats` JSON endpoint that returns exact, aggregated query and blocking totals.
+* **Replacement:** Point the Blocky widget `url` to `http://<ip>:4000/api/stats` (or simply `http://<ip>:4000`) and ensure statistics collection is enabled in your Blocky configuration.
+
+### Migration Example
+
+**Old (`config.yaml`):**
+```yaml
+widgets:
+  - name: "Blocky Stats"
+    type: "blocky"
+    url: "http://192.168.1.10:4000/metrics"
+```
+
+**Replacement (`config.yaml`):**
+```yaml
+widgets:
+  - name: "Blocky Stats"
+    type: "blocky"
+    url: "http://192.168.1.10:4000/api/stats"
+```

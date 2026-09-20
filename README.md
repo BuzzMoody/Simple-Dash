@@ -211,13 +211,15 @@ widgets:
 |------|------------------------|----------------|---------------|----------------|----------------------|
 | `sys_metrics` | `cpu`, `ram`, `uptime` | `CPU`, `RAM`, `Uptime` | System Telemetry | ❌ None (Local Host) | ❌ None |
 | `pihole` | `queries`, `blocked` | `Queries`, `Blocked` | DNS Queries & Blocked % | `http://<ip>/admin/api.php` | ✅ Web Password Token |
-| `blocky` | `queries`, `blocked` | `Queries`, `Blocked` | DNS Queries & Blocked % | `http://<ip>:4000/metrics` | ❌ None |
+| `blocky` | `queries`, `blocked` | `Queries`, `Blocked` | DNS Queries & Blocked % | `http://<ip>:4000/api/stats` | ❌ None |
 | `proxmox` | `cpu`, `ram` | `CPU`, `RAM` | Node CPU & RAM Usage | `https://<ip>:8006/api2/json/nodes/<node>/status` | ✅ `PVEAPIToken=User@pam!ID=Secret` |
 | `portainer` | `running`, `stopped` | `Running`, `Stopped` | Container Counts | `http://<ip>:9000/api/endpoints/1/docker/containers/json` | ✅ API Token |
 | `qbittorrent`| `download`, `upload`, `torrents` | `Down`, `Up`, `Torrents` | Speeds & Active Torrents | `http://<ip>:8080/api/v2/sync/maindata` | ❌ (Bypass local subnet auth) |
 | `jellyfin` | `streams` | `Streams` | Active Streaming Sessions | `http://<ip>:8096/Sessions` | ✅ API Token |
 | `speedtest` | `ping`, `download`, `upload` | `Ping`, `Down`, `Up` | Latency & Network Speeds | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
 | `homeassistant`| `state` | `State` | Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |
+
+> **Note for Blocky:** The Blocky widget queries the `/api/stats` endpoint, which requires statistics collection to be enabled in your Blocky configuration per the [Blocky Statistics Documentation](https://0xerr0r.github.io/blocky/latest/configuration/#statistics).
 
 ### Services
 Your primary application cards. The dashboard automatically monitors the `url` via HTTP GET requests every 60 seconds to display live health dots.
