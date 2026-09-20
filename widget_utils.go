@@ -6,7 +6,31 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 )
+
+// formatNumber formats an integer with thousands comma separators (e.g. 185776 -> "185,776").
+func formatNumber[T int | int64 | uint | uint64](n T) string {
+	val := int64(n)
+	sign := ""
+	if val < 0 {
+		sign = "-"
+		val = -val
+	}
+	in := strconv.FormatInt(val, 10)
+	out := make([]byte, 0, len(in)+(len(in)-1)/3)
+	offset := len(in) % 3
+	if offset == 0 {
+		offset = 3
+	}
+	for i, b := range []byte(in) {
+		if i > 0 && (i-offset)%3 == 0 {
+			out = append(out, ',')
+		}
+		out = append(out, b)
+	}
+	return sign + string(out)
+}
 
 // MetricThreshold defines thresholds for colour transitions.
 type MetricThreshold struct {

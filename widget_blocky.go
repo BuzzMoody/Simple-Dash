@@ -36,14 +36,14 @@ func (w *BlockyWidget) Fetch(ctx context.Context, client *http.Client, cfg *Stan
 			Key:       "queries",
 			Label:     "Queries",
 			Value:     data.Summary.Queries,
-			Formatted: fmt.Sprintf("%d", data.Summary.Queries),
+			Formatted: formatNumber(data.Summary.Queries),
 			Icon:      "help-circle",
 		},
 		{
 			Key:       "blocked",
 			Label:     "Blocked",
 			Value:     data.Summary.Blocked,
-			Formatted: fmt.Sprintf("%d", data.Summary.Blocked),
+			Formatted: formatNumber(data.Summary.Blocked),
 			Icon:      "shield",
 		},
 		{

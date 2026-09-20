@@ -52,7 +52,7 @@ func (w *QbittorrentWidget) Fetch(ctx context.Context, client *http.Client, cfg 
 			Key:       "torrents",
 			Label:     "Torrents",
 			Value:     len(data.Torrents),
-			Formatted: fmt.Sprintf("%d", len(data.Torrents)),
+			Formatted: formatNumber(len(data.Torrents)),
 			Icon:      "file-text",
 		},
 	}, nil

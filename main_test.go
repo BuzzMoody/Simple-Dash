@@ -362,7 +362,7 @@ func TestBlockyWidget(t *testing.T) {
 
 	for _, m := range metrics {
 		if m.Key == "queries" {
-			if m.Value != 1000 || m.Formatted != "1000" {
+			if m.Value != 1000 || m.Formatted != "1,000" {
 				t.Errorf("Unexpected queries metric: %+v", m)
 			}
 		}
@@ -375,6 +375,29 @@ func TestBlockyWidget(t *testing.T) {
 			if m.Value != 25.0 || m.Formatted != "25.0%" {
 				t.Errorf("Unexpected percent metric: %+v", m)
 			}
+		}
+	}
+}
+
+func TestFormatNumber(t *testing.T) {
+	tests := []struct {
+		input    int
+		expected string
+	}{
+		{0, "0"},
+		{5, "5"},
+		{455, "455"},
+		{1000, "1,000"},
+		{6028, "6,028"},
+		{185776, "185,776"},
+		{1000000, "1,000,000"},
+		{-12345, "-12,345"},
+	}
+
+	for _, tc := range tests {
+		got := formatNumber(tc.input)
+		if got != tc.expected {
+			t.Errorf("formatNumber(%d) = %q; want %q", tc.input, got, tc.expected)
 		}
 	}
 }

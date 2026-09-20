@@ -38,7 +38,7 @@ func (w *JellyfinWidget) Fetch(ctx context.Context, client *http.Client, cfg *St
 			Key:       "streams",
 			Label:     "Active Streams",
 			Value:     activeStreams,
-			Formatted: fmt.Sprintf("%d", activeStreams),
+			Formatted: formatNumber(activeStreams),
 			Icon:      "play",
 		},
 	}, nil

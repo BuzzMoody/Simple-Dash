@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -39,14 +38,14 @@ func (w *PortainerWidget) Fetch(ctx context.Context, client *http.Client, cfg *S
 			Key:       "running",
 			Label:     "Running",
 			Value:     running,
-			Formatted: fmt.Sprintf("%d", running),
+			Formatted: formatNumber(running),
 			Icon:      "activity",
 		},
 		{
 			Key:       "stopped",
 			Label:     "Stopped",
 			Value:     stopped,
-			Formatted: fmt.Sprintf("%d", stopped),
+			Formatted: formatNumber(stopped),
 			Icon:      "pause-circle",
 			Threshold: &MetricThreshold{Warning: 1, Danger: 5},
 		},

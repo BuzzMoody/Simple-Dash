@@ -44,7 +44,7 @@ func (p *PiholeWidget) Fetch(ctx context.Context, client *http.Client, cfg *Stan
 			Key:       "blocked",
 			Label:     "Blocked",
 			Value:     data.AdsBlockedToday,
-			Formatted: fmt.Sprintf("%d", data.AdsBlockedToday),
+			Formatted: formatNumber(data.AdsBlockedToday),
 			Icon:      "shield",
 		},
 		{
@@ -59,7 +59,7 @@ func (p *PiholeWidget) Fetch(ctx context.Context, client *http.Client, cfg *Stan
 			Key:       "clients",
 			Label:     "Clients",
 			Value:     data.UniqueClients,
-			Formatted: fmt.Sprintf("%d", data.UniqueClients),
+			Formatted: formatNumber(data.UniqueClients),
 			Icon:      "users",
 		},
 	}, nil
