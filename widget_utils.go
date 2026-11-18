@@ -48,6 +48,9 @@ type WidgetMetric struct {
 	Unit      string           `json:"unit,omitempty"`
 	Icon      string           `json:"icon,omitempty"`
 	Threshold *MetricThreshold `json:"threshold,omitempty"`
+	// Colour lets a widget colour a value itself (e.g. "green" for a gain, "red" for a loss). A user's labels: colour
+	// or thresholds still win. Empty leaves the built-in thresholds or the default text colour.
+	Colour string `json:"colour,omitempty"`
 }
 
 // WidgetResult contains the ordered metrics for a widget.
@@ -69,6 +72,7 @@ var widgetRegistry = map[string]WidgetParser{
 	"speedtest":     &SpeedtestWidget{},
 	"homeassistant": &HomeAssistantWidget{},
 	"blocky":        &BlockyWidget{},
+	"asxdash":       &AsxdashWidget{},
 	"sys_metrics":   &SysMetricsWidget{},
 	"system":        &SysMetricsWidget{},
 }

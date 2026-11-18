@@ -25,6 +25,9 @@ export const getMetricSVG = (iconName) => {
     const k = (iconName || '').toLowerCase();
     const svgWrap = (paths) => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
 
+    // Checked first so the broader includes() matches below (e.g. 'up', 'time') cannot claim them
+    if (k.includes('wallet')) return svgWrap(`<path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2"></path><path d="M22 7h-6a2.5 2.5 0 0 0 0 5h6z"></path><circle cx="16.5" cy="9.5" r="0.5"></circle>`);
+    if (k.includes('trending')) return svgWrap(`<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline>`);
     if (k.includes('running') || k === 'play') return svgWrap(`<polygon points="5 3 19 12 5 21 5 3"></polygon>`);
     if (k.includes('stopped') || k.includes('stop')) return svgWrap(`<circle cx="12" cy="12" r="10"></circle><rect x="9" y="9" width="6" height="6" rx="1"></rect>`);
     if (k.includes('pause')) return svgWrap(`<circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line>`);
@@ -141,7 +144,12 @@ export const getMetricColors = (metric, labelCfg) => {
         }
     }
 
-    // 2. Default built-in threshold behaviour
+    // 2. Colour chosen by the widget itself (e.g. green gain / red loss); a flat value sends none
+    if (metric?.colour) {
+        return resolveColorPair(metric.colour);
+    }
+
+    // 3. Default built-in threshold behaviour
     if (metric && metric.threshold && hasVal) {
         const { warning, danger, inverted } = metric.threshold;
         if (!inverted) {

@@ -193,7 +193,7 @@ widgets:
 
 **Widget Options:**
 - `name`: *(String)* Custom title for the widget card (displayed in the hover tooltip). If the name matches an existing service card, it automatically inherits the theme-aware logo or icon from that service.
-- `type`: *(String)* Widget parser key (e.g. `sys_metrics`, `pihole`, `proxmox`, `portainer`, `qbittorrent`, `jellyfin`, `speedtest`, `homeassistant`, `blocky`).
+- `type`: *(String)* Widget parser key (e.g. `sys_metrics`, `pihole`, `proxmox`, `portainer`, `qbittorrent`, `jellyfin`, `speedtest`, `homeassistant`, `blocky`, `asxdash`).
 - `url`: *(String)* Target API endpoint URL (not required for `sys_metrics`).
 - `logo` / `icon`: *(String)* Optional custom logo filename from `logos/` or emoji text.
 - `logo_light` / `logo_dark`: *(String)* Optional theme-specific logos.
@@ -218,6 +218,9 @@ widgets:
 | `jellyfin` | `streams` | `Streams` | Active Streaming Sessions | `http://<ip>:8096/Sessions` | ✅ API Token |
 | `speedtest` | `ping`, `download`, `upload` | `Ping`, `Down`, `Up` | Latency & Network Speeds | `http://<ip>:<port>/api/v1/results/latest` | ✅ API Token (if used) |
 | `homeassistant`| `state` | `State` | Entity State | `http://<ip>:8123/api/states/<entity_id>` | ✅ Long-Lived Access Token |
+| `asxdash` | `value`, `change`, `change_percent` | `Value`, `Today`, `Today %` | ASXDash Portfolio Value & Today's Gain/Loss | `http://<ip>:8085` (or the full `/api/widget/summary` path) | ❌ None |
+
+> **Note for ASXDash:** The ASXDash widget reads ASXDash's `GET /api/widget/summary` endpoint. ASXDash formats every figure itself (truncated, never rounded), so the widget shows them as they are. `Today` and `Today %` turn green for a gain and red for a loss, and stay the default text colour when flat; a `labels:` colour or threshold you set still takes priority. Before the first price of the trading day the day reads as flat, and outside trading hours it shows the last session's change.
 
 > **Note for Blocky:** The Blocky widget queries the `/api/stats` endpoint, which requires statistics collection to be enabled in your Blocky configuration per the [Blocky Statistics Documentation](https://0xerr0r.github.io/blocky/latest/configuration/#statistics).
 

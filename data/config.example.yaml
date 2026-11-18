@@ -49,6 +49,11 @@ widgets:
           warning: 25
           danger: 50
 
+  - name: "Shares"
+    type: "asxdash"
+    url: "http://192.168.1.20:8085" # ASXDash base URL; /api/widget/summary is added for you
+    icon: "📈"
+
 services:
   - name: "Pi-Hole"
     url: "http://192.168.1.10/admin"
